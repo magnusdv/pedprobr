@@ -1,0 +1,67 @@
+---
+output:
+  md_document:
+    variant: markdown_github
+---
+
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+
+```{r, echo = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.path = "README-"
+)
+```
+
+# pedprobr
+
+`pedprobr` is a reboot of the computational heart of the retired `paramlink`
+package. Its main content is an implemention of the Elston-Stewart algorithm for pedigree likelihoods. 
+It is part of a suite of packages for pedigree analysis in R, all using `pedtools` for basic 
+handling of pedigrees and markers.
+
+The workhorse of the package is the `likelihood()` function, which works in a variety of situations:
+
+* complex pedigrees with multiple layers inbreeding
+* autosomal and X-linked markers
+* a single marker or two linked markers
+* markers with mutation models
+
+## Installation
+To get the latest version of `pedprobr`, install from GitHub as follows: 
+```{r, eval = FALSE}
+ # First install devtools if needed
+if(!require(devtools)) install.packages("devtools")
+
+# Install pedprobr from github
+devtools::install_github("magnusdv/pedprobr")
+```
+
+## Getting started
+```{r example}
+library(pedtools)
+library(pedprobr)
+```
+
+For a simple example, we first create (with `pedtools`) a pedigree and attach to it a marker object. The marker is a diallelic SNP, and the two brothers are both heterozygous.
+```{r setup, fig.height=3, fig.width=3, fig.align="center"}
+x = nuclearPed(nch = 2)
+m = marker(x, '3' = 1:2, '4' = 1:2)
+
+x = addMarkers(x, m) # attach the marker
+x
+
+plot(x, m)
+```
+
+The pedigree likelihood is computed as follows:
+```{r}
+likelihood(x, marker1 = 1)
+```
+
+Besides `likelihood()` the most important functions in `probedr` are `oneMarkerDistribution()` and `twoMarkerDistribution()`. For a quick illustration of the former, we compute the joint genotype probability distribution of parents, conditional on the children.
+```{r}
+oneMarkerDistribution(x, ids = 1:2, partialmarker = 1)
+```
+

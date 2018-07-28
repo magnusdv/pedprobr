@@ -1,0 +1,138 @@
+#' Probability distribution for linked marker
+#'
+#' Computes the joint genotype distribution of two markers for a specified
+#' pedigree member, conditional on known genotypes and the recombination rate
+#' between the markers.
+#'
+#' @param x A `ped` object.
+#' @param id A single ID label.
+#' @param partialmarker1,partialmarker2 Either a `marker` object or the name (or
+#'   index) of a marker attached to `x`.
+#' @param theta A single numeric in the interval `[0, 0.5]`: the recombination
+#'   fraction between the two markers.
+#' @param loop_breakers (Only relevant if the pedigree has loops). A vector with
+#'   ID labels of individuals to be used as loop breakers. If NULL (default)
+#'   loop breakers are selected automatically. See [breakLoops()].
+#' @param eliminate A non-negative integer, indicating the number of iterations
+#'   in the internal algorithm for reducing the genotype space. Positive values
+#'   can save time if `partialmarker1` and/or `partialmarker2` have many
+#'   alleles.
+#' @param verbose A logical.
+#' @return A named matrix giving the joint genotype distribution.
+#' @author Magnus Dehli Vigeland
+#' @seealso [oneMarkerDistribution()]
+#'
+#' @examples
+#'
+#' library(pedtools)
+#'
+#' x = nuclearPed(father="fa", mother="mo", children=c("ch1", "ch2"))
+#'
+#' # Empty SNP marker
+#' emptySNP = marker(x, alleles=1:2)
+#' SNP1 = marker(x, fa=c(1,1), mo=c(1,0), alleles=1:2, afreq=c(0.1, 0.9))
+#' twoMarkerDistribution(x, id="mo", emptySNP, SNP1, theta=0)
+#' twoMarkerDistribution(x, id="mo", emptySNP, SNP1, theta=0.5)
+#' twoMarkerDistribution(x, id="ch1", emptySNP, SNP1, theta=0.5)
+#'
+#' # X-linked example
+#' SNPX_1 = marker(x, mo=c('a','b'), ch1='b', alleles=c('a','b'), chrom=23)
+#' SNPX_2 = marker(x, mo=c('a','b'), ch1='b', alleles=c('a','b'), chrom=23)
+#' r1 = twoMarkerDistribution(x, id="ch2", SNPX_1, SNPX_2, theta=0)
+#' r2 = twoMarkerDistribution(x, id="ch2", SNPX_1, SNPX_2, theta=0.5)
+#' stopifnot(all(r1==c(.5,0,0,.5)), all(r2==c(.25,.25,.25,.25)))
+#'
+#' @importFrom assertthat is.count
+#' @export
+twoMarkerDistribution <- function(x, id, partialmarker1, partialmarker2, theta, loop_breakers = NULL,
+                                  eliminate = 99, verbose = TRUE) {
+  assert_that(is.ped(x), is_count0(eliminate))
+
+  m1 = partialmarker1
+  if (!is.marker(m1)) {
+    if(length(m1) != 1)
+      stop2("`partialmarker1` must have length 1")
+    m1 = getMarkers(x, markers = m1)[[1]]
+  }
+
+  m2 = partialmarker2
+  if (!is.marker(m2)) {
+    if(length(m2) != 1)
+      stop2("`partialmarker2` must have length 1")
+    m2 = getMarkers(x, markers = m2)[[1]]
+  }
+  if (!is.null(x$LOOP_BREAKERS))
+    stop2("`ped` objects with pre-broken loops are not allowed as input to `twoMarkerDistribution`")
+
+  if (!identical(chrom(m1), chrom(m2)))
+    stop2("Partial markers are on different chromosomes: ", chrom(m1), chrom(m2))
+
+  onX = is_Xmarker(m1)
+
+  if (verbose) {
+    cat(sprintf("Partial markers (%s):\n", ifelse(onX, "X-linked", "autosomal")))
+
+    df = as.data.frame(setMarkers(x, list(m1,m2)))[-(2:4)]
+
+    # Add arrow in fourth column
+    df = cbind(df, arrow = "", stringsAsFactors = FALSE)
+    df$arrow[internalID(x, id)] = " <==="
+    names(df)[4] = ""
+
+    print(df, row.names = FALSE)
+
+    cat("\nAllele frequencies, marker 1:\n")
+    print(data.frame(as.list(afreq(m1)), check.names=F), row.names=F)
+    cat("\nAllele frequencies, marker 2:\n")
+    print(data.frame(as.list(afreq(m2)), check.names=F), row.names=F)
+    cat("\nRecombination rate:", theta, "\n")
+  }
+
+  # Start timer
+  starttime = Sys.time()
+
+  # Do this before loop breaking, since eliminate2 works better WITH the loops.
+  grid.subset = fast.grid(c(geno.grid.subset(x, m1, id, make.grid = F),
+                            geno.grid.subset(x, m2, id, make.grid = F)))
+
+  if (x$UNBROKEN_LOOPS) {
+    x = breakLoops(setMarkers(x, list(m1, m2)), loop_breakers = loop_breakers, verbose = verbose)
+    m1 = x$markerdata[[1]]
+    m2 = x$markerdata[[2]]
+  }
+
+  int.id = internalID(x, id)
+  allgenos1 = allGenotypes(nAlleles(m1))
+  allgenos2 = allGenotypes(nAlleles(m2))
+  alleles1 = alleles(m1)
+  alleles2 = alleles(m2)
+
+  if (!onX || getSex(x, id) == 2) {
+    gt1.strings = paste(alleles1[allgenos1[, 1]], alleles1[allgenos1[, 2]], sep = "/")
+    gt2.strings = paste(alleles2[allgenos2[, 1]], alleles2[allgenos2[, 2]], sep = "/")
+    geno.names = list(gt1.strings, gt2.strings)
+  }
+  else geno.names = list(alleles1, alleles2)
+
+  marginal = likelihood(x, marker1 = m1, marker2 = m2, theta = theta, eliminate = eliminate)
+  if (marginal == 0)
+    stop2("Partial marker data is impossible")
+
+  probs = array(0, dim = lengths(geno.names, use.names = F), dimnames = geno.names)
+  probs[grid.subset] = apply(grid.subset, 1, function(allg_rows) {
+    m1[int.id, ] = allgenos1[allg_rows[1], ]
+    m2[int.id, ] = allgenos2[allg_rows[2], ]
+    likelihood(x, marker1 = m1, marker2 = m2, theta = theta, eliminate = eliminate)
+  })
+
+  res = probs/marginal
+  if (verbose) {
+    cat("==============================\n\n")
+    cat("Analysis finished in ", round(Sys.time() - starttime,2), " seconds\n")
+    cat("\nJoint genotype distribution for individual ", id, ":\n",  sep = "")
+    print(round(res, 4))
+    return(invisible(res))
+  }
+  else
+    res
+}

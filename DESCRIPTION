@@ -1,0 +1,21 @@
+Package: pedprobr
+Type: Package
+Title: Pedigree Probabilities in R
+Version: 0.1.0
+Authors@R: person("Magnus Dehli", "Vigeland", 
+                  email = "m.d.vigeland@medisin.uio.no", 
+                  role = c("aut", "cre"))
+Description: A reboot of the computational heart of the retired paramlink
+    package, implementing the Elston-Stewart algorithm for calculating pedigree 
+    likelihoods. It is part of a suite of packages for pedigree analysis in R, 
+    using pedtools as the foundational package for handling pedigrees and 
+    markers.
+License: GPL-3
+Encoding: UTF-8
+LazyData: true
+Depends: R (>= 3.1.0)
+Imports: pedtools,
+    assertthat
+Suggests: testthat
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 6.0.1
