@@ -18,7 +18,7 @@ knitr::opts_chunk$set(
 
 `pedprobr` is a reboot of the computational heart of the retired `paramlink`
 package. Its main content is an implemention of the Elston-Stewart algorithm for pedigree likelihoods. 
-It is part of a suite of packages for pedigree analysis in R, all using `pedtools` for basic 
+It is part of a suite of packages for pedigree analysis in R, centered around `pedtools` for basic 
 handling of pedigrees and markers.
 
 The workhorse of the package is the `likelihood()` function, which works in a variety of situations:
@@ -44,7 +44,7 @@ library(pedtools)
 library(pedprobr)
 ```
 
-For a simple example, we first create (with `pedtools`) a pedigree and attach to it a marker object. The marker is a diallelic SNP, and the two brothers are both heterozygous.
+For a simple example, we first create (with `pedtools`) a pedigree and attach to it a marker object. The marker is a diallelic SNP, for which both brothers are heterozygous.
 ```{r setup, fig.height=3, fig.width=3, fig.align="center"}
 x = nuclearPed(nch = 2)
 m = marker(x, '3' = 1:2, '4' = 1:2)

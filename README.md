@@ -2,7 +2,7 @@
 pedprobr
 ========
 
-`pedprobr` is a reboot of the computational heart of the retired `paramlink` package. Its main content is an implemention of the Elston-Stewart algorithm for pedigree likelihoods. It is part of a suite of packages for pedigree analysis in R, all using `pedtools` for basic handling of pedigrees and markers.
+`pedprobr` is a reboot of the computational heart of the retired `paramlink` package. Its main content is an implemention of the Elston-Stewart algorithm for pedigree likelihoods. It is part of a suite of packages for pedigree analysis in R, centered around `pedtools` for basic handling of pedigrees and markers.
 
 The workhorse of the package is the `likelihood()` function, which works in a variety of situations:
 
@@ -32,7 +32,7 @@ library(pedtools)
 library(pedprobr)
 ```
 
-For a simple example, we first create (with `pedtools`) a pedigree and attach to it a marker object. The marker is a diallelic SNP, and the two brothers are both heterozygous.
+For a simple example, we first create (with `pedtools`) a pedigree and attach to it a marker object. The marker is a diallelic SNP, for which both brothers are heterozygous.
 
 ``` r
 x = nuclearPed(nch = 2)
@@ -76,7 +76,7 @@ oneMarkerDistribution(x, ids = 1:2, partialmarker = 1)
 #>  0.5 0.5
 #> ==============================
 #> 
-#> Analysis finished in  0.02  seconds
+#> Analysis finished in  0.01  seconds
 #> 
 #> Joint genotype probability distribution for individuals 1, 2:
 #>     1/1 2/2 1/2
