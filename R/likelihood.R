@@ -177,27 +177,39 @@ likelihood.ped = function(x, marker1, marker2 = NULL, theta = NULL, startdata = 
 
 #' @export
 #' @rdname likelihood
-likelihood.singleton = function(x, marker1, logbase = NULL, ...) {
-  if (!is.marker(marker1)) {
-    if(is.count(marker1) && marker1 < nMarkers(x))
-      marker1 = x$markerdata[[marker1]]
-    else
-      stop2("Argument `marker1` must be either a `marker` object or the index of an attached marker: ", marker1)
+likelihood.singleton = function(x, marker1, marker2 = NULL, logbase = NULL, ...) {
+  twolocus = !is.null(marker2)
+  if(missing(marker1) || is.null(marker1))
+    stop2("Argument `marker1` is missing")
+
+  # If two markers: Linkage is irrelevant for singletons
+  if (!is.null(marker2)) {
+    lik1 = likelihood.singleton(x, marker1)
+    lik2 = likelihood.singleton(x, marker2)
+    total = lik1 * lik2
+    if (is.numeric(logbase)) total = log(total, logbase)
+    return(total)
   }
-  if (is.null(marker1) || all(marker1 == 0))
+
+  if (!is.marker(marker1)) {
+    if(length(marker1) != 1)
+      stop2("Length of `marker1` must be 1")
+    marker1 = getMarkers(x, markers = marker1)[[1]]
+  }
+
+  # Quick return if empty
+  if(all(marker1 == 0))
     return(if (is.numeric(logbase)) 0 else 1)
 
   m = marker1
   afr = afreq(m)
 
-  onX = is_Xmarker(m)
-  if (onX && x$SEX == 1) {
+  if (is_Xmarker(m) && x$SEX == 1) {
     if (all(m > 0) && m[1] != m[2])
       stop2("Heterozygous genotype at X-linked marker in male singleton")
     res = afr[m[1]]
   }
-
-  else if (0 %in% m) {
+  else if (m[1] == 0 || m[2] == 0) {
     p = afr[m[m != 0]]
     res = p^2 + 2 * p * (1 - p)
   }
@@ -210,7 +222,8 @@ likelihood.singleton = function(x, marker1, logbase = NULL, ...) {
 #' @export
 #' @rdname likelihood
 likelihood.list = function(x, marker1, marker2 = NULL, logbase = NULL, total = TRUE, ...) {
-  assert_that(is.pedList(x), is.count(marker1), is.null(marker2) || is.count(marker2))
+  if(!is.pedList(x))
+    stop2("Input is a list, but not a list of `ped` objects")
 
   liks = vapply(x, function(xx) likelihood(xx, marker1, marker2, logbase=logbase, ...), numeric(1))
 
@@ -218,6 +231,3 @@ likelihood.list = function(x, marker1, marker2 = NULL, logbase = NULL, total = T
     if(!is.null(logbase)) sum(liks) else prod(liks)
   else liks
 }
-
-
-

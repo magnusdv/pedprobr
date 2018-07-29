@@ -13,7 +13,8 @@ likelihood(x, ...)
   startdata = NULL, eliminate = 0, logbase = NULL, loop_breakers = NULL,
   verbose = TRUE, ...)
 
-\method{likelihood}{singleton}(x, marker1, logbase = NULL, ...)
+\method{likelihood}{singleton}(x, marker1, marker2 = NULL, logbase = NULL,
+  ...)
 
 \method{likelihood}{list}(x, marker1, marker2 = NULL, logbase = NULL,
   total = TRUE, ...)
