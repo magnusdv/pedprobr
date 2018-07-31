@@ -225,9 +225,18 @@ likelihood.list = function(x, marker1, marker2 = NULL, logbase = NULL, total = T
   if(!is.pedList(x))
     stop2("Input is a list, but not a list of `ped` objects")
 
-  liks = vapply(x, function(xx) likelihood(xx, marker1, marker2, logbase=logbase, ...), numeric(1))
+  nx = length(x)
+  if (is.atomic(marker1))
+    marker1 = rep(list(marker1), length = nx)
+  if (is.atomic(marker2))
+    marker2 = rep(list(marker2), length = nx)  # Note: NULL is atomic
+
+  liks = vapply(1:nx,
+                function(i) likelihood(x[[i]], marker1[[i]], marker2[[i]], logbase=logbase, ...),
+                numeric(1))
 
   if (total)
     if(!is.null(logbase)) sum(liks) else prod(liks)
-  else liks
+  else
+    liks
 }
