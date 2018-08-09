@@ -5,8 +5,8 @@
     return(marker)  # no reduction needed (OK!)
   attrs = attributes(marker)
 
-  allowsMut = allowsMutations(marker) 
-  
+  allowsMut = allowsMutations(marker)
+
   if (allowsMut) {
     malem = attrs$mutmat$male
     femalem = attrs$mutmat$female
@@ -29,7 +29,7 @@
   if (length(present) == 0) {
     new_marker = rep.int(0, length(marker))
     attributes(new_marker) = modifyList(attrs, list(alleles = dummylab, afreq = 1))
-    if (!is.null(attrs$mutmat)) {
+    if (!is.null(attrs$mutmat)) { #TODO: remove?
       mm = matrix(1, dimnames = list(dummylab, dummylab))
       attr(new_marker, "mutmat") = list(male = mm, female = mm)
     }
@@ -44,7 +44,7 @@
 
   attributes(new_marker) = modifyList(attrs, list(alleles = new_alleles, afreq = new_freq))
 
-  if (!is.null(attrs$mutmat)) { # TODO allowsMutation()
+  if (allowsMut) {
     if (male_lump) {
       mm = malem[c(present, redund[1]), c(present, redund[1])]
       mm[, n] = 1 - rowSums(mm[, -n, drop = F])
@@ -53,12 +53,16 @@
       mf = femalem[c(present, redund[1]), c(present, redund[1])]
       mf[, n] = 1 - rowSums(mf[, -n, drop = F])
     }
-    # for(i in 1:(n-1)) { present_i = present[i] #m_weight = f_weight = attrs$afreq[redund]
-    # m_weight = malem[present_i, redund] f_weight = femalem[present_i, redund] mm[n, i] =
-    # (m_weight/sum(m_weight)) %*% malem[redund, present_i] mf[n, i] = (f_weight/sum(f_weight))
-    # %*% femalem[redund, present_i] }
+    # for(i in 1:(n-1)) {
+    #   present_i = present[i]
+    #   m_weight = f_weight = attrs$afreq[redund]
+    #   m_weight = malem[present_i, redund]
+    #   f_weight = femalem[present_i, redund]
+    #   mm[n, i] = (m_weight/sum(m_weight)) %*% malem[redund, present_i]
+    #   mf[n, i] = (f_weight/sum(f_weight)) %*% femalem[redund, present_i] }
     attr(new_marker, "mutmat") = list(male = mm, female = mf)
   }
+
   new_marker
 }
 
