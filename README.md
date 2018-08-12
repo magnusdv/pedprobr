@@ -79,7 +79,7 @@ oneMarkerDistribution(x, ids = 1:2, partialmarker = 1)
 #>  0.5 0.5
 #> ==============================
 #> 
-#> Analysis finished in  0  seconds
+#> Analysis finished in  0.02  seconds
 #> 
 #> Joint genotype probability distribution for individuals 1, 2:
 #>     1/1 2/2 1/2
