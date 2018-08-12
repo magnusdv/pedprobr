@@ -10,11 +10,15 @@ output:
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
-  fig.path = "README-"
+  fig.path = "man/figures/README-"
 )
 ```
 
-# pedprobr
+# pedprobr <img src="man/figures/logo.png" align="right" height=140 />
+
+
+
+## Overview
 
 `pedprobr` is a reboot of the computational heart of the retired `paramlink`
 package. Its main content is an implemention of the Elston-Stewart algorithm for pedigree likelihoods. 

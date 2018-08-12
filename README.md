@@ -1,6 +1,9 @@
 <!-- README.md is generated from README.Rmd. Please edit that file -->
-pedprobr
-========
+pedprobr <img src="man/figures/logo.png" align="right" height=140 />
+====================================================================
+
+Overview
+--------
 
 `pedprobr` is a reboot of the computational heart of the retired `paramlink` package. Its main content is an implemention of the Elston-Stewart algorithm for pedigree likelihoods. It is part of a suite of packages for pedigree analysis in R, centered around `pedtools` for basic handling of pedigrees and markers.
 
@@ -49,7 +52,7 @@ x
 plot(x, m)
 ```
 
-<img src="README-setup-1.png" style="display: block; margin: auto;" />
+<img src="man/figures/README-setup-1.png" style="display: block; margin: auto;" />
 
 The pedigree likelihood is computed as follows:
 
@@ -76,7 +79,7 @@ oneMarkerDistribution(x, ids = 1:2, partialmarker = 1)
 #>  0.5 0.5
 #> ==============================
 #> 
-#> Analysis finished in  0.01  seconds
+#> Analysis finished in  0  seconds
 #> 
 #> Joint genotype probability distribution for individuals 1, 2:
 #>     1/1 2/2 1/2
