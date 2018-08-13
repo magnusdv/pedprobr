@@ -20,9 +20,7 @@ knitr::opts_chunk$set(
 
 ## Overview
 
-`pedprobr` is a reboot of the computational heart of the retired `paramlink`
-package. Its main content is an implemention of the Elston-Stewart algorithm for pedigree likelihoods. 
-It is part of a suite of packages for pedigree analysis in R, centered around `pedtools` for basic 
+The main content of `pedprobr` is an implemention of the Elston-Stewart algorithm for pedigree likelihoods. It is a reboot of the implementation in [paramlink](https://CRAN.R-project.org/package=paramlink) which is no longer actively developed. `pedprobr` is part of a suite of packages for pedigree analysis in R, centered around `pedtools` for basic 
 handling of pedigrees and markers.
 
 The workhorse of the package is the `likelihood()` function, which works in a variety of situations:
@@ -66,6 +64,6 @@ likelihood(x, marker1 = 1)
 
 Besides `likelihood()` the most important functions in `probedr` are `oneMarkerDistribution()` and `twoMarkerDistribution()`. For a quick illustration of the former, we compute the joint genotype probability distribution of parents, conditional on the children.
 ```{r}
-oneMarkerDistribution(x, ids = 1:2, partialmarker = 1)
+oneMarkerDistribution(x, ids = 1:2, partialmarker = 1, verbose = F)
 ```
 

@@ -5,7 +5,7 @@ pedprobr <img src="man/figures/logo.png" align="right" height=140 />
 Overview
 --------
 
-`pedprobr` is a reboot of the computational heart of the retired `paramlink` package. Its main content is an implemention of the Elston-Stewart algorithm for pedigree likelihoods. It is part of a suite of packages for pedigree analysis in R, centered around `pedtools` for basic handling of pedigrees and markers.
+The main content of `pedprobr` is an implemention of the Elston-Stewart algorithm for pedigree likelihoods. It is a reboot of the implementation in [paramlink](https://CRAN.R-project.org/package=paramlink) which is no longer actively developed. `pedprobr` is part of a suite of packages for pedigree analysis in R, centered around `pedtools` for basic handling of pedigrees and markers.
 
 The workhorse of the package is the `likelihood()` function, which works in a variety of situations:
 
@@ -64,28 +64,7 @@ likelihood(x, marker1 = 1)
 Besides `likelihood()` the most important functions in `probedr` are `oneMarkerDistribution()` and `twoMarkerDistribution()`. For a quick illustration of the former, we compute the joint genotype probability distribution of parents, conditional on the children.
 
 ``` r
-oneMarkerDistribution(x, ids = 1:2, partialmarker = 1)
-#> Partial marker (autosomal):
-#>    <NA>
-#>  1  -/-
-#>  2  -/-
-#>  3  1/2
-#>  4  1/2
-#> -------- 
-#> Chrom NA: NA (Mb), NA (cM)
-#> Mutations possible: No 
-#> Allele frequencies:
-#>    1   2
-#>  0.5 0.5
-#> ==============================
-#> 
-<<<<<<< HEAD
-#> Analysis finished in  0.02  seconds
-=======
-#> Analysis finished in  0  seconds
->>>>>>> f3a33e70578e9c7011efa817551e87b3e10ccc12
-#> 
-#> Joint genotype probability distribution for individuals 1, 2:
+oneMarkerDistribution(x, ids = 1:2, partialmarker = 1, verbose = F)
 #>     1/1 2/2 1/2
 #> 1/1 0.0 0.2 0.1
 #> 2/2 0.2 0.0 0.1
