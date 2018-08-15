@@ -235,7 +235,7 @@ startdata_MM_AUT = function(x, marker1, marker2, eliminate = 0) {
   COMPLETE = rbind(rep(nseq, each = n), rep.int(nseq, times = n))
 
   # Building a list of genotypes for each indiv.
-  genolist = lapply(x$ID, function(i) {
+  genolist = lapply(1:pedsize(x), function(i) {
     gt = marker[i, ]
     unordered = founder_not_loopbreaker[i]
     .genotypeMatrix(gt, n, unordered, COMPLETE)
@@ -280,10 +280,10 @@ startdata_MM_AUT = function(x, marker1, marker2, eliminate = 0) {
         next
       g = genolist[[i]]
       kjonn = x$SEX[i]
-      if (i %in% NONFOU && informative[far <- x$FID[i]])
+      if (i %in% NONFOU && informative[far <- x$FIDX[i]])
         g = g[, g[1, ] %in% genolist[[far]][1, ] | g[1, ] %in% genolist[[far]][2, ],
               drop = F]
-      if (i %in% NONFOU && informative[mor <- x$MID[i]])
+      if (i %in% NONFOU && informative[mor <- x$MIDX[i]])
         g = g[, g[2, ] %in% genolist[[mor]][1, ] | g[2, ] %in% genolist[[mor]][2, ],
               drop = F]
       barn = offs[[i]]
@@ -349,8 +349,8 @@ startdata_MM_AUT = function(x, marker1, marker2, eliminate = 0) {
     return(genolist)
 
   SEX = x$SEX
-  FID = x$FID
-  MID = x$MID
+  FIDX = x$FIDX
+  MIDX = x$MIDX
   FOU = founders(x, internal=T)
   NONFOU = nonfounders(x, internal=T)
 
@@ -381,7 +381,7 @@ startdata_MM_AUT = function(x, marker1, marker2, eliminate = 0) {
     for (i in males) {
       if (ncols[i] == 1) next
       g = genolist[[i]]
-      if (is_nonfou[i] && informative[mor <- MID[i]])
+      if (is_nonfou[i] && informative[mor <- MIDX[i]])
         g = g[g %in% genolist[[mor]][1, ] | g %in% genolist[[mor]][2, ]]
       barn = offs[[i]]
       for (b in barn[informative[barn] & SEX[barn] == 2])
@@ -391,9 +391,9 @@ startdata_MM_AUT = function(x, marker1, marker2, eliminate = 0) {
     for (i in females) {
       if (ncols[i] == 1) next
       g = genolist[[i]]
-      if (is_nonfou[i] && informative[far <- FID[i]])
+      if (is_nonfou[i] && informative[far <- FIDX[i]])
         g = g[, g[1, ] %in% genolist[[far]], drop = F]
-      if (is_nonfou[i] && informative[mor <- MID[i]])
+      if (is_nonfou[i] && informative[mor <- MIDX[i]])
         g = g[, g[2, ] %in% genolist[[mor]][1, ] | g[2, ] %in% genolist[[mor]][2, ],
               drop = F]
       barn = offs[[i]]
