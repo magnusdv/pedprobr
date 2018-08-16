@@ -3,6 +3,7 @@
 S3method(likelihood,list)
 S3method(likelihood,ped)
 S3method(likelihood,singleton)
+export(HW_prob)
 export(allGenotypes)
 export(geno.grid.subset)
 export(likelihood)

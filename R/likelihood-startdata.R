@@ -20,13 +20,19 @@ startdata_M_AUT = function(x, marker, eliminate = 0) {
 
   FOU = founders(x, internal=T)
 
+  # Founder inbreeding: A vector of length pedsize(x), with NA's at nonfounders
+  # Enables quick look-up e.g. FOU_INB[i].
+  FOU_INB = rep(NA_real_, pedsize(x))
+  FOU_INB[FOU] = founder_inbreeding(x, ids=founders(x))
+
   # Add any members which should be treated as founders
   FOU = c(FOU, attr(x, "treat_as_founders"))
 
   dat = lapply(1:pedsize(x), function(i) {
     h = glist[[i]]
     if (i %in% FOU) {
-      prob = afr[h[1, ]] * afr[h[2, ]] * ((h[1, ] != h[2, ]) + 1)
+      #prob = afr[h[1, ]] * afr[h[2, ]] * ((h[1, ] != h[2, ]) + 1)
+      prob = HW_prob(h[1, ], h[2, ], afr, f = FOU_INB[i])
       if (sum(prob) == 0)
         impossible = TRUE
     }
@@ -56,8 +62,8 @@ startdata_M_X = function(x, marker, eliminate = 0) {
   dat = lapply(1:pedsize(x), function(i) {
     h = glist[[i]]
     if (i %in% FOU) {
-      prob = switch(sex[i], afr[h],
-                    afr[h[1, ]] * afr[h[2, ]] * ((h[1, ] != h[2, ]) + 1))
+      prob = switch(sex[i], afr[h], HW_prob(h[1, ], h[2, ], afr))
+                  #  afr[h[1, ]] * afr[h[2, ]] * ((h[1, ] != h[2, ]) + 1))
       if (sum(prob) == 0)
         impossible = TRUE
     }

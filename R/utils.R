@@ -56,6 +56,35 @@ is_count0 <- function(x) {
   cbind(v1, v2, deparse.level = 0)
 }
 
+
+#' Hardy-Weinberg probabilities
+#'
+#' @param allele1,allele2 Vectors of equal length, containing alleles in the
+#'   form of indices of `afreq`
+#' @param afreq A numeric vector with allele frequencies
+#' @param f A single number in `[0, 1]`; the inbreeding coefficient
+#'
+#' @return A numeric vector of the same length as `allele1` and  `allele2`
+#'
+#' @examples
+#' p = 0.1; q = 1-p
+#' hw = HW_prob(c(1,1,2), c(1,2,2), c(p, q))
+#' stopifnot(all.equal(hw, c(p^2, 2*p*q, q^2)))
+#'
+#' @export
+HW_prob = function(allele1, allele2, afreq, f = 0) {
+  afreq = as.numeric(afreq) # remove names; slightly faster than unname
+
+  homoz = allele1 == allele2
+  hw = afreq[allele1] * afreq[allele2] * (2 - homoz)
+
+  if(f > 0)
+    hw = afreq[allele1] * homoz * f + hw * (1 - f)
+
+  hw
+}
+
+
 #' Genotype matrix
 #'
 #' An autosomal marker with `n` alleles has `G = choose(n+1, 2)` possible
