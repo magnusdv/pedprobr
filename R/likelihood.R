@@ -60,7 +60,8 @@ likelihood = function(x, ...) UseMethod("likelihood", x)
 #' @export
 #' @rdname likelihood
 likelihood.ped = function(x, marker1, marker2 = NULL, theta = NULL, startdata = NULL,
-                          eliminate = 0, logbase = NULL, loop_breakers = NULL, verbose=TRUE, ...) {
+                          eliminate = 0, logbase = NULL, loop_breakers = NULL,
+                          verbose = FALSE, ...) {
 
   twolocus = !is.null(marker2)
   if(twolocus && is.null(theta))

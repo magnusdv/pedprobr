@@ -11,7 +11,7 @@ likelihood(x, ...)
 
 \method{likelihood}{ped}(x, marker1, marker2 = NULL, theta = NULL,
   startdata = NULL, eliminate = 0, logbase = NULL,
-  loop_breakers = NULL, verbose = TRUE, ...)
+  loop_breakers = NULL, verbose = FALSE, ...)
 
 \method{likelihood}{singleton}(x, marker1, marker2 = NULL,
   logbase = NULL, ...)
