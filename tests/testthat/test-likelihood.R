@@ -6,13 +6,13 @@ test_that("empty markers give likelihood 1", {
   expect_equal(likelihood(x, marker(x, alleles=1:2)), 1)
   expect_equal(likelihood(x, marker(x, alleles=letters[1:3])), 1)
 
-  x2 = cousinsPed(1)
+  x2 = cousinPed(1)
   expect_equal(likelihood(x2, marker(x2)), 1)
 
-  x3 = halfCousinsPed(0)
+  x3 = halfCousinPed(0)
   expect_equal(likelihood(x3, marker(x3)), 1)
 
-  #x4 = cousinsPed(0, child=T)
+  #x4 = cousinPed(0, child=T)
   #expect_equal(likelihood(x4, marker(x4)), 1)
 })
 
@@ -98,7 +98,7 @@ test_that("likelihoods are correct in 3 generat. SNP example", {
 })
 
 test_that("likelihoods are correct in looped ped", {
-  x = fullSibMating(2)
+  x = fullSibMating(1)
   p = 0.1; q = 0.2; r = 1-p-q
 
   m1 = marker(x, '5'=1:2, '6'=1:2, alleles=1:3, afreq=c(p,q,r))

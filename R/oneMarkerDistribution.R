@@ -52,11 +52,11 @@
 #' oneMarkerDistribution(x, ids=1:2, partialmarker=m2, grid.subset=grid)
 #'
 #' #### Something else:
-#' # The genotype distribution of an individual whose half cousin is homozygous
-#' # for a rare allele.
-#' y = halfCousinsPed(degree=1)
-#' snp = marker(y, `9`=c('a','a'), alleles=c('a', 'b'), afreq=c(0.01, 0.99))
-#' oneMarkerDistribution(y, ids=8, partialmarker=snp)
+#' # The genotype distribution of an individual (id=5) whose half cousin (id=9) is 
+#' # homozygous for a rare allele.
+#' y = halfCousinPed(1)
+#' snp = marker(y, `9`="a", alleles=c("a", "b"), afreq=c(0.01, 0.99))
+#' oneMarkerDistribution(y, ids=5, partialmarker=snp)
 #'
 #' #### X-linked example: TODO
 #'

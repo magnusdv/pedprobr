@@ -15,11 +15,11 @@ test_that("linked empty markers give likelihood 1", {
   m1.2 = marker(x1, alleles=1:2)
   expect_equal(liktest(x1, m1.2, m1.2), c(1,1,1))
 
-  x2 = cousinsPed(1)
+  x2 = cousinPed(1)
   m2 = marker(x2, alleles=1:3)
   expect_equal(liktest(x2, m2, m2), c(1,1,1))
 
-  x3 = halfCousinsPed(0, child=T)
+  x3 = halfCousinPed(0, child=T)
   m3 = marker(x3, alleles=1:3)
   expect_equal(liktest(x3, m3, m3), c(1,1,1))
 })
