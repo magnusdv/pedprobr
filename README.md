@@ -2,22 +2,19 @@
 pedprobr <img src="man/figures/logo.png" align="right" height=140 />
 ====================================================================
 
-Overview
---------
+Introduction
+------------
 
-The main content of `pedprobr` is an implemention of the Elston-Stewart algorithm for pedigree likelihoods. It is a reboot of the implementation in [paramlink](https://CRAN.R-project.org/package=paramlink) which is no longer actively developed. `pedprobr` is part of a suite of packages for pedigree analysis in R, centered around `pedtools` for basic handling of pedigrees and markers.
+The main content of pedprobr is an implemention of the Elston-Stewart algorithm for pedigree likelihoods. It is a reboot of the implementation in [paramlink](https://CRAN.R-project.org/package=paramlink) which is no longer actively developed.
 
-The workhorse of the package is the `likelihood()` function, which works in a variety of situations:
+pedprobr is part of a suite of packages for pedigree analysis in R, centered around the [pedtools](https://github.com/magnusdv/pedtools) package.
 
--   complex pedigrees with multiple layers inbreeding
--   autosomal and X-linked markers
--   a single marker or two linked markers
--   markers with mutation models
+The workhorse of the package is the `likelihood()` function, which works in a variety of situations: \* complex pedigrees with multiple layers inbreeding \* autosomal and X-linked markers \* a single marker or two linked markers \* markers with mutation models
 
 Installation
 ------------
 
-To get the latest version of `pedprobr`, install from GitHub as follows:
+To get the latest version of pedprobr, install from GitHub as follows:
 
 ``` r
  # First install devtools if needed
@@ -48,11 +45,13 @@ x
 #>   2   *   *   2 -/-
 #>   3   1   2   1 1/2
 #>   4   1   2   1 1/2
+```
 
+``` r
 plot(x, m)
 ```
 
-<img src="man/figures/README-setup-1.png" style="display: block; margin: auto;" />
+![](man/figures/README-unnamed-chunk-6-1.png)
 
 The pedigree likelihood is computed as follows:
 
@@ -61,7 +60,17 @@ likelihood(x, marker1 = 1)
 #> [1] 0.3125
 ```
 
-Besides `likelihood()` the most important functions in `probedr` are `oneMarkerDistribution()` and `twoMarkerDistribution()`. For a quick illustration of the former, we compute the joint genotype probability distribution of parents, conditional on the children.
+Genotype probability distributions
+----------------------------------
+
+Besides `likelihood()` the most important functions in pedprobr are:
+
+-   `oneMarkerDistribution()` : for a subset of family members, compute their joint genotype distribution at a single marker
+-   `twoMarkerDistribution()` : for a single family member, compute the joint genotype distribution at two linked markers
+
+In both cases, the distributions are computed conditionally on any known genotypes at the markers in question.
+
+Let us continue the above example to give a quick illustration of `oneMarkerDistribution()`. Conditional on the two heterozygous children, what is the joint distribution for the parents? The answer is easily found:
 
 ``` r
 oneMarkerDistribution(x, ids = 1:2, partialmarker = 1, verbose = F)
