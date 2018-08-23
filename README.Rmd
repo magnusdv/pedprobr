@@ -60,11 +60,7 @@ plot(x, m)
 ```
 
 ```{r echo = FALSE, fig.height=3, fig.width=2.5}
-<<<<<<< HEAD
 plot(x, m, margins = c(0,1,1,1))
-=======
-plot(x, m, margins = c(0.5,1,1,1))
->>>>>>> b4ef3ed32b43116889bb6fb0b2a159d051eb4a32
 ```
 
 The pedigree likelihood is computed as follows:
