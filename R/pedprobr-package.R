@@ -8,5 +8,4 @@
 #' @import pedtools
 #'
 #' @name pedprobr
-#' @importFrom assertthat assert_that
 NULL

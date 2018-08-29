@@ -44,8 +44,8 @@
 likelihood_merlin = function(x, markers = seq_len(nMarkers(x)), logbase=NULL, verbose = FALSE,
                              generate.files = TRUE, cleanup = generate.files, logfile = "") {
   if(!is.ped(x)) stop2("Input is not a `ped` object")
-  if(!is.null(logbase))
-    assert_that(assertthat::is.number(logbase), logbase>0)
+  if(!is.null(logbase) && (!is.numeric(logbase) || length(logbase) != 1 || logbase <= 0))
+    stop2("`logbase` must be a single positive number: ", logbase)
 
   clean = function(cleanup, verbose, files)
     if (cleanup) {

@@ -42,11 +42,13 @@
 #' r2 = twoMarkerDistribution(x, id="ch2", SNPX_1, SNPX_2, theta=0.5)
 #' stopifnot(all(r1==c(.5,0,0,.5)), all(r2==c(.25,.25,.25,.25)))
 #'
-#' @importFrom assertthat is.count
 #' @export
 twoMarkerDistribution <- function(x, id, partialmarker1, partialmarker2, theta, loop_breakers = NULL,
                                   eliminate = 99, verbose = TRUE) {
-  assert_that(is.ped(x), is_count0(eliminate))
+  if(!is.ped(x)) 
+    stop2("Input is not a `ped` object")
+  if(!is_count(eliminate, minimum = 0)) 
+    stop2("`eliminate` must be a nonnegative integer")
 
   m1 = partialmarker1
   if (!is.marker(m1)) {

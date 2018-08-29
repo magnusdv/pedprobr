@@ -4,6 +4,13 @@ stop2 = function(...) {
   do.call(stop, a)
 }
 
+# Test that input is a positive (or similar) integer.
+is_count = function(x, minimum = 1) {
+  isTRUE(length(x) == 1 &&
+         (is.integer(x) || (is.numeric(x) && x == as.integer(x))) &&
+         x >= minimum)
+}
+
 .mysetdiff = function(x, y) {
   unique.default(x[match(x, y, 0L) == 0L])
 }
@@ -41,10 +48,6 @@ log_or_not = function(x, logbase) {
   else x
 }
 
-# Test that input is a nonegative integer.
-is_count0 <- function(x) {
-  assert_that(is.numeric(x), length(x) == 1, x == as.integer(x), x >= 0)
-}
 
 # Equivalent to t.default(combn(n, 2)), but ~6 times faster.
 .comb2 = function(n) {

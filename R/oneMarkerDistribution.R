@@ -60,11 +60,13 @@
 #'
 #' #### X-linked example: TODO
 #'
-#' @importFrom assertthat is.count
 #' @export
 oneMarkerDistribution <- function(x, ids, partialmarker, grid.subset = NULL,
                                   loop_breakers = NULL, eliminate = 0, verbose = TRUE) {
-  assert_that(is.ped(x), is_count0(eliminate))
+  if(!is.ped(x)) 
+    stop2("Input is not a `ped` object")
+  if(!is_count(eliminate, minimum = 0)) 
+    stop2("`eliminate` must be a nonnegative integer")
 
   m = partialmarker
 
