@@ -14,7 +14,8 @@ License: GPL-3
 Encoding: UTF-8
 LazyData: true
 Depends: R (>= 3.1.0)
-Imports: pedtools
+Imports: pedtools,
+    pedmut
 Suggests: testthat
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 6.1.0

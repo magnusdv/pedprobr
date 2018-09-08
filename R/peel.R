@@ -160,11 +160,13 @@ choosePeeler = function(twolocus, theta, Xchrom, SEX, mutmat) {
   # mutmat = mutation matrix
   sq = seq_len(ncol(parent))
   if (is.null(mutmat))
-    unlist(lapply(sq, function(i)
+    prob = unlist(lapply(sq, function(i)
       ((parent[1, i] == childhap) + (parent[2, i] == childhap))/2))
   else
-    unlist(lapply(sq, function(i)
+    prob = unlist(lapply(sq, function(i)
       (mutmat[parent[1, i], childhap] + mutmat[parent[2, i], childhap])/2))
+
+  prob
 }
 
 #####################

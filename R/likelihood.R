@@ -110,8 +110,8 @@ likelihood.ped = function(x, marker1, marker2 = NULL, theta = NULL, startdata = 
     return(ifelse(is.numeric(logbase), -Inf, 0))
 
   Xchrom = is_Xmarker(marker1)
-  mutmat = attr(marker1, "mutmat")
-  PEEL = choosePeeler(twolocus, theta, Xchrom, x$SEX, mutmat)
+  mut = mutmod(marker1)
+  PEEL = choosePeeler(twolocus, theta, Xchrom, x$SEX, mut)
 
   dat = startdata
 

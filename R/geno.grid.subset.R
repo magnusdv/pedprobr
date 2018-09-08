@@ -14,7 +14,7 @@
 geno.grid.subset = function(x, partialmarker, ids, make.grid = T) {
     int.ids = internalID(x, ids)
     nall = nAlleles(partialmarker)
-    mutations = !is.null(attr(partialmarker, "mutmat"))
+    mutations = allowsMutations(partialmarker)
     chrom = if (is_Xmarker(partialmarker)) "X" else "AUTOSOMAL"
 
     allg = allGenotypes(nall)

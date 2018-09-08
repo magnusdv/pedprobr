@@ -250,7 +250,7 @@ startdata_MM_AUT = function(x, marker1, marker2, eliminate = 0) {
   attr(genolist, "impossible") = FALSE
 
   # If mutations, don't eliminate any genotypes
-  if (!is.null(attr(marker, "mutmat")))
+  if (allowsMutations(marker))
     return(genolist)
 
   .eliminate(x, genolist, n, repeats = eliminate)
@@ -343,7 +343,7 @@ startdata_MM_AUT = function(x, marker1, marker2, eliminate = 0) {
   attr(genolist, "impossible") = FALSE
 
   # If mutations, don't eliminate any genotypes
-  if (!is.null(attr(marker, "mutmat")))
+  if (allowsMutations(marker))
     return(genolist)
 
   .eliminate_X(x, genolist, n, eliminate)
