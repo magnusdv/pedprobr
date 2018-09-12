@@ -83,8 +83,8 @@ likelihood.ped = function(x, marker1, marker2 = NULL, theta = NULL, startdata = 
     marker2 = getMarkers(x, markers = marker2)[[1]]
   }
 
-  marker1 = .reduce_alleles(marker1)
-  marker2 = .reduce_alleles(marker2)  # unchanged if NULL
+  marker1 = reduceAlleles(marker1)
+  marker2 = reduceAlleles(marker2)  # unchanged if NULL
 
   if (x$UNBROKEN_LOOPS) {
     if(verbose) message("Tip: To optimize speed, consider breaking loops before calling 'likelihood'. See ?breakLoops.")
