@@ -26,7 +26,8 @@ startdata_M_AUT = function(x, marker, eliminate = 0) {
   FOU_INB[FOU] = founder_inbreeding(x, ids=founders(x))
 
   # Add any members which should be treated as founders
-  FOU = c(FOU, attr(x, "treat_as_founders"))
+  extra_fou = attr(x, "treat_as_founder")
+  FOU = c(FOU, extra_fou)
 
   dat = lapply(1:pedsize(x), function(i) {
     h = glist[[i]]

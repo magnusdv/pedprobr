@@ -81,7 +81,7 @@ HW_prob = function(allele1, allele2, afreq, f = 0) {
   homoz = allele1 == allele2
   hw = afreq[allele1] * afreq[allele2] * (2 - homoz)
 
-  if(f > 0)
+  if(!is.na(f) && f > 0)
     hw = afreq[allele1] * homoz * f + hw * (1 - f)
 
   hw
