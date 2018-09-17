@@ -13,9 +13,9 @@ Description: A reboot of the computational heart of the retired paramlink
 License: GPL-3
 Encoding: UTF-8
 LazyData: true
-Depends: R (>= 3.1.0)
-Imports: pedtools,
-    pedmut
+Depends: R (>= 3.1.0),
+    pedtools
+Imports: pedmut
 Suggests: testthat
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 6.1.0
