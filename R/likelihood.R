@@ -97,9 +97,10 @@ likelihood.ped = function(x, marker1, marker2 = NULL, theta = NULL, startdata = 
   }
 
   if (is.null(startdata)) {
-    inform = .informative(x, marker1, marker2)
+    inform = informativeSubnucs(x, marker1, marker2)
     inform_subnucs = inform$subnucs
     attr(x, "treat_as_founder") = inform$newfounders
+
     if(!twolocus)
       startdata = startdata_M(x, marker = marker1, eliminate = eliminate)
     else

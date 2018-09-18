@@ -82,4 +82,12 @@ test_that("loops - mutation", {
                likelihood(x, m4, verbose=F))
 })
 
+test_that("ancestral ped - non-stationary mut", {
+  mutmat = matrix(c(0,0,1,1), ncol=2, dimnames = list(1:2, 1:2))
+  mut = pedmut::mutationModel("custom", matrix = mutmat)
 
+  x = relabel(addParents(linearPed(2), 4, verbose = F), 1:7)
+  m = marker(x, '3'=2, '6'=2, alleles=1:2, mutmod=mut)
+  # plot(x,m)
+  expect_equal(likelihood(x,m), 1)
+})
