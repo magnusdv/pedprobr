@@ -60,6 +60,10 @@ startdata_M_X = function(x, marker, eliminate = 0) {
 
   FOU = founders(x, internal=T)
 
+  # Add any members which should be treated as founders
+  extra_fou = attr(x, "treat_as_founder")
+  FOU = c(FOU, extra_fou)
+
   dat = lapply(1:pedsize(x), function(i) {
     h = glist[[i]]
     if (i %in% FOU) {
