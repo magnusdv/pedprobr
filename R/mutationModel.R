@@ -15,5 +15,5 @@ hasStationaryModel = function(m) {
   afr = afreq(m)
 
   isStationary(mut$male, afr) &&
-    (isTRUE(sexEq) || isStationary(mut$male, afr))
+    (isTRUE(sexEq) || isStationary(mut$female, afr))
 }
