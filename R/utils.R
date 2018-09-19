@@ -106,3 +106,13 @@ HW_prob = function(allele1, allele2, afreq, f = 0) {
 allGenotypes = function(n) {
   rbind(cbind(seq_len(n), seq_len(n)), .comb2(n))
 }
+
+# Debug tools: Paste genotypes given as 2*k matrices
+pasteHap = function(hapmat) {
+  if(is.matrix(hapmat)) {
+    stopifnot(nrow(hapmat) == 2)
+    return(paste(hapmat[1, ], hapmat[2, ], sep="/"))
+  }
+  stopifnot(is.numeric(hapmat))
+  as.character(hapmat)
+}

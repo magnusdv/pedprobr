@@ -58,6 +58,9 @@ choosePeeler = function(twolocus, theta, Xchrom, SEX, mutmat) {
         TRarray[i, j, ] = transpat * trans_mats[, j]
     }
 
+    # DEBUG
+    # print(array(TRarray, dim=c(fa_len, mo_len, pi_len), dimnames = lapply(list(farh, morh, pivh), pasteHap)))
+
     arr = as.vector(TRarray) * as.vector(likel)
     dim(arr) = dim(TRarray)
     res = .colSums(arr, fa_len * mo_len, pi_len)  #sum for each entry of haps[[link]]
@@ -123,7 +126,8 @@ choosePeeler = function(twolocus, theta, Xchrom, SEX, mutmat) {
 
     if (SEX[link] == 1) {
      trans_mats = .trans_M(morh, pivh, mutmat = mutmat$female)
-     TRarray = rep(trans_mats, each = fa_len)
+     dim(trans_mats) = c(pi_len, mo_len)
+     TRarray = rep(t.default(trans_mats), each = fa_len)
     }
     else {
      TRarray = array(0, dim=c(fa_len, mo_len, pi_len))
@@ -136,6 +140,10 @@ choosePeeler = function(twolocus, theta, Xchrom, SEX, mutmat) {
        TRarray[i, , ] = t.default(trans_pats * trans_mats)  #TODO:make faster?
      }
     }
+
+    # DEBUG
+    # print(array(TRarray, dim=c(fa_len, mo_len, pi_len), dimnames = lapply(list(farh, morh, pivh), pasteHap)))
+
     arr = as.vector(TRarray) * as.vector(likel)
     dim(arr) = dim(TRarray)
     res = .colSums(arr, fa_len * mo_len, pi_len)  #sum for each entry of haps[[link]]
@@ -155,9 +163,10 @@ choosePeeler = function(twolocus, theta, Xchrom, SEX, mutmat) {
 
 
 .trans_M = function(parent, childhap, mutmat = NULL) {
-  # parent = matrix with 2 rows;
+  # parent = matrix with 2 rows; each column a genotype
   # childhap = vector of any length (parental allele);
   # mutmat = mutation matrix
+  # output: Vector of probs, length ncol(par)*child. See debug below
   sq = seq_len(ncol(parent))
   if (is.null(mutmat))
     prob = unlist(lapply(sq, function(i)
@@ -165,6 +174,9 @@ choosePeeler = function(twolocus, theta, Xchrom, SEX, mutmat) {
   else
     prob = unlist(lapply(sq, function(i)
       (mutmat[parent[1, i], childhap] + mutmat[parent[2, i], childhap])/2))
+
+  # DEBUG:
+  # print(matrix(prob, ncol = ncol(parent), dimnames = list(childhap, pasteHap(parent))))
 
   prob
 }
