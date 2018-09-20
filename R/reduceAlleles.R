@@ -34,6 +34,9 @@ reduceAlleles = function(marker) {
     lumpedFemale = lumpedMatrix(mut$female, lump)
     mutmod(new_marker) = mutationModel(list(female = lumpedFemale, male = lumpedMale))
   }
+  else {
+    mutmod(new_marker) = NULL
+  }
 
   new_marker
 }
