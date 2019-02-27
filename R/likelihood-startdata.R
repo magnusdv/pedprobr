@@ -23,7 +23,7 @@ startdata_M_AUT = function(x, marker, eliminate = 0) {
   # Founder inbreeding: A vector of length pedsize(x), with NA's at nonfounders
   # Enables quick look-up e.g. FOU_INB[i].
   FOU_INB = rep(NA_real_, pedsize(x))
-  FOU_INB[FOU] = founder_inbreeding(x, ids=founders(x))
+  FOU_INB[FOU] = founderInbreeding(x, ids=founders(x))
 
   # Add any members which should be treated as founders
   extra_fou = attr(x, "treat_as_founder")

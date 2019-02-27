@@ -8,7 +8,7 @@ test_that("likelihood of inbred singleton agrees with expanded pedigree, and the
   x = setMarkers(x, list(mhom, mhet))
 
   y = subset(x, 5)
-  founder_inbreeding(y, 5) = 0.25
+  founderInbreeding(y, 5) = 0.25
 
   lik_y_hom = likelihood(y, "hom")
   lik_y_het = likelihood(y, "het")
@@ -31,7 +31,7 @@ test_that("likelihood of nuc with inbred founder is correct", {
   x = setMarkers(x, list(mhom, mhet))
 
   y = branch(x, 5)
-  founder_inbreeding(y, 5) = 0.25
+  founderInbreeding(y, 5) = 0.25
 
   lik_y_hom = likelihood(y, "hom")
   lik_y_het = likelihood(y, "het")

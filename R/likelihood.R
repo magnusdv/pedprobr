@@ -205,7 +205,7 @@ likelihood.singleton = function(x, marker1, marker2 = NULL, logbase = NULL, ...)
 
   m = marker1
   afr = afreq(m)
-  finb = founder_inbreeding(x)
+  finb = founderInbreeding(x)
 
   if (is_Xmarker(m) && x$SEX == 1) {
     if (all(m > 0) && m[1] != m[2])
