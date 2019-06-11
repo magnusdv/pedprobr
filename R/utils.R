@@ -76,15 +76,13 @@ log_or_not = function(x, logbase) {
 #'
 #' @export
 HW_prob = function(allele1, allele2, afreq, f = 0) {
-  afreq = as.numeric(afreq) # remove names; slightly faster than unname
-
   homoz = allele1 == allele2
   hw = afreq[allele1] * afreq[allele2] * (2 - homoz)
 
   if(!is.na(f) && f > 0)
     hw = afreq[allele1] * homoz * f + hw * (1 - f)
 
-  hw
+  as.numeric(hw) # remove names; slightly faster than unname
 }
 
 
