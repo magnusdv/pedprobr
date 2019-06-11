@@ -8,13 +8,12 @@ startdata_M = function(x, marker, eliminate = 0) {
 }
 
 startdata_M_AUT = function(x, marker, eliminate = 0) {
-  afr = afreq(marker)
-  impossible = FALSE
 
   glist = .build_genolist(x, marker, eliminate)
-  if (attr(glist, "impossible")) { #TODO why not simply return dat here?
-    #dat = list()
-    #attr(dat, "impossible") = TRUE
+
+  if (attr(glist, "impossible")) {
+    dat = list()
+    attr(dat, "impossible") = TRUE
     return(dat)
   }
 
@@ -29,15 +28,19 @@ startdata_M_AUT = function(x, marker, eliminate = 0) {
   extra_fou = attr(x, "treat_as_founder")
   FOU = c(FOU, extra_fou)
 
+  afr = afreq(marker)
+  impossible = FALSE
+
   dat = lapply(1:pedsize(x), function(i) {
     h = glist[[i]]
     if (i %in% FOU) {
-      #prob = afr[h[1, ]] * afr[h[2, ]] * ((h[1, ] != h[2, ]) + 1)
       prob = HW_prob(h[1, ], h[2, ], afr, f = FOU_INB[i])
       if (sum(prob) == 0)
         impossible = TRUE
     }
-    else prob = rep.int(1, ncol(h))
+    else {
+      prob = rep.int(1, ncol(h))
+    }
     list(hap = h, prob = as.numeric(prob))
   })
 
@@ -46,12 +49,9 @@ startdata_M_AUT = function(x, marker, eliminate = 0) {
 }
 
 startdata_M_X = function(x, marker, eliminate = 0) {
-  sex = x$SEX
-  afr = afreq(marker)
-
-  impossible = FALSE
 
   glist = .build_genolist_X(x, marker, eliminate)
+
   if (attr(glist, "impossible")) {
     dat = list()
     attr(dat, "impossible") = TRUE
@@ -64,19 +64,23 @@ startdata_M_X = function(x, marker, eliminate = 0) {
   extra_fou = attr(x, "treat_as_founder")
   FOU = c(FOU, extra_fou)
 
+  sex = x$SEX
+  afr = afreq(marker)
+  impossible = FALSE
+
   dat = lapply(1:pedsize(x), function(i) {
     h = glist[[i]]
     if (i %in% FOU) {
       prob = switch(sex[i], afr[h], HW_prob(h[1, ], h[2, ], afr))
-                  #  afr[h[1, ]] * afr[h[2, ]] * ((h[1, ] != h[2, ]) + 1))
       if (sum(prob) == 0)
         impossible = TRUE
     }
-    else
+    else {
       prob = rep.int(1, length(h)/sex[i])
-
+    }
     list(hap = h, prob = as.numeric(prob))
   })
+
   attr(dat, "impossible") = impossible
   dat
 }
