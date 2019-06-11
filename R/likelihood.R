@@ -205,9 +205,10 @@ likelihood.singleton = function(x, marker1, marker2 = NULL, logbase = NULL, ...)
 
   m = marker1
   afr = afreq(m)
-  finb = founderInbreeding(x)
+  chromX = is_Xmarker(m)
+  finb = founderInbreeding(x, chromType = if(chromX) "x" else "autosomal")
 
-  if (is_Xmarker(m) && x$SEX == 1) {
+  if (chromX && x$SEX == 1) {
     if (all(m > 0) && m[1] != m[2])
       stop2("Heterozygous genotype at X-linked marker in male singleton")
     res = afr[m[1]]
@@ -217,7 +218,7 @@ likelihood.singleton = function(x, marker1, marker2 = NULL, logbase = NULL, ...)
     res = p^2 + 2 * p * (1 - p)
   }
   else {
-    res = HW_prob(m[1], m[2], afr, finb) #prod(afr[m]) * ifelse(m[1] != m[2], 2, 1)  # assumes HWE
+    res = HW_prob(m[1], m[2], afr, finb)
   }
   if (is.numeric(logbase)) log(res, logbase) else res
 }
