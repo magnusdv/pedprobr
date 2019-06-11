@@ -136,7 +136,7 @@ likelihood.ped = function(x, marker1, marker2 = NULL, theta = NULL, startdata = 
 
     # For each orig, find the indices of its haplos (in orig$hap) that also occur in its copy.
     # Then take cross product of these vectors.
-    loopgrid = fast.grid(lapply(seq_along(origs), function(i) {
+    loopgrid = fastGrid(lapply(seq_along(origs), function(i) {
       ori = two2one(dat[[c(origs[i], 1)]])
       seq_along(ori)[ori %in% two2one(dat[[c(copies[i], 1)]])]
     }), as.list = TRUE)
@@ -218,7 +218,7 @@ likelihood.singleton = function(x, marker1, marker2 = NULL, logbase = NULL, ...)
     res = p^2 + 2 * p * (1 - p)
   }
   else {
-    res = HW_prob(m[1], m[2], afr, finb)
+    res = HWprob(m[1], m[2], afr, finb)
   }
   if (is.numeric(logbase)) log(res, logbase) else res
 }

@@ -65,7 +65,7 @@ oneMarkerDistribution <- function(x, ids, partialmarker, grid.subset = NULL,
                                   loop_breakers = NULL, eliminate = 0, verbose = TRUE) {
   if(!is.ped(x))
     stop2("Input is not a `ped` object")
-  if(!is_count(eliminate, minimum = 0))
+  if(!isCount(eliminate, minimum = 0))
     stop2("`eliminate` must be a nonnegative integer")
 
   m = partialmarker
@@ -93,7 +93,7 @@ oneMarkerDistribution <- function(x, ids, partialmarker, grid.subset = NULL,
 
   # Compute grid before loop breaking (works better with eliminate2)
   if (is.null(grid.subset))
-    grid.subset = geno.grid.subset(x, m, ids, make.grid=T)
+    grid.subset = genoCombinations(x, m, ids, make.grid=T)
   else
     grid.subset = as.matrix(grid.subset)
 

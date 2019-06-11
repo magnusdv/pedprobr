@@ -45,9 +45,9 @@
 #' @export
 twoMarkerDistribution <- function(x, id, partialmarker1, partialmarker2, theta, loop_breakers = NULL,
                                   eliminate = 99, verbose = TRUE) {
-  if(!is.ped(x)) 
+  if(!is.ped(x))
     stop2("Input is not a `ped` object")
-  if(!is_count(eliminate, minimum = 0)) 
+  if(!isCount(eliminate, minimum = 0))
     stop2("`eliminate` must be a nonnegative integer")
 
   m1 = partialmarker1
@@ -94,8 +94,8 @@ twoMarkerDistribution <- function(x, id, partialmarker1, partialmarker2, theta, 
   starttime = Sys.time()
 
   # Do this before loop breaking, since eliminate2 works better WITH the loops.
-  grid.subset = fast.grid(c(geno.grid.subset(x, m1, id, make.grid = F),
-                            geno.grid.subset(x, m2, id, make.grid = F)))
+  grid.subset = fastGrid(c(genoCombinations(x, m1, id, make.grid = F),
+                            genoCombinations(x, m2, id, make.grid = F)))
 
   if (x$UNBROKEN_LOOPS) {
     x = breakLoops(setMarkers(x, list(m1, m2)), loop_breakers = loop_breakers, verbose = verbose)
