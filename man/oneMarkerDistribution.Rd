@@ -67,7 +67,7 @@ grid = expand.grid(5:10, 1:4)
 oneMarkerDistribution(x, ids=1:2, partialmarker=m2, grid.subset=grid)
 
 #### Something else:
-# The genotype distribution of an individual (id=5) whose half cousin (id=9) is 
+# The genotype distribution of an individual (id=5) whose half cousin (id=9) is
 # homozygous for a rare allele.
 y = halfCousinPed(1)
 snp = marker(y, `9`="a", alleles=c("a", "b"), afreq=c(0.01, 0.99))

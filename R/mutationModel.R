@@ -8,7 +8,7 @@ pedmut::mutationModel
 
 #' @importFrom pedmut isStationary
 hasStationaryModel = function(m) {
-  mut = mutmod(m)
+  mut = attr(m, 'mutmod')
   if(is.null(mut)) return(TRUE)
 
   sexEq = attr(mut, 'sexEqual')
