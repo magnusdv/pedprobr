@@ -52,7 +52,7 @@
 #' oneMarkerDistribution(x, ids=1:2, partialmarker=m2, grid.subset=grid)
 #'
 #' #### Something else:
-#' # The genotype distribution of an individual (id=5) whose half cousin (id=9) is 
+#' # The genotype distribution of an individual (id=5) whose half cousin (id=9) is
 #' # homozygous for a rare allele.
 #' y = halfCousinPed(1)
 #' snp = marker(y, `9`="a", alleles=c("a", "b"), afreq=c(0.01, 0.99))
@@ -63,9 +63,9 @@
 #' @export
 oneMarkerDistribution <- function(x, ids, partialmarker, grid.subset = NULL,
                                   loop_breakers = NULL, eliminate = 0, verbose = TRUE) {
-  if(!is.ped(x)) 
+  if(!is.ped(x))
     stop2("Input is not a `ped` object")
-  if(!is_count(eliminate, minimum = 0)) 
+  if(!is_count(eliminate, minimum = 0))
     stop2("`eliminate` must be a nonnegative integer")
 
   m = partialmarker
@@ -101,6 +101,10 @@ oneMarkerDistribution <- function(x, ids, partialmarker, grid.subset = NULL,
     x = breakLoops(setMarkers(x, m), loop_breakers = loop_breakers, verbose = verbose)
     m = x$markerdata[[1]]
   }
+
+  # Ensure peeling order is set (to avoid redundant computation)
+  if(is.null(attr(x, "PEELING_ORDER")))
+    attr(x, "PEELING_ORDER") = peelingOrder(x)
 
   int.ids = internalID(x, ids)
   gt.strings = paste(alleles[allgenos[, 1]], alleles[allgenos[, 2]], sep = "/")
