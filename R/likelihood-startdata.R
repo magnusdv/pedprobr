@@ -1,15 +1,15 @@
 #### FUNCTIONS FOR CREATING THE INTITIAL HAPLOTYPE COMBINATIONS W/PROBABILITIES.
 
-startdata_M = function(x, marker, eliminate = 0) {
+startdata_M = function(x, marker, eliminate = 0, treatAsFounder = NULL) {
   if(is_Xmarker(marker))
-    startdata_M_X(x, marker, eliminate)
+    startdata_M_X(x, marker, eliminate, treatAsFounder)
   else
-    startdata_M_AUT(x, marker, eliminate)
+    startdata_M_AUT(x, marker, eliminate, treatAsFounder)
 }
 
-startdata_M_AUT = function(x, marker, eliminate = 0) {
+startdata_M_AUT = function(x, marker, eliminate = 0, treatAsFounder = NULL) {
 
-  glist = .buildGenolist(x, marker, eliminate)
+  glist = .buildGenolist(x, marker, eliminate, treatAsFounder)
 
   if (attr(glist, "impossible")) {
     dat = list()
@@ -22,11 +22,10 @@ startdata_M_AUT = function(x, marker, eliminate = 0) {
   # Founder inbreeding: A vector of length pedsize(x), with NA's at nonfounders
   # Enables quick look-up e.g. FOU_INB[i].
   FOU_INB = rep(NA_real_, pedsize(x))
-  FOU_INB[FOU] = founderInbreeding(x, ids=founders(x))
+  FOU_INB[FOU] = founderInbreeding(x, ids = founders(x))
 
   # Add any members which should be treated as founders
-  extraFou = attr(x, "treatAsFounder")
-  FOU = c(FOU, extraFou)
+  FOU = c(FOU, treatAsFounder)
 
   afr = afreq(marker)
   impossible = FALSE
@@ -48,9 +47,9 @@ startdata_M_AUT = function(x, marker, eliminate = 0) {
   dat
 }
 
-startdata_M_X = function(x, marker, eliminate = 0) {
+startdata_M_X = function(x, marker, eliminate = 0, treatAsFounder = NULL) {
 
-  glist = .buildGenolistX(x, marker, eliminate)
+  glist = .buildGenolistX(x, marker, eliminate, treatAsFounder = treatAsFounder)
 
   if (attr(glist, "impossible")) {
     dat = list()
@@ -61,8 +60,7 @@ startdata_M_X = function(x, marker, eliminate = 0) {
   FOU = founders(x, internal = T)
 
   # Add any members which should be treated as founders
-  extraFou = attr(x, "treatAsFounder")
-  FOU = c(FOU, extraFou)
+  FOU = c(FOU, treatAsFounder)
 
   sex = x$SEX
   afr = afreq(marker)
@@ -113,16 +111,16 @@ startprob_MM_X = function(h, afreq1, afreq2, sex, founder) {
 }
 
 
-startdata_MM = function(x, marker1, marker2, eliminate = 0) {
+startdata_MM = function(x, marker1, marker2, eliminate = 0, treatAsFounder = NULL) {
   if(is_Xmarker(marker1))
-    startdata_MM_X(x, marker1, marker2, eliminate=eliminate)
+    startdata_MM_X(x, marker1, marker2, eliminate = eliminate, treatAsFounder = treatAsFounder)
   else
-    startdata_MM_AUT(x, marker1, marker2, eliminate=eliminate)
+    startdata_MM_AUT(x, marker1, marker2, eliminate = eliminate, treatAsFounder = treatAsFounder)
 }
 
-startdata_MM_X = function(x, marker1, marker2, eliminate = 0) {
-  m1_list = .buildGenolistX(x, marker1, eliminate)
-  m2_list = .buildGenolistX(x, marker2, eliminate)
+startdata_MM_X = function(x, marker1, marker2, eliminate = 0, treatAsFounder = NULL) {
+  m1_list = .buildGenolistX(x, marker1, eliminate, treatAsFounder)
+  m2_list = .buildGenolistX(x, marker2, eliminate, treatAsFounder)
   if (attr(m1_list, "impossible") || attr(m2_list, "impossible")) {
     dat = list()
     attr(dat, "impossible") = TRUE
@@ -133,7 +131,7 @@ startdata_MM_X = function(x, marker1, marker2, eliminate = 0) {
   afreq2 = afreq(marker2)
   isFounder = logical(pedsize(x))
   isFounder[founders(x, internal = T)] = TRUE
-  isFounder[attr(x, "treatAsFounder")] = TRUE
+  isFounder[treatAsFounder] = TRUE
 
   sex = x$SEX
   impossible = FALSE
@@ -168,9 +166,9 @@ startdata_MM_X = function(x, marker1, marker2, eliminate = 0) {
   dat
 }
 
-startdata_MM_AUT = function(x, marker1, marker2, eliminate = 0) {
-  m1_list = .buildGenolist(x, marker1, eliminate)
-  m2_list = .buildGenolist(x, marker2, eliminate)
+startdata_MM_AUT = function(x, marker1, marker2, eliminate = 0, treatAsFounder = NULL) {
+  m1_list = .buildGenolist(x, marker1, eliminate, treatAsFounder)
+  m2_list = .buildGenolist(x, marker2, eliminate, treatAsFounder)
   if (attr(m1_list, "impossible") || attr(m2_list, "impossible")) {
     dat = list()
     attr(dat, "impossible") = TRUE
@@ -181,7 +179,7 @@ startdata_MM_AUT = function(x, marker1, marker2, eliminate = 0) {
   afreq2 = afreq(marker2)
   isFounder = logical(pedsize(x))
   isFounder[founders(x, internal = T)] = TRUE
-  isFounder[attr(x, "treatAsFounder")] = TRUE
+  isFounder[treatAsFounder] = TRUE
   impossible = FALSE
 
   dat = lapply(1:pedsize(x), function(i) {
@@ -237,13 +235,13 @@ startdata_MM_AUT = function(x, marker1, marker2, eliminate = 0) {
   m
 }
 
-.buildGenolist = function(x, marker, eliminate = 0) {
+.buildGenolist = function(x, marker, eliminate = 0, treatAsFounder = NULL) {
   n = nAlleles(marker)
 
   # Founders (except loop breaker copies) need only *unordered* genotypes
   founderNotLB = logical(pedsize(x))
   founderNotLB[founders(x, internal = T)] = TRUE
-  founderNotLB[attr(x, "treatAsFounder")] = TRUE
+  founderNotLB[treatAsFounder] = TRUE
   founderNotLB[x$LOOP_BREAKERS[, 2]] = FALSE
 
   # A matrix containing a complete set of ordered genotypes
@@ -263,12 +261,12 @@ startdata_MM_AUT = function(x, marker1, marker2, eliminate = 0) {
   if (allowsMutations(marker))
     return(genolist)
 
-  .eliminate(x, genolist, n, repeats = eliminate)
+  .eliminate(x, genolist, n, repeats = eliminate, treatAsFounder = treatAsFounder)
 }
 
 
 
-.eliminate = function(x, genolist, nall, repeats = 0) {
+.eliminate = function(x, genolist, nall, repeats = 0, treatAsFounder = NULL) {
   if (repeats == 0 || attr(genolist, "impossible"))
     return(genolist)
   N = pedsize(x)
@@ -277,10 +275,9 @@ startdata_MM_AUT = function(x, marker1, marker2, eliminate = 0) {
   NONFOU = nonfounders(x, internal = T)
 
   # Adjust for "extra" founders
-  treatAsFou = attr(x, "treatAsFounder")
-  if(length(treatAsFou) > 0) {
-    FOU = c(FOU, treatAsFou)
-    NONFOU = setdiff(NONFOU, treatAsFou)
+  if(length(treatAsFounder) > 0) {
+    FOU = c(FOU, treatAsFounder)
+    NONFOU = .mysetdiff(NONFOU, treatAsFounder)
   }
 
   offs = lapply(1:N, function(i) children(x, i, internal = TRUE))
@@ -312,18 +309,19 @@ startdata_MM_AUT = function(x, marker1, marker2, eliminate = 0) {
     ncolsNew = unlist(lapply(genolist, ncol))
     if (any(ncolsNew == 0)) {
       attr(genolist, "impossible") = TRUE
-      return(genolist)
+      break
     }
     if (sum(ncolsNew) == sum(ncols))
-      return(genolist)
+      break
   }
+
   genolist
 }
 
 
 #------------X-linked-------------------
 
-.buildGenolistX <- function(x, marker, eliminate) {
+.buildGenolistX <- function(x, marker, eliminate, treatAsFounder = NULL) {
 
   n = nAlleles(marker)
   nseq = seq_len(n)
@@ -331,7 +329,7 @@ startdata_MM_AUT = function(x, marker1, marker2, eliminate = 0) {
   # Founders (except loop breaker copies) need only *unordered* genotypes
   founderNotLB = logical(pedsize(x))
   founderNotLB[founders(x, internal = T)] = TRUE
-  founderNotLB[attr(x, "treatAsFounder")] = TRUE
+  founderNotLB[treatAsFounder] = TRUE
   founderNotLB[x$LOOP_BREAKERS[, 2]] = FALSE
 
   genolist = vector(pedsize(x), mode="list")
@@ -356,11 +354,11 @@ startdata_MM_AUT = function(x, marker1, marker2, eliminate = 0) {
   if (allowsMutations(marker))
     return(genolist)
 
-  .eliminateX(x, genolist, n, eliminate)
+  .eliminateX(x, genolist, n, eliminate, treatAsFounder)
 }
 
 
-.eliminateX = function(x, genolist, nall, repeats = 0) {
+.eliminateX = function(x, genolist, nall, repeats = 0, treatAsFounder = NULL) {
   if (repeats == 0 || attr(genolist, "impossible"))
     return(genolist)
 
@@ -371,10 +369,9 @@ startdata_MM_AUT = function(x, marker1, marker2, eliminate = 0) {
   NONFOU = nonfounders(x, internal = T)
 
   # Adjust for "extra" founders
-  treatAsFou = attr(x, "treatAsFounder")
-  if(length(treatAsFou) > 0) {
-    FOU = c(FOU, treatAsFou)
-    NONFOU = setdiff(NONFOU, treatAsFou)
+  if(length(treatAsFounder) > 0) {
+    FOU = c(FOU, treatAsFounder)
+    NONFOU = .mysetdiff(NONFOU, treatAsFounder)
   }
 
   xsize = pedsize(x)
@@ -424,11 +421,11 @@ startdata_MM_AUT = function(x, marker1, marker2, eliminate = 0) {
     ncolsNew = lengths(genolist)/SEX
     if (any(ncolsNew == 0)) {
       attr(genolist, "impossible") = TRUE
-      return(genolist)
+      break
     }
     if (sum(ncolsNew) == sum(ncols))
-      return(genolist)
+      break
   }
+
   genolist
 }
-
