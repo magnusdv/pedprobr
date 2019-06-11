@@ -8,21 +8,35 @@ informativeSubnucs = function(x, marker1, marker2 = NULL) {
   if(is.null(nucs))
     nucs = attr(x, "PEELING_ORDER") = peelingOrder(x)
 
+  stationary = hasStationaryModel(marker1) &&
+    (is.null(marker2) || hasStationaryModel(marker2))
+
+  is_miss = marker1[, 1] == 0 & marker1[, 2] == 0
+  if(!is.null(marker2))
+    is_miss = is_miss & marker2[, 1] == 0 & marker2[, 2] == 0
+
+  # Quick return if x is nuclear
+  if(length(nucs) == 1) {
+    if (stationary) {
+      sub = nucs[[1]]
+      sub$children = sub$children[!is_miss[sub$children]]
+      good_nucs = list(sub)
+    }
+    else {
+      good_nucs = nucs
+    }
+    return(list(subnucs = good_nucs, newfounders = numeric(0)))
+  }
+
   # Return unchanged if all are genotyped
-  if (all(marker1[, 1] > 0) && (is.null(marker2) || all(marker2[, 1] > 0)))
+  if (!any(is_miss))
     return(list(subnucs = nucs, newfounders = numeric(0)))
 
-  stationary = hasStationaryModel(marker1) &&
-               (is.null(marker2) || hasStationaryModel(marker2))
 
   newfounders = numeric(0)
   good_nucs = list()
   NONFOU = nonfounders(x, internal=T)
   LEAVES = leaves(x, internal=T)
-
-  is_miss = marker1[, 1] == 0 & marker1[, 2] == 0
-  if(!is.null(marker2))
-    is_miss = is_miss & marker2[, 1] == 0 & marker2[, 2] == 0
 
   is_miss[x$LOOP_BREAKERS] = F  # works (and quick) also if no loops.
   is_uninf_leaf = is_uninf_fou = is_miss
