@@ -61,7 +61,7 @@
 #' #### X-linked example: TODO
 #'
 #' @export
-oneMarkerDistribution <- function(x, ids, partialmarker, grid.subset = NULL,
+oneMarkerDistribution <- function(x, ids, partialmarker, grid.subset = NULL, doSetup = T,
                                   loop_breakers = NULL, eliminate = 0, verbose = TRUE) {
   if(!is.ped(x))
     stop2("Input is not a `ped` object")
@@ -85,11 +85,15 @@ oneMarkerDistribution <- function(x, ids, partialmarker, grid.subset = NULL,
   if (verbose) {
     cat(sprintf("Partial marker (%s):\n", ifelse(onX, "X-linked", "autosomal")))
     print(m)
+    cat("==============================\n")
+    msg = "Computing the %sgenotype probability distribution for individual%s: %s\n"
+    if(length(ids) == 1)
+      cat(sprintf(msg, "", "", ids))
+    else
+      cat(sprintf(msg, "joint ", "s", toString(ids)))
   }
 
   starttime = Sys.time()
-
-  allgenos = allGenotypes(nAlleles(m))
 
   # Compute grid before loop breaking (works better with eliminate2)
   if (is.null(grid.subset))
@@ -102,11 +106,22 @@ oneMarkerDistribution <- function(x, ids, partialmarker, grid.subset = NULL,
     m = x$markerdata[[1]]
   }
 
+  int.ids = internalID(x, ids)
+
   # Ensure peeling order is set (to avoid redundant computation)
   if(is.null(attr(x, "PEELING_ORDER")))
     attr(x, "PEELING_ORDER") = peelingOrder(x)
 
-  int.ids = internalID(x, ids)
+  setup = list()
+  if(doSetup) {
+    mDummy = m
+    mDummy[int.ids, ] = 1
+    inform = informativeSubnucs(x, mDummy)
+    setup$informativeNucs = inform$subnucs
+    setup$treatAsFounder = inform$newfounders
+  }
+
+  allgenos = allGenotypes(nAlleles(m))
   gt.strings = paste(alleles[allgenos[, 1]], alleles[allgenos[, 2]], sep = "/")
 
   geno.names = if(onX) list(alleles, gt.strings)[getSex(x, ids)]
@@ -118,22 +133,13 @@ oneMarkerDistribution <- function(x, ids, partialmarker, grid.subset = NULL,
   probs = array(0, dim = lengths(geno.names, use.names = F), dimnames = geno.names)
   probs[grid.subset] = apply(grid.subset, 1, function(allg_rows) {
       m[int.ids, ] = allgenos[allg_rows, ]
-      likelihood(x, marker1 = m, eliminate = eliminate)
+      likelihood(x, marker1 = m, eliminate = eliminate, setup = setup)
   })
 
   res = probs/marginal
   if (verbose) {
-    cat("==============================\n\n")
-    cat("Analysis finished in ", round(Sys.time() - starttime,2), " seconds\n")
-    if(length(ids)==1)
-      cat("\nGenotype probability distribution for individual ", ids, ":\n", sep="")
-    else
-      cat("\nJoint genotype probability distribution for individuals ",
-          toString(ids), ":\n", sep = "")
-
-    print(round(res, 4))
-    return(invisible(res))
+    cat("\nAnalysis finished in", round(Sys.time() - starttime, 2), " seconds\n")
   }
-  else
-    res
+
+  res
 }

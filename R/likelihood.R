@@ -235,7 +235,7 @@ likelihood.list = function(x, marker1, marker2 = NULL, logbase = NULL, total = T
 }
 
 
-setupData = function(x, marker1, marker2, eliminate, setup) {
+setupData = function(x, marker1, marker2 = NULL, eliminate = 0, setup = NULL) {
   if (is.null(setup))
     setup = list()
 
