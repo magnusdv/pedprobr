@@ -15,7 +15,7 @@ genoCombinations = function(x, partialmarker, ids, make.grid = T) {
     int.ids = internalID(x, ids)
     nall = nAlleles(partialmarker)
     mutations = allowsMutations(partialmarker)
-    chrom = if (is_Xmarker(partialmarker)) "X" else "AUTOSOMAL"
+    chrom = if (isXmarker(partialmarker)) "X" else "AUTOSOMAL"
 
     allg = allGenotypes(nall)
     allgRef = 1000 * (allg[, 1] + allg[, 2]) + abs(allg[, 1] - allg[, 2])

@@ -69,7 +69,7 @@ twoMarkerDistribution <- function(x, id, partialmarker1, partialmarker2, theta, 
   if (!identical(chrom(m1), chrom(m2)))
     stop2("Partial markers are on different chromosomes: ", chrom(m1), chrom(m2))
 
-  onX = is_Xmarker(m1)
+  onX = isXmarker(m1)
 
   if (verbose) {
     cat(sprintf("Partial markers (%s):\n", ifelse(onX, "X-linked", "autosomal")))
@@ -88,6 +88,9 @@ twoMarkerDistribution <- function(x, id, partialmarker1, partialmarker2, theta, 
     cat("\nAllele frequencies, marker 2:\n")
     print(data.frame(as.list(afreq(m2)), check.names=F), row.names=F)
     cat("\nRecombination rate:", theta, "\n")
+
+    cat("==============================\n")
+    cat("Computing the joint genotype probability distribution for individual:", id, "\n")
   }
 
   # Start timer
@@ -129,12 +132,8 @@ twoMarkerDistribution <- function(x, id, partialmarker1, partialmarker2, theta, 
 
   res = probs/marginal
   if (verbose) {
-    cat("==============================\n\n")
-    cat("Analysis finished in ", round(Sys.time() - starttime,2), " seconds\n")
-    cat("\nJoint genotype distribution for individual ", id, ":\n",  sep = "")
-    print(round(res, 4))
-    return(invisible(res))
+    cat("\nAnalysis finished in", round(Sys.time() - starttime, 2), " seconds\n")
   }
-  else
-    res
+
+  res
 }

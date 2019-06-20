@@ -101,7 +101,7 @@ likelihood.ped = function(x, marker1, marker2 = NULL, theta = NULL, setup = NULL
   if (attr(dat, "impossible"))
     return(ifelse(is.numeric(logbase), -Inf, 0))
 
-  Xchrom = is_Xmarker(marker1)
+  Xchrom = isXmarker(marker1)
   mut = mutmod(marker1)
   PEEL = choosePeeler(twolocus, theta, Xchrom, x$SEX, mut)
 
@@ -194,7 +194,7 @@ likelihood.singleton = function(x, marker1, marker2 = NULL, logbase = NULL, ...)
 
   m = marker1
   afr = afreq(m)
-  chromX = is_Xmarker(m)
+  chromX = isXmarker(m)
   finb = founderInbreeding(x, chromType = if(chromX) "x" else "autosomal")
 
   if (chromX && x$SEX == 1) {

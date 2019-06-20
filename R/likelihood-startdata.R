@@ -1,7 +1,7 @@
 #### FUNCTIONS FOR CREATING THE INTITIAL HAPLOTYPE COMBINATIONS W/PROBABILITIES.
 
 startdata_M = function(x, marker, eliminate = 0, treatAsFounder = NULL) {
-  if(is_Xmarker(marker))
+  if(isXmarker(marker))
     startdata_M_X(x, marker, eliminate, treatAsFounder)
   else
     startdata_M_AUT(x, marker, eliminate, treatAsFounder)
@@ -22,7 +22,7 @@ startdata_M_AUT = function(x, marker, eliminate = 0, treatAsFounder = NULL) {
   # Founder inbreeding: A vector of length pedsize(x), with NA's at nonfounders
   # Enables quick look-up e.g. FOU_INB[i].
   FOU_INB = rep(NA_real_, pedsize(x))
-  FOU_INB[FOU] = founderInbreeding(x, ids = founders(x))
+  FOU_INB[FOU] = founderInbreeding(x)
 
   # Add any members which should be treated as founders
   FOU = c(FOU, treatAsFounder)
@@ -112,7 +112,7 @@ startprob_MM_X = function(h, afreq1, afreq2, sex, founder) {
 
 
 startdata_MM = function(x, marker1, marker2, eliminate = 0, treatAsFounder = NULL) {
-  if(is_Xmarker(marker1))
+  if(isXmarker(marker1))
     startdata_MM_X(x, marker1, marker2, eliminate = eliminate, treatAsFounder = treatAsFounder)
   else
     startdata_MM_AUT(x, marker1, marker2, eliminate = eliminate, treatAsFounder = treatAsFounder)

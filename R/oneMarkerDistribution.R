@@ -61,7 +61,7 @@
 #' #### X-linked example: TODO
 #'
 #' @export
-oneMarkerDistribution <- function(x, ids, partialmarker, grid.subset = NULL, doSetup = T,
+oneMarkerDistribution <- function(x, ids, partialmarker, grid.subset = NULL,
                                   loop_breakers = NULL, eliminate = 0, verbose = TRUE) {
   if(!is.ped(x))
     stop2("Input is not a `ped` object")
@@ -80,7 +80,7 @@ oneMarkerDistribution <- function(x, ids, partialmarker, grid.subset = NULL, doS
     stop2("`ped` objects with pre-broken loops are not allowed as input to `oneMarkerDistribution()`")
 
   alleles = alleles(m)
-  onX = is_Xmarker(m)
+  onX = isXmarker(m)
 
   if (verbose) {
     cat(sprintf("Partial marker (%s):\n", ifelse(onX, "X-linked", "autosomal")))
@@ -108,28 +108,32 @@ oneMarkerDistribution <- function(x, ids, partialmarker, grid.subset = NULL, doS
 
   int.ids = internalID(x, ids)
 
-  # Ensure peeling order is set (to avoid redundant computation)
-  if(is.null(attr(x, "PEELING_ORDER")))
-    attr(x, "PEELING_ORDER") = peelingOrder(x)
-
-  setup = list()
-  if(doSetup) {
-    mDummy = m
-    mDummy[int.ids, ] = 1
-    inform = informativeSubnucs(x, mDummy)
-    setup$informativeNucs = inform$subnucs
-    setup$treatAsFounder = inform$newfounders
-  }
-
   allgenos = allGenotypes(nAlleles(m))
   gt.strings = paste(alleles[allgenos[, 1]], alleles[allgenos[, 2]], sep = "/")
 
   geno.names = if(onX) list(alleles, gt.strings)[getSex(x, ids)]
                else rep(list(gt.strings), length(ids))
 
+
+  ### Likelihood setup
+
+  # Ensure peeling order is set (otherwise it is done multiple times)
+  if(is.null(attr(x, "PEELING_ORDER")))
+    attr(x, "PEELING_ORDER") = peelingOrder(x)
+
+  # Precompute informative nucs
+  mDummy = m
+  mDummy[int.ids, ] = 1
+  inform = informativeSubnucs(x, mDummy)
+  setup = list(informativeNucs = inform$subnucs,
+               treatAsFounder = inform$newfounders)
+
+  # Compute marginal
   marginal = likelihood(x, marker1 = m, eliminate = eliminate)
   if (marginal == 0)
       stop2("Partial marker is impossible")
+
+  # Compute likelihood of each combo
   probs = array(0, dim = lengths(geno.names, use.names = F), dimnames = geno.names)
   probs[grid.subset] = apply(grid.subset, 1, function(allg_rows) {
       m[int.ids, ] = allgenos[allg_rows, ]
