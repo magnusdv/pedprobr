@@ -18,7 +18,7 @@
 #' @param logbase a positive number, or NULL. If numeric, the log-likelihood is
 #'   returned, with `logbase` as basis for the logarithm.
 #' @param verbose a logical: Show MERLIN output and other information, or not.
-#' @param generate.files a logical. If TRUE, the files 'merlin.ped',
+#' @param generateFiles a logical. If TRUE, the files 'merlin.ped',
 #'   'merlin.dat', 'merlin.map', and 'merlin.freq'.
 #' @param cleanup a logical: Should the MERLIN files be deleted automatically?
 #' @param logfile a character. If this is given, the MERLIN screen output will
@@ -41,8 +41,9 @@
 #' }
 #'
 #' @export
-likelihood_merlin = function(x, markers = seq_len(nMarkers(x)), logbase=NULL, verbose = FALSE,
-                             generate.files = TRUE, cleanup = generate.files, logfile = "") {
+likelihoodMerlin = function(x, markers = seq_len(nMarkers(x)), logbase = NULL,
+                            verbose = FALSE, generateFiles = TRUE,
+                            cleanup = generateFiles, logfile = "") {
   if(!is.ped(x)) stop2("Input is not a `ped` object")
   if(!is.null(logbase) && (!is.numeric(logbase) || length(logbase) != 1 || logbase <= 0))
     stop2("`logbase` must be a single positive number: ", logbase)
@@ -56,12 +57,12 @@ likelihood_merlin = function(x, markers = seq_len(nMarkers(x)), logbase=NULL, ve
   if (nMarkers(x) == 0) stop2("Pedigree has no attached markers")
   x = selectMarkers(x, markers)
 
-  if (generate.files) {
+  if (generateFiles) {
     files = writePed(x, prefix = "_merlin", merlin = TRUE,
                       what = c("ped", "dat", "map", "freq"), verbose=verbose)
   }
   # TODO: fix
-  program = if (is_Xmarker(x$markerdata[[1]])) "minx" else "merlin"
+  program = if (isXmarker(x$markerdata[[1]])) "minx" else "merlin"
 
   command = paste(program,
                   "-p _merlin.ped",

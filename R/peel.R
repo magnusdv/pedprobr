@@ -70,8 +70,8 @@ choosePeeler = function(twolocus, theta, Xchrom, SEX, mutmat) {
   if (sum(res) == 0)
     attr(dat, "impossible") = TRUE
 
-  pivhap_update = dat[[c(link, 1)]][, res > 0, drop = F]
-  dat[[link]] = list(hap = pivhap_update, prob = res[res > 0])
+  pivhapUpdate = dat[[c(link, 1)]][, res > 0, drop = F]
+  dat[[link]] = list(hap = pivhapUpdate, prob = res[res > 0])
   dat
 }
 
@@ -153,11 +153,11 @@ choosePeeler = function(twolocus, theta, Xchrom, SEX, mutmat) {
   if (sum(res) == 0) attr(dat, "impossible") = TRUE
 
   if (SEX[link]==1)
-    pivhap_update = dat[[c(link, 1)]][res > 0]
+    pivhapUpdate = dat[[c(link, 1)]][res > 0]
   else
-    pivhap_update = dat[[c(link, 1)]][, res > 0, drop = F]
+    pivhapUpdate = dat[[c(link, 1)]][, res > 0, drop = F]
 
-  dat[[link]] = list(hap = pivhap_update, prob = res[res > 0])
+  dat[[link]] = list(hap = pivhapUpdate, prob = res[res > 0])
   dat
 }
 
@@ -240,8 +240,8 @@ choosePeeler = function(twolocus, theta, Xchrom, SEX, mutmat) {
 
   if (sum(res) == 0) attr(dat, "impossible") = TRUE
 
-  pivhap_update = dat[[c(link, 1)]][, res > 0, drop = F]
-  dat[[link]] = list(hap = pivhap_update, prob = res[res > 0])
+  pivhapUpdate = dat[[c(link, 1)]][, res > 0, drop = F]
+  dat[[link]] = list(hap = pivhapUpdate, prob = res[res > 0])
   dat
 }
 
@@ -312,8 +312,8 @@ choosePeeler = function(twolocus, theta, Xchrom, SEX, mutmat) {
 
   if (sum(res) == 0)  attr(dat, "impossible") = TRUE
 
-  pivhap_update = dat[[c(link, 1)]][, res > 0, drop = F]
-  dat[[link]] = list(hap = pivhap_update, prob = res[res > 0])
+  pivhapUpdate = dat[[c(link, 1)]][, res > 0, drop = F]
+  dat[[link]] = list(hap = pivhapUpdate, prob = res[res > 0])
   dat
 }
 

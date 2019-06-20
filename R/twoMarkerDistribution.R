@@ -45,9 +45,9 @@
 #' @export
 twoMarkerDistribution <- function(x, id, partialmarker1, partialmarker2, theta, loop_breakers = NULL,
                                   eliminate = 99, verbose = TRUE) {
-  if(!is.ped(x)) 
+  if(!is.ped(x))
     stop2("Input is not a `ped` object")
-  if(!is_count(eliminate, minimum = 0)) 
+  if(!isCount(eliminate, minimum = 0))
     stop2("`eliminate` must be a nonnegative integer")
 
   m1 = partialmarker1
@@ -69,7 +69,7 @@ twoMarkerDistribution <- function(x, id, partialmarker1, partialmarker2, theta, 
   if (!identical(chrom(m1), chrom(m2)))
     stop2("Partial markers are on different chromosomes: ", chrom(m1), chrom(m2))
 
-  onX = is_Xmarker(m1)
+  onX = isXmarker(m1)
 
   if (verbose) {
     cat(sprintf("Partial markers (%s):\n", ifelse(onX, "X-linked", "autosomal")))
@@ -88,14 +88,17 @@ twoMarkerDistribution <- function(x, id, partialmarker1, partialmarker2, theta, 
     cat("\nAllele frequencies, marker 2:\n")
     print(data.frame(as.list(afreq(m2)), check.names=F), row.names=F)
     cat("\nRecombination rate:", theta, "\n")
+
+    cat("==============================\n")
+    cat("Computing the joint genotype probability distribution for individual:", id, "\n")
   }
 
   # Start timer
   starttime = Sys.time()
 
   # Do this before loop breaking, since eliminate2 works better WITH the loops.
-  grid.subset = fast.grid(c(geno.grid.subset(x, m1, id, make.grid = F),
-                            geno.grid.subset(x, m2, id, make.grid = F)))
+  grid.subset = fastGrid(c(genoCombinations(x, m1, id, make.grid = F),
+                            genoCombinations(x, m2, id, make.grid = F)))
 
   if (x$UNBROKEN_LOOPS) {
     x = breakLoops(setMarkers(x, list(m1, m2)), loop_breakers = loop_breakers, verbose = verbose)
@@ -129,12 +132,8 @@ twoMarkerDistribution <- function(x, id, partialmarker1, partialmarker2, theta, 
 
   res = probs/marginal
   if (verbose) {
-    cat("==============================\n\n")
-    cat("Analysis finished in ", round(Sys.time() - starttime,2), " seconds\n")
-    cat("\nJoint genotype distribution for individual ", id, ":\n",  sep = "")
-    print(round(res, 4))
-    return(invisible(res))
+    cat("\nAnalysis finished in", round(Sys.time() - starttime, 2), " seconds\n")
   }
-  else
-    res
+
+  res
 }

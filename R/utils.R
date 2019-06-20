@@ -5,7 +5,7 @@ stop2 = function(...) {
 }
 
 # Test that input is a positive (or similar) integer.
-is_count = function(x, minimum = 1) {
+isCount = function(x, minimum = 1) {
   isTRUE(length(x) == 1 &&
          (is.integer(x) || (is.numeric(x) && x == as.integer(x))) &&
          x >= minimum)
@@ -21,7 +21,7 @@ is_count = function(x, minimum = 1) {
 }
 
 # Stripped version of expand.grid
-fast.grid = function(argslist, as.list = FALSE) {
+fastGrid = function(argslist, as.list = FALSE) {
   nargs = length(argslist)
   orep = nr = prod(lengths(argslist))
   if (nargs == 0L || nr == 0L)
@@ -71,11 +71,11 @@ log_or_not = function(x, logbase) {
 #'
 #' @examples
 #' p = 0.1; q = 1-p
-#' hw = HW_prob(c(1,1,2), c(1,2,2), c(p, q))
+#' hw = HWprob(c(1,1,2), c(1,2,2), c(p, q))
 #' stopifnot(all.equal(hw, c(p^2, 2*p*q, q^2)))
 #'
 #' @export
-HW_prob = function(allele1, allele2, afreq, f = 0) {
+HWprob = function(allele1, allele2, afreq, f = 0) {
   homoz = allele1 == allele2
   hw = afreq[allele1] * afreq[allele2] * (2 - homoz)
 

@@ -65,7 +65,7 @@ oneMarkerDistribution <- function(x, ids, partialmarker, grid.subset = NULL,
                                   loop_breakers = NULL, eliminate = 0, verbose = TRUE) {
   if(!is.ped(x))
     stop2("Input is not a `ped` object")
-  if(!is_count(eliminate, minimum = 0))
+  if(!isCount(eliminate, minimum = 0))
     stop2("`eliminate` must be a nonnegative integer")
 
   m = partialmarker
@@ -80,20 +80,24 @@ oneMarkerDistribution <- function(x, ids, partialmarker, grid.subset = NULL,
     stop2("`ped` objects with pre-broken loops are not allowed as input to `oneMarkerDistribution()`")
 
   alleles = alleles(m)
-  onX = is_Xmarker(m)
+  onX = isXmarker(m)
 
   if (verbose) {
     cat(sprintf("Partial marker (%s):\n", ifelse(onX, "X-linked", "autosomal")))
     print(m)
+    cat("==============================\n")
+    msg = "Computing the %sgenotype probability distribution for individual%s: %s\n"
+    if(length(ids) == 1)
+      cat(sprintf(msg, "", "", ids))
+    else
+      cat(sprintf(msg, "joint ", "s", toString(ids)))
   }
 
   starttime = Sys.time()
 
-  allgenos = allGenotypes(nAlleles(m))
-
   # Compute grid before loop breaking (works better with eliminate2)
   if (is.null(grid.subset))
-    grid.subset = geno.grid.subset(x, m, ids, make.grid=T)
+    grid.subset = genoCombinations(x, m, ids, make.grid=T)
   else
     grid.subset = as.matrix(grid.subset)
 
@@ -102,38 +106,44 @@ oneMarkerDistribution <- function(x, ids, partialmarker, grid.subset = NULL,
     m = x$markerdata[[1]]
   }
 
-  # Ensure peeling order is set (to avoid redundant computation)
-  if(is.null(attr(x, "PEELING_ORDER")))
-    attr(x, "PEELING_ORDER") = peelingOrder(x)
-
   int.ids = internalID(x, ids)
+
+  allgenos = allGenotypes(nAlleles(m))
   gt.strings = paste(alleles[allgenos[, 1]], alleles[allgenos[, 2]], sep = "/")
 
   geno.names = if(onX) list(alleles, gt.strings)[getSex(x, ids)]
                else rep(list(gt.strings), length(ids))
 
+
+  ### Likelihood setup
+
+  # Ensure peeling order is set (otherwise it is done multiple times)
+  if(is.null(attr(x, "PEELING_ORDER")))
+    attr(x, "PEELING_ORDER") = peelingOrder(x)
+
+  # Precompute informative nucs
+  mDummy = m
+  mDummy[int.ids, ] = 1
+  inform = informativeSubnucs(x, mDummy)
+  setup = list(informativeNucs = inform$subnucs,
+               treatAsFounder = inform$newfounders)
+
+  # Compute marginal
   marginal = likelihood(x, marker1 = m, eliminate = eliminate)
   if (marginal == 0)
       stop2("Partial marker is impossible")
+
+  # Compute likelihood of each combo
   probs = array(0, dim = lengths(geno.names, use.names = F), dimnames = geno.names)
   probs[grid.subset] = apply(grid.subset, 1, function(allg_rows) {
       m[int.ids, ] = allgenos[allg_rows, ]
-      likelihood(x, marker1 = m, eliminate = eliminate)
+      likelihood(x, marker1 = m, eliminate = eliminate, setup = setup)
   })
 
   res = probs/marginal
   if (verbose) {
-    cat("==============================\n\n")
-    cat("Analysis finished in ", round(Sys.time() - starttime,2), " seconds\n")
-    if(length(ids)==1)
-      cat("\nGenotype probability distribution for individual ", ids, ":\n", sep="")
-    else
-      cat("\nJoint genotype probability distribution for individuals ",
-          toString(ids), ":\n", sep = "")
-
-    print(round(res, 4))
-    return(invisible(res))
+    cat("\nAnalysis finished in", round(Sys.time() - starttime, 2), " seconds\n")
   }
-  else
-    res
+
+  res
 }

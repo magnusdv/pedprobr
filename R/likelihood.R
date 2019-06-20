@@ -27,7 +27,7 @@
 #' @param loop_breakers a vector of ID labels indicating loop breakers. If NULL
 #'   (default), automatic selection of loop breakers will be performed. See
 #'   [breakLoops()].
-#' @param startdata for internal use.
+#' @param setup for internal use.
 #' @param verbose a logical
 #' @param total a logical; if TRUE, the product of the likelihoods is returned,
 #'   otherwise a vector with the likelihoods for each pedigree in the list.
@@ -40,18 +40,17 @@
 #'
 #' @examples
 #'
-#' library(pedtools)
-#'
 #' # likelihood of inbred pedigree (grandfather/granddaughter incest)
-#' x = nuclearPed(father="grandfather", children="a")
-#' x = addDaughter(x, "a", id="granddaughter")
-#' x = addChildren(x, father="grandfather", mother="granddaughter", nch=1, id="child")
-#' m = marker(x, grandfather=1, child=1:2)
+#' x = nuclearPed(father = "grandfather", child = "a")
+#' x = addDaughter(x, "a", id = "granddaughter")
+#' x = addChildren(x, father = "grandfather", mother = "granddaughter",
+#'                 nch = 1, id = "child")
+#' m = marker(x, grandfather = 1, child = 1:2)
 #'
 #' plot(x, m)
 #' lik = likelihood(x, m)
 #'
-#' stopifnot(lik==0.09375)
+#' stopifnot(lik == 0.09375)
 #'
 #' @export
 likelihood = function(x, ...) UseMethod("likelihood", x)
@@ -59,7 +58,7 @@ likelihood = function(x, ...) UseMethod("likelihood", x)
 
 #' @export
 #' @rdname likelihood
-likelihood.ped = function(x, marker1, marker2 = NULL, theta = NULL, startdata = NULL,
+likelihood.ped = function(x, marker1, marker2 = NULL, theta = NULL, setup = NULL,
                           eliminate = 0, logbase = NULL, loop_breakers = NULL,
                           verbose = FALSE, ...) {
 
@@ -96,28 +95,18 @@ likelihood.ped = function(x, marker1, marker2 = NULL, theta = NULL, startdata = 
       marker2 = x$markerdata[[2]]
   }
 
-  if (is.null(startdata)) {
-    inform = informativeSubnucs(x, marker1, marker2)
-    inform_subnucs = inform$subnucs
-    attr(x, "treat_as_founder") = inform$newfounders
+  setup = setupData(x, marker1, marker2, eliminate, setup)
 
-    if(!twolocus)
-      startdata = startdata_M(x, marker = marker1, eliminate = eliminate)
-    else
-      startdata = startdata_MM(x, marker1 = marker1, marker2 = marker2, eliminate = eliminate)
-  }
-
-  if (attr(startdata, "impossible"))
+  dat = setup$startdata
+  if (attr(dat, "impossible"))
     return(ifelse(is.numeric(logbase), -Inf, 0))
 
-  Xchrom = is_Xmarker(marker1)
+  Xchrom = isXmarker(marker1)
   mut = mutmod(marker1)
   PEEL = choosePeeler(twolocus, theta, Xchrom, x$SEX, mut)
 
-  dat = startdata
-
   if (is.null(dups <- x$LOOP_BREAKERS)) {
-    for (sub in inform_subnucs) {
+    for (sub in setup$informativeNucs) {
       dat = PEEL(dat, sub)
       if (sub$link > 0 && attr(dat, "impossible"))
         return(ifelse(is.numeric(logbase), -Inf, 0))
@@ -136,7 +125,7 @@ likelihood.ped = function(x, marker1, marker2 = NULL, theta = NULL, startdata = 
 
     # For each orig, find the indices of its haplos (in orig$hap) that also occur in its copy.
     # Then take cross product of these vectors.
-    loopgrid = fast.grid(lapply(seq_along(origs), function(i) {
+    loopgrid = fastGrid(lapply(seq_along(origs), function(i) {
       ori = two2one(dat[[c(origs[i], 1)]])
       seq_along(ori)[ori %in% two2one(dat[[c(copies[i], 1)]])]
     }), as.list = TRUE)
@@ -162,7 +151,7 @@ likelihood.ped = function(x, marker1, marker2 = NULL, theta = NULL, startdata = 
         dat1[[copy.int]] = list(hap = hap, prob = 1)
       }
 
-      for (sub in inform_subnucs) {
+      for (sub in setup$informativeNucs) {
         dat1 = PEEL(dat1, sub)
 
         # If impossible data - break out of ES-algorithm and go to next r in loopgrid.
@@ -205,7 +194,7 @@ likelihood.singleton = function(x, marker1, marker2 = NULL, logbase = NULL, ...)
 
   m = marker1
   afr = afreq(m)
-  chromX = is_Xmarker(m)
+  chromX = isXmarker(m)
   finb = founderInbreeding(x, chromType = if(chromX) "x" else "autosomal")
 
   if (chromX && x$SEX == 1) {
@@ -218,7 +207,7 @@ likelihood.singleton = function(x, marker1, marker2 = NULL, logbase = NULL, ...)
     res = p^2 + 2 * p * (1 - p)
   }
   else {
-    res = HW_prob(m[1], m[2], afr, finb)
+    res = HWprob(m[1], m[2], afr, finb)
   }
   if (is.numeric(logbase)) log(res, logbase) else res
 }
@@ -243,4 +232,31 @@ likelihood.list = function(x, marker1, marker2 = NULL, logbase = NULL, total = T
     if(!is.null(logbase)) sum(liks) else prod(liks)
   else
     liks
+}
+
+
+setupData = function(x, marker1, marker2 = NULL, eliminate = 0, setup = NULL) {
+  if (is.null(setup))
+    setup = list()
+
+  informativeNucs = setup$informativeNucs
+  treatAsFounder  = setup$treatAsFounder
+  startdata       = setup$startdata
+
+  if(is.null(informativeNucs)) {
+    inform = informativeSubnucs(x, marker1, marker2)
+    informativeNucs = inform$subnucs
+    treatAsFounder = inform$newfounders
+  }
+
+  if(is.null(startdata)) {
+    if(is.null(marker2))
+      startdata = startdata_M(x, marker = marker1, eliminate = eliminate,
+                              treatAsFounder = treatAsFounder)
+    else
+      startdata = startdata_MM(x, marker1 = marker1, marker2 = marker2,
+                               eliminate = eliminate, treatAsFounder = treatAsFounder)
+  }
+
+  list(informativeNucs = informativeNucs, treatAsFounder = treatAsFounder, startdata = startdata)
 }

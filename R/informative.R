@@ -11,69 +11,69 @@ informativeSubnucs = function(x, marker1, marker2 = NULL) {
   stationary = hasStationaryModel(marker1) &&
     (is.null(marker2) || hasStationaryModel(marker2))
 
-  is_miss = marker1[, 1] == 0 & marker1[, 2] == 0
+  isMiss = marker1[, 1] == 0 & marker1[, 2] == 0
   if(!is.null(marker2))
-    is_miss = is_miss & marker2[, 1] == 0 & marker2[, 2] == 0
+    isMiss = isMiss & marker2[, 1] == 0 & marker2[, 2] == 0
 
   # Quick return if x is nuclear
   if(length(nucs) == 1) {
     if (stationary) {
       sub = nucs[[1]]
-      sub$children = sub$children[!is_miss[sub$children]]
-      good_nucs = list(sub)
+      sub$children = sub$children[!isMiss[sub$children]]
+      goodNucs = list(sub)
     }
     else {
-      good_nucs = nucs
+      goodNucs = nucs
     }
-    return(list(subnucs = good_nucs, newfounders = numeric(0)))
+    return(list(subnucs = goodNucs, newfounders = numeric(0)))
   }
 
   # Return unchanged if all are genotyped
-  if (!any(is_miss))
+  if (!any(isMiss))
     return(list(subnucs = nucs, newfounders = numeric(0)))
 
 
   newfounders = numeric(0)
-  good_nucs = list()
+  goodNucs = list()
   NONFOU = nonfounders(x, internal=T)
   LEAVES = leaves(x, internal=T)
 
-  is_miss[x$LOOP_BREAKERS] = F  # works (and quick) also if no loops.
-  is_uninf_leaf = is_uninf_fou = is_miss
+  isMiss[x$LOOP_BREAKERS] = F  # works (and quick) also if no loops.
+  isUninfLeaf = isUninfFou = isMiss
 
-  is_uninf_leaf[-LEAVES] = F   # logical with T only if uninformative leaf
-  is_uninf_fou[NONFOU] = F # logical with T only if uninformative founder
+  isUninfLeaf[-LEAVES] = F   # logical with T only if uninformative leaf
+  isUninfFou[NONFOU] = F # logical with T only if uninformative founder
 
   for (sub in nucs) {
     fa = sub$father
     mo = sub$mother
     offs = sub$children
     link = sub$link
-    is_uninf_leaf[link] = FALSE # just in case link is an untyped child. TODO: necessary??
+    isUninfLeaf[link] = FALSE # just in case link is an untyped child. TODO: necessary??
 
     # Keep only genotyped leaves
-    keep_offs = offs[!is_uninf_leaf[offs]]
-    nkeep = length(keep_offs)
+    keepOffs = offs[!isUninfLeaf[offs]]
+    nkeep = length(keepOffs)
 
     # Skip nuc if: all kids are uninf leaves AND the non-link parent is uninf
-    if (nkeep == 0 && link == fa && is_uninf_fou[mo])
+    if (nkeep == 0 && link == fa && isUninfFou[mo])
       next
-    if (nkeep == 0 && link == mo && is_uninf_fou[fa])
+    if (nkeep == 0 && link == mo && isUninfFou[fa])
       next
 
     # Skip nuc if: Single child is link, both parents uninf founders
     # NB: Only skip if stationary mutation model!
-    if (stationary && nkeep == 1 && link == keep_offs &&
-        is_uninf_fou[fa] && is_uninf_fou[mo]) {
+    if (stationary && nkeep == 1 && link == keepOffs &&
+        isUninfFou[fa] && isUninfFou[mo]) {
 
       newfounders = c(newfounders, link)
       next
     }
-    sub$children = keep_offs
+    sub$children = keepOffs
 
-    good_nucs = c(good_nucs, list(sub))
-    is_uninf_fou[link] = FALSE  #added in v0.8-1 to correct a bug marking certain 'middle' subnucs uninformative
+    goodNucs = c(goodNucs, list(sub))
+    isUninfFou[link] = FALSE  #added in v0.8-1 to correct a bug marking certain 'middle' subnucs uninformative
   }
-  list(subnucs = good_nucs, newfounders = newfounders)
+  list(subnucs = goodNucs, newfounders = newfounders)
 }
 

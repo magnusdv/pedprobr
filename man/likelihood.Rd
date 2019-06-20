@@ -10,7 +10,7 @@
 likelihood(x, ...)
 
 \method{likelihood}{ped}(x, marker1, marker2 = NULL, theta = NULL,
-  startdata = NULL, eliminate = 0, logbase = NULL,
+  setup = NULL, eliminate = 0, logbase = NULL,
   loop_breakers = NULL, verbose = FALSE, ...)
 
 \method{likelihood}{singleton}(x, marker1, marker2 = NULL,
@@ -33,7 +33,7 @@ Details.}
 \item{theta}{the recombination rate between \code{marker1} and \code{marker2}. To make
 biological sense \code{theta} should be between 0 and 0.5.}
 
-\item{startdata}{for internal use.}
+\item{setup}{for internal use.}
 
 \item{eliminate}{mostly for internal use: a non-negative integer indicating
 the number of iterations in the internal genotype-compatibility algorithm.
@@ -71,18 +71,17 @@ Elston-Stewart algorithm, and works in a variety of situations:
 }
 \examples{
 
-library(pedtools)
-
 # likelihood of inbred pedigree (grandfather/granddaughter incest)
-x = nuclearPed(father="grandfather", children="a")
-x = addDaughter(x, "a", id="granddaughter")
-x = addChildren(x, father="grandfather", mother="granddaughter", nch=1, id="child")
-m = marker(x, grandfather=1, child=1:2)
+x = nuclearPed(father = "grandfather", child = "a")
+x = addDaughter(x, "a", id = "granddaughter")
+x = addChildren(x, father = "grandfather", mother = "granddaughter",
+                nch = 1, id = "child")
+m = marker(x, grandfather = 1, child = 1:2)
 
 plot(x, m)
 lik = likelihood(x, m)
 
-stopifnot(lik==0.09375)
+stopifnot(lik == 0.09375)
 
 }
 \author{
