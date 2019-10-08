@@ -90,9 +90,9 @@ likelihood.ped = function(x, marker1, marker2 = NULL, theta = NULL, setup = NULL
     m = list(marker1)
     m[[2]] = marker2  # no effect if NULL
     x = breakLoops(setMarkers(x, m), loop_breakers = loop_breakers, verbose = verbose)
-    marker1 = x$markerdata[[1]]
+    marker1 = x$MARKERS[[1]]
     if (twolocus)
-      marker2 = x$markerdata[[2]]
+      marker2 = x$MARKERS[[2]]
   }
 
   setup = setupData(x, marker1, marker2, eliminate, setup)

@@ -62,7 +62,7 @@ likelihoodMerlin = function(x, markers = seq_len(nMarkers(x)), logbase = NULL,
                       what = c("ped", "dat", "map", "freq"), verbose=verbose)
   }
   # TODO: fix
-  program = if (isXmarker(x$markerdata[[1]])) "minx" else "merlin"
+  program = if (isXmarker(x$MARKERS[[1]])) "minx" else "merlin"
 
   command = paste(program,
                   "-p _merlin.ped",

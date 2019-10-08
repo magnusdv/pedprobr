@@ -102,8 +102,8 @@ twoMarkerDistribution <- function(x, id, partialmarker1, partialmarker2, theta, 
 
   if (x$UNBROKEN_LOOPS) {
     x = breakLoops(setMarkers(x, list(m1, m2)), loop_breakers = loop_breakers, verbose = verbose)
-    m1 = x$markerdata[[1]]
-    m2 = x$markerdata[[2]]
+    m1 = x$MARKERS[[1]]
+    m2 = x$MARKERS[[2]]
   }
 
   int.id = internalID(x, id)

@@ -103,7 +103,7 @@ oneMarkerDistribution <- function(x, ids, partialmarker, grid.subset = NULL,
 
   if (x$UNBROKEN_LOOPS) {
     x = breakLoops(setMarkers(x, m), loop_breakers = loop_breakers, verbose = verbose)
-    m = x$markerdata[[1]]
+    m = x$MARKERS[[1]]
   }
 
   int.ids = internalID(x, ids)
