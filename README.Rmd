@@ -20,15 +20,17 @@ knitr::opts_chunk$set(
 
 ## Introduction
 
-The main content of pedprobr is an implemention of the Elston-Stewart algorithm for pedigree likelihoods. It is a reboot of the implementation in [paramlink](https://CRAN.R-project.org/package=paramlink) which is no longer actively developed. 
+The main content of pedprobr is an implementation of the Elston-Stewart algorithm for pedigree likelihoods. It is a reboot of the implementation in [paramlink](https://CRAN.R-project.org/package=paramlink) which is no longer actively developed. 
 
-pedprobr is part of a suite of packages for pedigree analysis in R, centered around the [pedtools](https://github.com/magnusdv/pedtools) package.
+pedprobr is part of the ped suite, a collection of packages for pedigree analysis in R, based on [pedtools](https://github.com/magnusdv/pedtools) for basic handling of pedigrees and marker data.
 
-The workhorse of the package is the `likelihood()` function, which works in a variety of situations:
-* complex pedigrees with multiple layers inbreeding
+The workhorse of the pedprobr package is the `likelihood()` function, which works in a variety of situations:
+
+* complex inbred pedigrees
+* pedigrees with inbred founders
 * autosomal and X-linked markers
 * a single marker or two linked markers
-* markers with mutation models
+* markers with mutation models (supported by [pedmut](https://github.com/magnusdv/pedmut))
 
 ## Installation
 To get the latest version of pedprobr, install from GitHub as follows: 
@@ -42,14 +44,13 @@ devtools::install_github("magnusdv/pedprobr")
 
 ## Getting started
 ```{r}
-library(pedtools)
 library(pedprobr)
 ```
 
-For a simple example, we first create (with `pedtools`) a pedigree and attach to it a marker object. The marker is a diallelic SNP, for which both brothers are heterozygous.
+To set up a simple example, we first use `pedtools` utilities to create a pedigree and attach to it a marker object. The marker has alleles `1` and `2`, with frequencies 0.2 and 0.8 respectively, and both brothers are heterozygous.
 ```{r}
 x = nuclearPed(nch = 2)
-m = marker(x, '3' = 1:2, '4' = 1:2)
+m = marker(x, '3' = 1:2, '4' = 1:2, alleles = 1:2, afreq = c(0.2, 0.8))
 
 x = addMarkers(x, m) # attach the marker
 x
@@ -63,7 +64,7 @@ plot(x, m)
 plot(x, m, margins = c(0,1,1,1))
 ```
 
-The pedigree likelihood is computed as follows:
+The pedigree likelihood, i,.e., the probability of observing these genotypes given the pedigree, may now be obtained as follows:
 ```{r}
 likelihood(x, marker1 = 1)
 ```
@@ -76,8 +77,11 @@ Besides `likelihood()` the most important functions in pedprobr are:
 
 In both cases, the distributions are computed conditionally on any known genotypes at the markers in question.
 
-Let us continue the above example to give a quick illustration of `oneMarkerDistribution()`. Conditional on the two heterozygous children, what is the joint distribution for the parents? The answer is easily found:
+For an illustration of `oneMarkerDistribution()` we may continue our example from above, and answer the following question: _Conditional on the two heterozygous children, what is the joint distribution for the parents?_ 
+
+The answer is easily found as follows:
 ```{r}
 oneMarkerDistribution(x, ids = 1:2, partialmarker = 1, verbose = F)
 ```
+
 
