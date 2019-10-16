@@ -209,7 +209,7 @@ startdata_MM_AUT = function(x, marker1, marker2, eliminate = 0, treatAsFounder =
 
 #### .buildGenolist and ELIMINATE
 
-.genotypeMatrix = function(gt, n, unordered, complete=NULL) {
+.genotypeMatrix = function(gt, n, unordered, complete = NULL) {
   nseq = seq_len(n)
 
   # The complete matrix can (should!) be supplied to avoid making it each time
@@ -219,16 +219,16 @@ startdata_MM_AUT = function(x, marker1, marker2, eliminate = 0, treatAsFounder =
   a = gt[1]
   b = gt[2]
 
-  if(a==0 && b==0)
+  if(a == 0 && b == 0)
     m = complete
-  else if (a==0 && b>0)
+  else if (a == 0 && b > 0)
     m = rbind(c(nseq, rep(b, n - 1)), c(rep(b, n), nseq[-b]))
-  else if (a>0 && b==0)
+  else if (a > 0 && b == 0)
     m = rbind(c(nseq, rep(a, n - 1)), c(rep(a, n), nseq[-a]))
-  else if (a==b)
-    m = cbind(c(a,b))
+  else if (a == b)
+    m = cbind(c(a, b))
   else
-    m = cbind(c(a,b), c(b, a))
+    m = cbind(c(a, b), c(b, a))
 
   if (unordered) # TODO: condition on this earlier?
     m = m[, m[1, ] <= m[2, ], drop = FALSE]
@@ -332,7 +332,7 @@ startdata_MM_AUT = function(x, marker1, marker2, eliminate = 0, treatAsFounder =
   founderNotLB[treatAsFounder] = TRUE
   founderNotLB[x$LOOP_BREAKERS[, 2]] = FALSE
 
-  genolist = vector(pedsize(x), mode="list")
+  genolist = vector(pedsize(x), mode = "list")
 
   # Males
   SEX = x$SEX

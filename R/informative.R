@@ -35,8 +35,8 @@ informativeSubnucs = function(x, marker1, marker2 = NULL) {
 
   newfounders = numeric(0)
   goodNucs = list()
-  NONFOU = nonfounders(x, internal=T)
-  LEAVES = leaves(x, internal=T)
+  NONFOU = nonfounders(x, internal = T)
+  LEAVES = leaves(x, internal = T)
 
   isMiss[x$LOOP_BREAKERS] = F  # works (and quick) also if no loops.
   isUninfLeaf = isUninfFou = isMiss

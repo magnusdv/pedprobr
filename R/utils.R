@@ -1,6 +1,6 @@
 stop2 = function(...) {
   a = lapply(list(...), toString)
-  a = append(a, list(call.=FALSE))
+  a = append(a, list(call. = FALSE))
   do.call(stop, a)
 }
 
@@ -109,8 +109,21 @@ allGenotypes = function(n) {
 pasteHap = function(hapmat) {
   if(is.matrix(hapmat)) {
     stopifnot(nrow(hapmat) == 2)
-    return(paste(hapmat[1, ], hapmat[2, ], sep="/"))
+    return(paste(hapmat[1, ], hapmat[2, ], sep = "/"))
   }
   stopifnot(is.numeric(hapmat))
   as.character(hapmat)
+}
+
+
+#' @importFrom pedmut isStationary
+hasStationaryModel = function(m) {
+  mut = attr(m, 'mutmod')
+  if(is.null(mut)) return(TRUE)
+
+  sexEq = attr(mut, 'sexEqual')
+  afr = afreq(m)
+
+  isStationary(mut$male, afr) &&
+    (isTRUE(sexEq) || isStationary(mut$female, afr))
 }
