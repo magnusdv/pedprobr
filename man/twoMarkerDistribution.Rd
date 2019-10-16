@@ -2,7 +2,7 @@
 % Please edit documentation in R/twoMarkerDistribution.R
 \name{twoMarkerDistribution}
 \alias{twoMarkerDistribution}
-\title{Probability distribution for linked marker}
+\title{Genotype distribution for two linked markers}
 \usage{
 twoMarkerDistribution(x, id, partialmarker1, partialmarker2, theta,
   loop_breakers = NULL, eliminate = 99, verbose = TRUE)
@@ -12,7 +12,7 @@ twoMarkerDistribution(x, id, partialmarker1, partialmarker2, theta,
 
 \item{id}{A single ID label.}
 
-\item{partialmarker1, partialmarker2}{Either a \code{marker} object or the name (or
+\item{partialmarker1, partialmarker2}{Either a \code{marker} object, or the name (or
 index) of a marker attached to \code{x}.}
 
 \item{theta}{A single numeric in the interval \code{[0, 0.5]}: the recombination
@@ -39,23 +39,25 @@ between the markers.
 }
 \examples{
 
-library(pedtools)
+# A sib-pair pedigree
+x = nuclearPed(children = c("bro1", "bro2"))
 
-x = nuclearPed(father="fa", mother="mo", children=c("ch1", "ch2"))
+# Two SNP markers; first brother homozygous for the `1` allele
+SNP1 = SNP2 = marker(x, bro1 = c(1,1), alleles = 1:2)
 
-# Empty SNP marker
-emptySNP = marker(x, alleles=1:2)
-SNP1 = marker(x, fa=c(1,1), mo=c(1,0), alleles=1:2, afreq=c(0.1, 0.9))
-twoMarkerDistribution(x, id="mo", emptySNP, SNP1, theta=0)
-twoMarkerDistribution(x, id="mo", emptySNP, SNP1, theta=0.5)
-twoMarkerDistribution(x, id="ch1", emptySNP, SNP1, theta=0.5)
+plot(x, marker = list(SNP1, SNP2))
 
-# X-linked example
-SNPX_1 = marker(x, mo=c('a','b'), ch1='b', alleles=c('a','b'), chrom=23)
-SNPX_2 = marker(x, mo=c('a','b'), ch1='b', alleles=c('a','b'), chrom=23)
-r1 = twoMarkerDistribution(x, id="ch2", SNPX_1, SNPX_2, theta=0)
-r2 = twoMarkerDistribution(x, id="ch2", SNPX_1, SNPX_2, theta=0.5)
-stopifnot(all(r1==c(.5,0,0,.5)), all(r2==c(.25,.25,.25,.25)))
+# Genotype distribution for the brother: Depends on theta
+twoMarkerDistribution(x, id = "bro2", SNP1, SNP2, theta = 0)
+twoMarkerDistribution(x, id = "bro2", SNP1, SNP2, theta = 0.5)
+
+# X-linked
+chrom(SNP1) = chrom(SNP2) = "X"
+
+plot(x, marker = list(SNP1, SNP2))
+
+twoMarkerDistribution(x, id = "bro2", SNP1, SNP2, theta = 0)
+twoMarkerDistribution(x, id = "bro2", SNP1, SNP2, theta = 0.5)
 
 }
 \seealso{

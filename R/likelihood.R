@@ -1,16 +1,21 @@
 #' Pedigree likelihood
 #'
-#' Calculates the likelihood of a pedigree (or a list of pedigrees) given
-#' genotypes for a marker or a pair of linked markers.
+#' This function is the heart of pedprobr. It computes the likelihood of a
+#' pedigree (or a list of pedigrees) given genotypes for a marker or a pair of
+#' linked markers.
 #'
-#' The `likelihood` function is the heart of `pedprobr`. It implements the
-#' Elston-Stewart algorithm, and works in a variety of situations:
+#' The implementation is based on the peeling algorithm of Elston and Stewart (1971). A
+#' variety of situations are covered; see the Examples section for some demonstrations.
 #'
-#' * complex pedigrees with multiple layers inbreeding
+#' * complex inbred pedigrees
+#'
+#' * pedigrees with inbred founders
+#'
 #' * autosomal and X-linked markers
-#' * a single marker or two linked markers
-#' * markers with mutation models
 #'
+#' * a single marker or two linked markers
+#'
+#' * markers with mutation models
 #'
 #' @param x a `ped` object, a `singleton` object, or a list of such objects.
 #' @param marker1 a [marker()] object compatible with `x`. If `x` is a list,
@@ -37,20 +42,46 @@
 #' positive number, the output is `log(likelihood, logbase)`.
 
 #' @author Magnus Dehli Vigeland
+#' @references Elston and Stewart (1971), \doi{10.1159/000152448}
 #'
 #' @examples
 #'
-#' # likelihood of inbred pedigree (grandfather/granddaughter incest)
-#' x = nuclearPed(father = "grandfather", child = "a")
-#' x = addDaughter(x, "a", id = "granddaughter")
-#' x = addChildren(x, father = "grandfather", mother = "granddaughter",
-#'                 nch = 1, id = "child")
-#' m = marker(x, grandfather = 1, child = 1:2)
+#' ### Example 1: Likelihood of trio with inbred father
 #'
-#' plot(x, m)
-#' lik = likelihood(x, m)
+#' x = cousinPed(0, child = TRUE)
+#' x = addSon(x, 5)
+#' x = relabel(x, old = 5:7, new = c("father", "mother", "child"))
 #'
-#' stopifnot(lik == 0.09375)
+#' # Equifrequent SNP marker: father homozygous, child heterozygous
+#' m = marker(x, father = 1, child = 1:2)
+#' x = addMarkers(x, m)
+#'
+#' # Plot with genotypes
+#' plot(x, marker = 1)
+#'
+#' # Compute the likelihood
+#' lik1 = likelihood(x, marker1 = 1)
+#'
+#'
+#' ### Example 2: Same as above, but using founder inbreeding
+#'
+#' # Extract the trio
+#' y = subset(x, c("father", "mother", "child"))
+#'
+#' # Indicate that the father has inbreeding coefficient 1/4
+#' founderInbreeding(y, "father") = 1/4
+#'
+#' # Plot (notice the inbreeding coefficient)
+#' plot(y, marker = 1)
+#'
+#' # Likelihood should be the same as above
+#' lik2 = likelihood(y, marker1 = 1)
+#'
+#' stopifnot(all.equal(lik1, lik2))
+#'
+#'
+#' ### Example 3: Modelling mutations
+#' # TODO after next pedtools release
 #'
 #' @export
 likelihood = function(x, ...) UseMethod("likelihood", x)
@@ -169,7 +200,7 @@ likelihood.ped = function(x, marker1, marker2 = NULL, theta = NULL, setup = NULL
 #' @export
 #' @rdname likelihood
 likelihood.singleton = function(x, marker1, marker2 = NULL, logbase = NULL, ...) {
-  twolocus = !is.null(marker2)
+
   if(missing(marker1) || is.null(marker1))
     stop2("Argument `marker1` is missing")
 
@@ -225,8 +256,9 @@ likelihood.list = function(x, marker1, marker2 = NULL, logbase = NULL, total = T
     marker2 = rep(list(marker2), length = nx)  # Note: NULL is atomic
 
   liks = vapply(1:nx,
-                function(i) likelihood(x[[i]], marker1[[i]], marker2[[i]], logbase=logbase, ...),
-                numeric(1))
+                function(i) likelihood(x[[i]], marker1[[i]], marker2[[i]],
+                                       logbase = logbase, ...),
+                FUN.VALUE = numeric(1))
 
   if (total)
     if(!is.null(logbase)) sum(liks) else prod(liks)

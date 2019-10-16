@@ -1,4 +1,4 @@
-#' Probability distribution for linked marker
+#' Genotype distribution for two linked markers
 #'
 #' Computes the joint genotype distribution of two markers for a specified
 #' pedigree member, conditional on known genotypes and the recombination rate
@@ -6,7 +6,7 @@
 #'
 #' @param x A `ped` object.
 #' @param id A single ID label.
-#' @param partialmarker1,partialmarker2 Either a `marker` object or the name (or
+#' @param partialmarker1,partialmarker2 Either a `marker` object, or the name (or
 #'   index) of a marker attached to `x`.
 #' @param theta A single numeric in the interval `[0, 0.5]`: the recombination
 #'   fraction between the two markers.
@@ -24,23 +24,25 @@
 #'
 #' @examples
 #'
-#' library(pedtools)
+#' # A sib-pair pedigree
+#' x = nuclearPed(children = c("bro1", "bro2"))
 #'
-#' x = nuclearPed(father="fa", mother="mo", children=c("ch1", "ch2"))
+#' # Two SNP markers; first brother homozygous for the `1` allele
+#' SNP1 = SNP2 = marker(x, bro1 = c(1,1), alleles = 1:2)
 #'
-#' # Empty SNP marker
-#' emptySNP = marker(x, alleles=1:2)
-#' SNP1 = marker(x, fa=c(1,1), mo=c(1,0), alleles=1:2, afreq=c(0.1, 0.9))
-#' twoMarkerDistribution(x, id="mo", emptySNP, SNP1, theta=0)
-#' twoMarkerDistribution(x, id="mo", emptySNP, SNP1, theta=0.5)
-#' twoMarkerDistribution(x, id="ch1", emptySNP, SNP1, theta=0.5)
+#' plot(x, marker = list(SNP1, SNP2))
 #'
-#' # X-linked example
-#' SNPX_1 = marker(x, mo=c('a','b'), ch1='b', alleles=c('a','b'), chrom=23)
-#' SNPX_2 = marker(x, mo=c('a','b'), ch1='b', alleles=c('a','b'), chrom=23)
-#' r1 = twoMarkerDistribution(x, id="ch2", SNPX_1, SNPX_2, theta=0)
-#' r2 = twoMarkerDistribution(x, id="ch2", SNPX_1, SNPX_2, theta=0.5)
-#' stopifnot(all(r1==c(.5,0,0,.5)), all(r2==c(.25,.25,.25,.25)))
+#' # Genotype distribution for the brother: Depends on theta
+#' twoMarkerDistribution(x, id = "bro2", SNP1, SNP2, theta = 0)
+#' twoMarkerDistribution(x, id = "bro2", SNP1, SNP2, theta = 0.5)
+#'
+#' # X-linked
+#' chrom(SNP1) = chrom(SNP2) = "X"
+#'
+#' plot(x, marker = list(SNP1, SNP2))
+#'
+#' twoMarkerDistribution(x, id = "bro2", SNP1, SNP2, theta = 0)
+#' twoMarkerDistribution(x, id = "bro2", SNP1, SNP2, theta = 0.5)
 #'
 #' @export
 twoMarkerDistribution <- function(x, id, partialmarker1, partialmarker2, theta, loop_breakers = NULL,
@@ -67,14 +69,14 @@ twoMarkerDistribution <- function(x, id, partialmarker1, partialmarker2, theta, 
     stop2("`ped` objects with pre-broken loops are not allowed as input to `twoMarkerDistribution`")
 
   if (!identical(chrom(m1), chrom(m2)))
-    stop2("Partial markers are on different chromosomes: ", chrom(m1), chrom(m2))
+    stop2("Partial markers are on different chromosomes: ", toString(c(chrom(m1), chrom(m2))))
 
   onX = isXmarker(m1)
 
   if (verbose) {
     cat(sprintf("Partial markers (%s):\n", ifelse(onX, "X-linked", "autosomal")))
 
-    df = as.data.frame(setMarkers(x, list(m1,m2)))[-(2:4)]
+    df = as.data.frame(setMarkers(x, list(m1, m2)))[-(2:4)]
 
     # Add arrow in fourth column
     df = cbind(df, arrow = "", stringsAsFactors = FALSE)
@@ -84,12 +86,12 @@ twoMarkerDistribution <- function(x, id, partialmarker1, partialmarker2, theta, 
     print(df, row.names = FALSE)
 
     cat("\nAllele frequencies, marker 1:\n")
-    print(data.frame(as.list(afreq(m1)), check.names=F), row.names=F)
+    print(data.frame(as.list(afreq(m1)), check.names = F), row.names = F)
     cat("\nAllele frequencies, marker 2:\n")
-    print(data.frame(as.list(afreq(m2)), check.names=F), row.names=F)
+    print(data.frame(as.list(afreq(m2)), check.names = F), row.names = F)
     cat("\nRecombination rate:", theta, "\n")
 
-    cat("==============================\n")
+    cat("=============================\n")
     cat("Computing the joint genotype probability distribution for individual:", id, "\n")
   }
 

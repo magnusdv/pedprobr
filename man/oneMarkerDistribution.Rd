@@ -2,10 +2,10 @@
 % Please edit documentation in R/oneMarkerDistribution.R
 \name{oneMarkerDistribution}
 \alias{oneMarkerDistribution}
-\title{Probability distribution for a single marker}
+\title{Genotype distribution for a single marker}
 \usage{
-oneMarkerDistribution(x, ids, partialmarker, grid.subset = NULL,
-  loop_breakers = NULL, eliminate = 0, verbose = TRUE)
+oneMarkerDistribution(x, ids, partialmarker, loop_breakers = NULL,
+  eliminate = 0, grid.subset = NULL, verbose = TRUE)
 }
 \arguments{
 \item{x}{A \code{ped} object.}
@@ -15,14 +15,6 @@ oneMarkerDistribution(x, ids, partialmarker, grid.subset = NULL,
 \item{partialmarker}{Either a \code{marker} object or the name (or index) of a
 marker attached to \code{x}.}
 
-\item{grid.subset}{(Optional; not relevant for most users.) A numeric matrix
-describing a subset of all marker genotype combinations for the \code{ids}
-individuals. The matrix should have one column for each of the \code{ids}
-individuals, and one row for each combination: The genotypes are described
-in terms of the matrix \code{M = allGenotypes(n)}, where \code{n} is the number of
-alleles for the marker. If the entry in column \code{j} is the integer \code{k}, this
-means that the genotype of individual \code{ids[j]} is row \code{k} of \code{M}.}
-
 \item{loop_breakers}{(Only relevant if the pedigree has loops). A vector with
 ID labels of individuals to be used as loop breakers. If NULL (default)
 loop breakers are selected automatically. See \code{\link[=breakLoops]{breakLoops()}}.}
@@ -30,6 +22,14 @@ loop breakers are selected automatically. See \code{\link[=breakLoops]{breakLoop
 \item{eliminate}{A non-negative integer, indicating the number of iterations
 in the internal genotype-compatibility algorithm. Positive values can save
 time if \code{partialmarker} has many alleles.}
+
+\item{grid.subset}{(Optional; not relevant for most users.) A numeric matrix
+describing a subset of all marker genotype combinations for the \code{ids}
+individuals. The matrix should have one column for each of the \code{ids}
+individuals, and one row for each combination: The genotypes are described
+in terms of the matrix \code{M = allGenotypes(n)}, where \code{n} is the number of
+alleles for the marker. If the entry in column \code{j} is the integer \code{k}, this
+means that the genotype of individual \code{ids[j]} is row \code{k} of \code{M}.}
 
 \item{verbose}{A logical.}
 }
@@ -41,39 +41,34 @@ are conditional on the known genotypes and the allele frequencies of
 }
 \description{
 Computes the genotype probability distribution of one or several pedigree
-members, conditional on known genotypes for the marker.
+members, possibly conditional on known genotypes for the marker.
 }
 \examples{
-library(pedtools)
-x = nuclearPed(2)
 
-# Empty SNP marker
-snp = marker(x, alleles=1:2)
-oneMarkerDistribution(x, ids=3:4, partialmarker=snp)
+# Trivial example giving Hardy-Weinberg probabilities
+s = singleton(id = 1)
+m = marker(s, alleles = 1:2) # equifrequent SNP
+oneMarkerDistribution(s, ids = 1, partialmarker = m)
 
-#### Different example for the same pedigree. A marker with 4 alleles:
-m2 = marker(x, `3`=c('C','D'), `4`=c('C','D'), alleles=LETTERS[1:4])
-oneMarkerDistribution(x, ids=1, partialmarker=m2)
+# Conditioning on a partial genotype
+genotype(m, id = 1) = c(1, NA)
+oneMarkerDistribution(s, ids = 1, partialmarker = m)
 
-# Same as above, but computing only the cases where individual 1 is heterozygous.
-# (The numbers 5:10 refer to the 6 last rows of allGenotypes(4),
-# which contain the heterozygous genotypes.)
-oneMarkerDistribution(x, ids=1, partialmarker=m2, grid.subset=matrix(5:10, ncol=1))
+# Genotype distribution for a child of heterozygous parents
+trio = nuclearPed(father = "fa", mother = "mo", child = "ch")
+m1 = marker(trio, fa = 1:2, mo = 1:2)
+oneMarkerDistribution(trio, ids = "ch", partialmarker = m1)
 
-#### Expanding on the previous example:
-# Joint genotype probabilities of the parents, but including only the combinations
-# where the father is heterozygous and the mother is homozygous:
-grid = expand.grid(5:10, 1:4)
-oneMarkerDistribution(x, ids=1:2, partialmarker=m2, grid.subset=grid)
+# Joint distribution of the parents, given that the child is heterozygous
+m2 = marker(trio, ch = 1:2, alleles = 1:2, afreq = c(0.5, 0.5))
+oneMarkerDistribution(trio, ids = c("fa", "mo"), partialmarker = m2)
 
-#### Something else:
-# The genotype distribution of an individual (id=5) whose half cousin (id=9) is
-# homozygous for a rare allele.
-y = halfCousinPed(1)
-snp = marker(y, `9`="a", alleles=c("a", "b"), afreq=c(0.01, 0.99))
-oneMarkerDistribution(y, ids=5, partialmarker=snp)
-
-#### X-linked example: TODO
+# A different example: The genotype distribution of an individual (id = 5)
+# whose half cousin (id = 9) is homozygous for a rare allele.
+y = halfCousinPed(degree = 1)
+snp = marker(y, `9` = "a", alleles = c("a", "b"), afreq = c(0.01, 0.99))
+plot(y, snp)
+oneMarkerDistribution(y, ids = 5, partialmarker = snp)
 
 }
 \seealso{

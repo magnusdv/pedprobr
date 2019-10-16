@@ -11,18 +11,20 @@ likelihoodMerlin(x, markers = seq_len(nMarkers(x)), logbase = NULL,
 \arguments{
 \item{x}{a \code{\link{ped}} object}
 
-\item{markers}{an integer vector indicating which markers to use (default:
-all).}
+\item{markers}{a vector of names or indices of markers attached to \code{x}.
+(Default: all markers).}
 
 \item{logbase}{a positive number, or NULL. If numeric, the log-likelihood is
 returned, with \code{logbase} as basis for the logarithm.}
 
-\item{verbose}{a logical: Show MERLIN output and other information, or not.}
+\item{verbose}{a logical.}
 
-\item{generateFiles}{a logical. If TRUE, the files 'merlin.ped',
-'merlin.dat', 'merlin.map', and 'merlin.freq'.}
+\item{generateFiles}{a logical. If TRUE, input files to MERLIN named
+'_merlin.ped', '_merlin.dat', '_merlin.map', and '_merlin.freq' are created
+in the current directory. If FALSE, no files are created.}
 
-\item{cleanup}{a logical: Should the MERLIN files be deleted automatically?}
+\item{cleanup}{a logical. If TRUE, the MERLIN input files are deleted after
+the call to MERLIN.}
 
 \item{logfile}{a character. If this is given, the MERLIN screen output will
 be written to a file with this name.}
@@ -31,28 +33,29 @@ be written to a file with this name.}
 A number.
 }
 \description{
-For this function to work, MERLIN must be installed and the path to
-merlin.exe included in the PATH variable. The \code{likelihood_merlin} function is
-a wrapper for one particular functionality of MERLIN.
+This function is a wrapper of the "--likelihood" functionality of the MERLIN
+software. It computes the total likelihood of the pedigree given the
+indicated marker data. For this function to work, MERLIN must be installed
+and correctly pointed to in the PATH variable.
 }
 \details{
-By default the following MERLIN command is run via \code{\link[=system]{system()}},
-after creating appropriate files in the current working directory:
+By default the following MERLIN command is run via \code{\link[=system]{system()}}, after creating
+appropriate files in the current working directory:
 
-\preformatted{%
-  merlin -p _merlin.ped -d _merlin.dat -m _merlin.map -f _merlin.freq
-         --lik --bits:100 --megabytes:4000 --quiet
-}
+\preformatted{% merlin -p _merlin.ped -d _merlin.dat -m _merlin.map -f
+_merlin.freq --likelihood --bits:100 --megabytes:4000 --quiet }
 }
 \examples{
 
-\dontrun{
-x = pedtools::nuclearPed(1)
-m = pedtools::marker(x, "3"=1:2)
-x = pedtools::setMarkers(x, m)
+\donttest{
+### Requires MERLIN to be installed ###
+
+x = nuclearPed(1)
+m = marker(x, "3" = 1:2)
+x = setMarkers(x, m)
 
 # Likelihood computation by MERLIN:
-likelihood_merlin(x)
+likelihoodMerlin(x)
 }
 
 }

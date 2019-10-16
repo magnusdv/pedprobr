@@ -56,14 +56,16 @@ The likelihood of the data. If the parameter \code{logbase} is a
 positive number, the output is \code{log(likelihood, logbase)}.
 }
 \description{
-Calculates the likelihood of a pedigree (or a list of pedigrees) given
-genotypes for a marker or a pair of linked markers.
+This function is the heart of pedprobr. It computes the likelihood of a
+pedigree (or a list of pedigrees) given genotypes for a marker or a pair of
+linked markers.
 }
 \details{
-The \code{likelihood} function is the heart of \code{pedprobr}. It implements the
-Elston-Stewart algorithm, and works in a variety of situations:
+The implementation is based on the peeling algorithm of Elston and Stewart (1971). A
+variety of situations are covered; see the Examples section for some demonstrations.
 \itemize{
-\item complex pedigrees with multiple layers inbreeding
+\item complex inbred pedigrees
+\item pedigrees with inbred founders
 \item autosomal and X-linked markers
 \item a single marker or two linked markers
 \item markers with mutation models
@@ -71,18 +73,46 @@ Elston-Stewart algorithm, and works in a variety of situations:
 }
 \examples{
 
-# likelihood of inbred pedigree (grandfather/granddaughter incest)
-x = nuclearPed(father = "grandfather", child = "a")
-x = addDaughter(x, "a", id = "granddaughter")
-x = addChildren(x, father = "grandfather", mother = "granddaughter",
-                nch = 1, id = "child")
-m = marker(x, grandfather = 1, child = 1:2)
+### Example 1: Likelihood of trio with inbred father
 
-plot(x, m)
-lik = likelihood(x, m)
+x = cousinPed(0, child = TRUE)
+x = addSon(x, 5)
+x = relabel(x, old = 5:7, new = c("father", "mother", "child"))
 
-stopifnot(lik == 0.09375)
+# Equifrequent SNP marker: father homozygous, child heterozygous
+m = marker(x, father = 1, child = 1:2)
+x = addMarkers(x, m)
 
+# Plot with genotypes
+plot(x, marker = 1)
+
+# Compute the likelihood
+lik1 = likelihood(x, marker1 = 1)
+
+
+### Example 2: Same as above, but using founder inbreeding
+
+# Extract the trio
+y = subset(x, c("father", "mother", "child"))
+
+# Indicate that the father has inbreeding coefficient 1/4
+founderInbreeding(y, "father") = 1/4
+
+# Plot (notice the inbreeding coefficient)
+plot(y, marker = 1)
+
+# Likelihood should be the same as above
+lik2 = likelihood(y, marker1 = 1)
+
+stopifnot(all.equal(lik1, lik2))
+
+
+### Example 3: Modelling mutations
+# TODO after next pedtools release
+
+}
+\references{
+Elston and Stewart (1971), \doi{10.1159/000152448}
 }
 \author{
 Magnus Dehli Vigeland
