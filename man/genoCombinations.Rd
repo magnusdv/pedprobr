@@ -13,10 +13,19 @@ genoCombinations(x, partialmarker, ids, make.grid = T)
 
 \item{ids}{a vector with ID labels of one or more pedigree members.}
 
-\item{make.grid}{a logical. If FALSE, a list is returned, otherwise the
-internal \code{fastGrid()} is applied to the list before returning it.}
+\item{make.grid}{a logical indicating if the result should be simplified to a
+matrix.}
+}
+\value{
+If \code{make.grid = FALSE} (the default) the function returns a list of
+integer vectors, one vector for each element of \code{ids}. Each integer
+represents a genotype, in the form of a row number of the matrix
+\code{allGenotypes(n)}, where \code{n} is the number of alleles of the marker.
+
+If \code{make.grid = TRUE}, the cartesian product of the vectors is taken,
+resulting in a matrix with one column for each element of \code{ids}.
 }
 \description{
-Auxiliary functions computing possible genotype combinations in a pedigree.
-These are not normally intended for end users.
+Returns the possible genotype combinations in a pedigree, given partial
+marker data. This function is mainly for internal use.
 }
