@@ -9,13 +9,13 @@ allGenotypes(n)
 \arguments{
 \item{n}{A positive integer.}
 }
+\value{
+An integer matrix with two columns and \code{choose(n+1, 2)} rows.
+}
 \description{
-An autosomal marker with \code{n} alleles has \code{G = choose(n+1, 2)} possible
-genotypes (when the allele order within a genotype does not matter). This
-function returns these in the form of a \code{G * 2} matrix where each row is a
-genotype. The computation is trivial; the main point is to provide a
-consistent ordering of the genotypes. The homozygous genotypes come first,
-followed by the heterozygous.
+An autosomal marker with \code{n} alleles has \code{choose(n+1, 2)} possible
+unordered genotypes. This function returns these as rows in a
+matrix.
 }
 \examples{
 allGenotypes(3)

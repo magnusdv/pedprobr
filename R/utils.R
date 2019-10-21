@@ -88,21 +88,26 @@ HWprob = function(allele1, allele2, afreq, f = 0) {
 
 #' Genotype matrix
 #'
-#' An autosomal marker with `n` alleles has `G = choose(n+1, 2)` possible
-#' genotypes (when the allele order within a genotype does not matter). This
-#' function returns these in the form of a `G * 2` matrix where each row is a
-#' genotype. The computation is trivial; the main point is to provide a
-#' consistent ordering of the genotypes. The homozygous genotypes come first,
-#' followed by the heterozygous.
+#' An autosomal marker with `n` alleles has `choose(n+1, 2)` possible
+#' unordered genotypes. This function returns these as rows in a
+#' matrix.
 #'
 #' @param n A positive integer.
+#' @return An integer matrix with two columns and `choose(n+1, 2)` rows.
 #'
 #' @examples
 #' allGenotypes(3)
 #'
 #' @export
 allGenotypes = function(n) {
-  rbind(cbind(seq_len(n), seq_len(n)), .comb2(n))
+  # rbind(cbind(seq_len(n), seq_len(n)), .comb2(n))
+  if (n < 1)
+    return(matrix(nrow = 0, ncol = 2))
+  nseq = seq_len(n)
+  cbind(
+    rep.int(nseq, times = n:1),
+    unlist(lapply(nseq, function(i) i:n))
+  )
 }
 
 # Debug tools: Paste genotypes given as 2*k matrices
