@@ -100,7 +100,7 @@ twoMarkerDistribution <- function(x, id, partialmarker1, partialmarker2, theta, 
 
   # Do this before loop breaking, since eliminate2 works better WITH the loops.
   grid.subset = fastGrid(c(genoCombinations(x, m1, id, make.grid = F),
-                            genoCombinations(x, m2, id, make.grid = F)))
+                           genoCombinations(x, m2, id, make.grid = F)))
 
   if (x$UNBROKEN_LOOPS) {
     x = breakLoops(setMarkers(x, list(m1, m2)), loop_breakers = loop_breakers, verbose = verbose)

@@ -102,7 +102,7 @@ HWprob = function(allele1, allele2, afreq, f = 0) {
 allGenotypes = function(n) {
   # rbind(cbind(seq_len(n), seq_len(n)), .comb2(n))
   if (n < 1)
-    return(matrix(nrow = 0, ncol = 2))
+    return(matrix(integer(0), ncol = 2))
   nseq = seq_len(n)
   cbind(
     rep.int(nseq, times = n:1),
