@@ -18,7 +18,7 @@
 #'   resulting in a matrix with one column for each element of `ids`.
 #'
 #' @export
-genoCombinations = function(x, partialmarker, ids, make.grid = T) {
+genoCombinations = function(x, partialmarker, ids, make.grid = TRUE) {
     int.ids = internalID(x, ids)
     mutations = allowsMutations(partialmarker)
 

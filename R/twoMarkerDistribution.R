@@ -87,9 +87,9 @@ twoMarkerDistribution <- function(x, id, partialmarker1, partialmarker2, theta, 
     print(df, row.names = FALSE)
 
     cat("\nAllele frequencies, marker 1:\n")
-    print(data.frame(as.list(afreq(m1)), check.names = F), row.names = F)
+    print(data.frame(as.list(afreq(m1)), check.names = FALSE), row.names = FALSE)
     cat("\nAllele frequencies, marker 2:\n")
-    print(data.frame(as.list(afreq(m2)), check.names = F), row.names = F)
+    print(data.frame(as.list(afreq(m2)), check.names = FALSE), row.names = FALSE)
     cat("\nRecombination rate:", theta, "\n")
 
     cat("=============================\n")
@@ -100,8 +100,8 @@ twoMarkerDistribution <- function(x, id, partialmarker1, partialmarker2, theta, 
   starttime = Sys.time()
 
   # Do this before loop breaking, since eliminate2 works better WITH the loops.
-  grid.subset = fastGrid(c(genoCombinations(x, m1, id, make.grid = F),
-                           genoCombinations(x, m2, id, make.grid = F)))
+  grid.subset = fastGrid(c(genoCombinations(x, m1, id, make.grid = FALSE),
+                           genoCombinations(x, m2, id, make.grid = FALSE)))
 
   if (x$UNBROKEN_LOOPS) {
     x = breakLoops(setMarkers(x, list(m1, m2)), loop_breakers = loop_breakers, verbose = verbose)
@@ -126,7 +126,7 @@ twoMarkerDistribution <- function(x, id, partialmarker1, partialmarker2, theta, 
   }
 
   # Create output array. Will hold likelihood of each genotype combo
-  probs = array(0, dim = lengths(geno.names, use.names = F), dimnames = geno.names)
+  probs = array(0, dim = lengths(geno.names, use.names = FALSE), dimnames = geno.names)
 
   # Subset of `probs` that is affected by grid.subset
   probs.subset = grid.subset

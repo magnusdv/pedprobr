@@ -57,7 +57,7 @@ likelihoodMerlin = function(x, markers = seq_len(nMarkers(x)), logbase = NULL,
   x = selectMarkers(x, markers)
 
   # MERLIN or MINX?
-  xchrom = vapply(x$MARKERS, isXmarker, FUN.VALUE = F)
+  xchrom = vapply(x$MARKERS, isXmarker, FUN.VALUE = FALSE)
   if(all(xchrom)) {
     message("All markers are X-linked; calling MINX")
     program = "minx"
@@ -97,7 +97,7 @@ likelihoodMerlin = function(x, markers = seq_len(nMarkers(x)), logbase = NULL,
     message("\nExecuting the following command:\n", command, "\n")
 
   # Run MERLIN and store output
-  mout = suppressWarnings(system(command, intern = T))
+  mout = suppressWarnings(system(command, intern = TRUE))
 
   # Clean up
   clean(cleanup, verbose, files)

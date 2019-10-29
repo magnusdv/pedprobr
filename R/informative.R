@@ -35,14 +35,14 @@ informativeSubnucs = function(x, marker1, marker2 = NULL) {
 
   newfounders = numeric(0)
   goodNucs = list()
-  NONFOU = nonfounders(x, internal = T)
-  LEAVES = leaves(x, internal = T)
+  NONFOU = nonfounders(x, internal = TRUE)
+  LEAVES = leaves(x, internal = TRUE)
 
-  isMiss[x$LOOP_BREAKERS] = F  # works (and quick) also if no loops.
+  isMiss[x$LOOP_BREAKERS] = FALSE  # works (and quick) also if no loops.
   isUninfLeaf = isUninfFou = isMiss
 
-  isUninfLeaf[-LEAVES] = F   # logical with T only if uninformative leaf
-  isUninfFou[NONFOU] = F # logical with T only if uninformative founder
+  isUninfLeaf[-LEAVES] = FALSE  # logical with T only if uninformative leaf
+  isUninfFou[NONFOU] = FALSE  # logical with T only if uninformative founder
 
   for (sub in nucs) {
     fa = sub$father

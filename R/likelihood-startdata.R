@@ -17,7 +17,7 @@ startdata_M_AUT = function(x, marker, eliminate = 0, treatAsFounder = NULL) {
     return(dat)
   }
 
-  FOU = founders(x, internal = T)
+  FOU = founders(x, internal = TRUE)
 
   # Founder inbreeding: A vector of length pedsize(x), with NA's at nonfounders
   # Enables quick look-up e.g. FOU_INB[i].
@@ -57,7 +57,7 @@ startdata_M_X = function(x, marker, eliminate = 0, treatAsFounder = NULL) {
     return(dat)
   }
 
-  FOU = founders(x, internal = T)
+  FOU = founders(x, internal = TRUE)
 
   # Add any members which should be treated as founders
   FOU = c(FOU, treatAsFounder)
@@ -130,7 +130,7 @@ startdata_MM_X = function(x, marker1, marker2, eliminate = 0, treatAsFounder = N
   afreq1 = afreq(marker1)
   afreq2 = afreq(marker2)
   isFounder = logical(pedsize(x))
-  isFounder[founders(x, internal = T)] = TRUE
+  isFounder[founders(x, internal = TRUE)] = TRUE
   isFounder[treatAsFounder] = TRUE
 
   sex = x$SEX
@@ -145,14 +145,14 @@ startdata_MM_X = function(x, marker1, marker2, eliminate = 0, treatAsFounder = N
     else {
       hl1 = dim(h1)[2]
       hl2 = dim(h2)[2]
-      hap = rbind(h1[, rep(seq_len(hl1), each = hl2), drop = F],
-                  h2[, rep(seq_len(hl2), times = hl1), drop = F])  #matrix with four rows: m1_1, m1_2, m2_1, m2_2
+      hap = rbind(h1[, rep(seq_len(hl1), each = hl2), drop = FALSE],
+                  h2[, rep(seq_len(hl2), times = hl1), drop = FALSE])  #matrix with four rows: m1_1, m1_2, m2_1, m2_2
       if (isFounder[i]) {
         # Doubly heterozygous founders: Include the other phase as well.
         # (Since .buildGenolist() returns unordered genotypes for founders.)
         doublyhet = hap[1, ] != hap[2, ] & hap[3, ] != hap[4, ]
         if (any(doublyhet))
-          hap = cbind(hap, hap[c(1, 2, 4, 3), doublyhet, drop = F])
+          hap = cbind(hap, hap[c(1, 2, 4, 3), doublyhet, drop = FALSE])
       }
     }
     prob = startprob_MM_X(hap, afreq1 = afreq1, afreq2 = afreq2,
@@ -160,7 +160,7 @@ startdata_MM_X = function(x, marker1, marker2, eliminate = 0, treatAsFounder = N
     keep = prob > 0
     if (!any(keep))
       impossible = TRUE
-    list(hap = hap[, keep, drop = F], prob = as.numeric(prob[keep]))
+    list(hap = hap[, keep, drop = FALSE], prob = as.numeric(prob[keep]))
   })
   attr(dat, "impossible") = impossible
   dat
@@ -178,7 +178,7 @@ startdata_MM_AUT = function(x, marker1, marker2, eliminate = 0, treatAsFounder =
   afreq1 = afreq(marker1)
   afreq2 = afreq(marker2)
   isFounder = logical(pedsize(x))
-  isFounder[founders(x, internal = T)] = TRUE
+  isFounder[founders(x, internal = TRUE)] = TRUE
   isFounder[treatAsFounder] = TRUE
   impossible = FALSE
 
@@ -187,8 +187,8 @@ startdata_MM_AUT = function(x, marker1, marker2, eliminate = 0, treatAsFounder =
     hl1 = dim(h1)[2]
     h2 = m2_list[[i]]
     hl2 = dim(h2)[2]
-    hap = rbind(h1[, rep(seq_len(hl1), each = hl2), drop = F],
-                h2[, rep(seq_len(hl2), times = hl1), drop = F])  #matrix with four rows: m1_1, m1_2, m2_1, m2_2
+    hap = rbind(h1[, rep(seq_len(hl1), each = hl2), drop = FALSE],
+                h2[, rep(seq_len(hl2), times = hl1), drop = FALSE])  #matrix with four rows: m1_1, m1_2, m2_1, m2_2
     if (isFounder[i]) {
       # Doubly heterozygous founders: Include the other phase as well.
       # (Since .buildGenolist() returns unordered genotypes for founders.)
@@ -200,7 +200,7 @@ startdata_MM_AUT = function(x, marker1, marker2, eliminate = 0, treatAsFounder =
     keep = prob > 0
     if (!any(keep))
       impossible = TRUE
-    list(hap = hap[, keep, drop = F], prob = as.numeric(prob[keep]))
+    list(hap = hap[, keep, drop = FALSE], prob = as.numeric(prob[keep]))
   })
   attr(dat, "impossible") = impossible
   dat
@@ -240,7 +240,7 @@ startdata_MM_AUT = function(x, marker1, marker2, eliminate = 0, treatAsFounder =
 
   # Founders (except loop breaker copies) need only *unordered* genotypes
   founderNotLB = logical(pedsize(x))
-  founderNotLB[founders(x, internal = T)] = TRUE
+  founderNotLB[founders(x, internal = TRUE)] = TRUE
   founderNotLB[treatAsFounder] = TRUE
   founderNotLB[x$LOOP_BREAKERS[, 2]] = FALSE
 
@@ -271,8 +271,8 @@ startdata_MM_AUT = function(x, marker1, marker2, eliminate = 0, treatAsFounder =
     return(genolist)
   N = pedsize(x)
 
-  FOU = founders(x, internal = T)
-  NONFOU = nonfounders(x, internal = T)
+  FOU = founders(x, internal = TRUE)
+  NONFOU = nonfounders(x, internal = TRUE)
 
   # Adjust for "extra" founders
   if(length(treatAsFounder) > 0) {
@@ -295,14 +295,14 @@ startdata_MM_AUT = function(x, marker1, marker2, eliminate = 0, treatAsFounder =
       kjonn = x$SEX[i]
       if (i %in% NONFOU && informative[far <- x$FIDX[i]])
         g = g[, g[1, ] %in% genolist[[far]][1, ] | g[1, ] %in% genolist[[far]][2, ],
-              drop = F]
+              drop = FALSE]
       if (i %in% NONFOU && informative[mor <- x$MIDX[i]])
         g = g[, g[2, ] %in% genolist[[mor]][1, ] | g[2, ] %in% genolist[[mor]][2, ],
-              drop = F]
+              drop = FALSE]
       barn = offs[[i]]
       for (b in barn[informative[barn]]) {
         g = g[, g[1, ] %in% genolist[[b]][kjonn, ] | g[2, ] %in% genolist[[b]][kjonn, ],
-              drop = F]
+              drop = FALSE]
       }
       genolist[[i]] = g
     }
@@ -328,7 +328,7 @@ startdata_MM_AUT = function(x, marker1, marker2, eliminate = 0, treatAsFounder =
 
   # Founders (except loop breaker copies) need only *unordered* genotypes
   founderNotLB = logical(pedsize(x))
-  founderNotLB[founders(x, internal = T)] = TRUE
+  founderNotLB[founders(x, internal = TRUE)] = TRUE
   founderNotLB[treatAsFounder] = TRUE
   founderNotLB[x$LOOP_BREAKERS[, 2]] = FALSE
 
@@ -341,7 +341,7 @@ startdata_MM_AUT = function(x, marker1, marker2, eliminate = 0, treatAsFounder =
 
   # Females
   COMPLETE = rbind(rep(nseq, each = n), rep.int(nseq, times = n))
-  women = females(x, internal = T)
+  women = females(x, internal = TRUE)
   genolist[women] = lapply(women, function(i) {
     gt = marker[i, ]
     unordered = founderNotLB[i]
@@ -365,8 +365,8 @@ startdata_MM_AUT = function(x, marker1, marker2, eliminate = 0, treatAsFounder =
   SEX = x$SEX
   FIDX = x$FIDX
   MIDX = x$MIDX
-  FOU = founders(x, internal = T)
-  NONFOU = nonfounders(x, internal = T)
+  FOU = founders(x, internal = TRUE)
+  NONFOU = nonfounders(x, internal = TRUE)
 
   # Adjust for "extra" founders
   if(length(treatAsFounder) > 0) {
@@ -375,8 +375,8 @@ startdata_MM_AUT = function(x, marker1, marker2, eliminate = 0, treatAsFounder =
   }
 
   xsize = pedsize(x)
-  males = males(x, internal = T)
-  females = females(x, internal = T)
+  males = males(x, internal = TRUE)
+  females = females(x, internal = TRUE)
   femFou = .myintersect(females, FOU)
   femNonfou = .myintersect(females, NONFOU)
 
@@ -405,16 +405,16 @@ startdata_MM_AUT = function(x, marker1, marker2, eliminate = 0, treatAsFounder =
       if (ncols[i] == 1) next
       g = genolist[[i]]
       if (isNonfou[i] && informative[far <- FIDX[i]])
-        g = g[, g[1, ] %in% genolist[[far]], drop = F]
+        g = g[, g[1, ] %in% genolist[[far]], drop = FALSE]
       if (isNonfou[i] && informative[mor <- MIDX[i]])
         g = g[, g[2, ] %in% genolist[[mor]][1, ] | g[2, ] %in% genolist[[mor]][2, ],
-              drop = F]
+              drop = FALSE]
       barn = offs[[i]]
       for (b in barn[informative[barn]]) {
         if (SEX[b] == 1)
-          g = g[, g[1, ] %in% genolist[[b]] | g[2, ] %in% genolist[[b]], drop = F]
+          g = g[, g[1, ] %in% genolist[[b]] | g[2, ] %in% genolist[[b]], drop = FALSE]
         else
-          g = g[, g[1, ] %in% genolist[[b]][2, ] | g[2, ] %in% genolist[[b]][2, ], drop = F]
+          g = g[, g[1, ] %in% genolist[[b]][2, ] | g[2, ] %in% genolist[[b]][2, ], drop = FALSE]
       }
       genolist[[i]] = g
     }

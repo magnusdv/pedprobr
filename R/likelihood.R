@@ -174,7 +174,7 @@ likelihood.ped = function(x, marker1, marker2 = NULL, theta = NULL, setup = NULL
         copy.int = copies[i]
         orighap = dat[[orig.int]]$hap
         origprob = dat[[orig.int]]$prob
-        hap = if (is.matrix(orighap))  orighap[, r[i], drop = F] else orighap[r[i]]
+        hap = if (is.matrix(orighap))  orighap[, r[i], drop = FALSE] else orighap[r[i]]
         prob = origprob[r[i]]
         if (sum(prob) == 0)
           message("The likelihood algorithm reached a strange place. The maintainer would be grateful to see this example.")

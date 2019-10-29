@@ -92,7 +92,7 @@ oneMarkerDistribution = function(x, ids, partialmarker, loop_breakers = NULL,
 
   # Compute grid before loop breaking (works better with eliminate2)
   if (is.null(grid.subset))
-    grid.subset = genoCombinations(x, m, ids, make.grid = T)
+    grid.subset = genoCombinations(x, m, ids, make.grid = TRUE)
   else
     grid.subset = as.matrix(grid.subset)
 
@@ -115,7 +115,7 @@ oneMarkerDistribution = function(x, ids, partialmarker, loop_breakers = NULL,
   }
 
   # Create output array. Will hold likelihood of each genotype combo
-  probs = array(0, dim = lengths(geno.names, use.names = F), dimnames = geno.names)
+  probs = array(0, dim = lengths(geno.names, use.names = FALSE), dimnames = geno.names)
 
   # Subset of `probs` that is affected by grid.subset
   probs.subset = grid.subset

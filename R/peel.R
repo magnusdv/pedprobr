@@ -70,7 +70,7 @@ choosePeeler = function(twolocus, theta, Xchrom, SEX, mutmat) {
   if (sum(res) == 0)
     attr(dat, "impossible") = TRUE
 
-  pivhapUpdate = dat[[c(link, 1)]][, res > 0, drop = F]
+  pivhapUpdate = dat[[c(link, 1)]][, res > 0, drop = FALSE]
   dat[[link]] = list(hap = pivhapUpdate, prob = res[res > 0])
   dat
 }
@@ -155,7 +155,7 @@ choosePeeler = function(twolocus, theta, Xchrom, SEX, mutmat) {
   if (SEX[link] == 1)
     pivhapUpdate = dat[[c(link, 1)]][res > 0]
   else
-    pivhapUpdate = dat[[c(link, 1)]][, res > 0, drop = F]
+    pivhapUpdate = dat[[c(link, 1)]][, res > 0, drop = FALSE]
 
   dat[[link]] = list(hap = pivhapUpdate, prob = res[res > 0])
   dat
@@ -207,9 +207,9 @@ choosePeeler = function(twolocus, theta, Xchrom, SEX, mutmat) {
     bh = dat[[c(b, 1)]]
     bp = dat[[c(b, 2)]]
     for (i in seq_len(fa_len)) {
-      transfather = .trans_MM(farh[, i], bh[c(1, 3), , drop = F], theta)
+      transfather = .trans_MM(farh[, i], bh[c(1, 3), , drop = FALSE], theta)
       for (j in seq_len(mo_len))
-        mm[i, j] = (transfather * .trans_MM(morh[, j], bh[c(2, 4), , drop = F], theta)) %*% bp
+        mm[i, j] = (transfather * .trans_MM(morh[, j], bh[c(2, 4), , drop = FALSE], theta)) %*% bp
     }
     likel = likel * mm
   }
@@ -228,9 +228,9 @@ choosePeeler = function(twolocus, theta, Xchrom, SEX, mutmat) {
 
     TRarray = array(0, dim = c(fa_len, mo_len, pi_len))
     for (i in seq_len(fa_len)) {
-      transfather = .trans_MM(farh[, i], pivh[c(1, 3), , drop = F], theta)
+      transfather = .trans_MM(farh[, i], pivh[c(1, 3), , drop = FALSE], theta)
       for (j in seq_len(mo_len))
-        TRarray[i, j, ] = transfather * .trans_MM(morh[, j], pivh[c(2, 4), , drop = F], theta)
+        TRarray[i, j, ] = transfather * .trans_MM(morh[, j], pivh[c(2, 4), , drop = FALSE], theta)
     }
     arr = as.vector(TRarray) * as.vector(likel)
     dim(arr) = dim(TRarray)
@@ -240,7 +240,7 @@ choosePeeler = function(twolocus, theta, Xchrom, SEX, mutmat) {
 
   if (sum(res) == 0) attr(dat, "impossible") = TRUE
 
-  pivhapUpdate = dat[[c(link, 1)]][, res > 0, drop = F]
+  pivhapUpdate = dat[[c(link, 1)]][, res > 0, drop = FALSE]
   dat[[link]] = list(hap = pivhapUpdate, prob = res[res > 0])
   dat
 }
@@ -270,7 +270,7 @@ choosePeeler = function(twolocus, theta, Xchrom, SEX, mutmat) {
     }
     else {
       for (j in seq_len(mo_len)) {
-        transmother = .trans_MM(morh[, j], bh[c(2, 4), , drop = F], theta)
+        transmother = .trans_MM(morh[, j], bh[c(2, 4), , drop = FALSE], theta)
         for (i in seq_len(fa_len))
           mm[i, j] = (as.numeric(farh[1, i] == bh[1, ] & farh[2, i] == bh[3, ]) * transmother) %*% bp
       }
@@ -312,7 +312,7 @@ choosePeeler = function(twolocus, theta, Xchrom, SEX, mutmat) {
 
   if (sum(res) == 0)  attr(dat, "impossible") = TRUE
 
-  pivhapUpdate = dat[[c(link, 1)]][, res > 0, drop = F]
+  pivhapUpdate = dat[[c(link, 1)]][, res > 0, drop = FALSE]
   dat[[link]] = list(hap = pivhapUpdate, prob = res[res > 0])
   dat
 }
