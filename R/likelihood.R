@@ -177,7 +177,7 @@ likelihood.ped = function(x, marker1, marker2 = NULL, theta = NULL, setup = NULL
         hap = if (is.matrix(orighap))  orighap[, r[i], drop = F] else orighap[r[i]]
         prob = origprob[r[i]]
         if (sum(prob) == 0)
-          print("Loop-loekke: Alle sannsynligheter er null. Magnus lurer paa om dette kan gi feilmelding.")
+          message("The likelihood algorithm reached a strange place. The maintainer would be grateful to see this example.")
         dat1[[orig.int]] = list(hap = hap, prob = prob)
         dat1[[copy.int]] = list(hap = hap, prob = 1)
       }

@@ -107,8 +107,7 @@ likelihoodMerlin = function(x, markers = seq_len(nMarkers(x)), logbase = NULL,
     write(mout, logfile)
 
   if (any(substr(mout, 1, 11) == "FATAL ERROR")) {
-    warning("FATAL ERROR reported by merlin")
-    print(mout)
+    warning(paste0(mout, collapse = "\n"), "\nFATAL ERROR reported by merlin")
     return(invisible())
   }
 
