@@ -56,8 +56,8 @@
 #' oneMarkerDistribution(y, ids = 5, partialmarker = snp)
 #'
 #' @export
-oneMarkerDistribution <- function(x, ids, partialmarker, loop_breakers = NULL,
-                                  eliminate = 0, grid.subset = NULL, verbose = TRUE) {
+oneMarkerDistribution = function(x, ids, partialmarker, loop_breakers = NULL,
+                                 eliminate = 0, grid.subset = NULL, verbose = TRUE) {
   if(!is.ped(x))
     stop2("Input is not a `ped` object")
   if(!isCount(eliminate, minimum = 0))
@@ -102,13 +102,29 @@ oneMarkerDistribution <- function(x, ids, partialmarker, loop_breakers = NULL,
   }
 
   int.ids = internalID(x, ids)
-
   allgenos = allGenotypes(nAlleles(m))
+
+  # Character with genotype labels
   gt.strings = paste(alleles[allgenos[, 1]], alleles[allgenos[, 2]], sep = "/")
+  if(onX) {
+    sx = getSex(x, ids)
+    geno.names =  list(alleles, gt.strings)[sx]
+  }
+  else {
+    geno.names = rep(list(gt.strings), length(ids))
+  }
 
-  geno.names = if(onX) list(alleles, gt.strings)[getSex(x, ids)]
-               else rep(list(gt.strings), length(ids))
+  # Create output array. Will hold likelihood of each genotype combo
+  probs = array(0, dim = lengths(geno.names, use.names = F), dimnames = geno.names)
 
+  # Subset of `probs` that is affected by grid.subset
+  probs.subset = grid.subset
+
+  # Needs adjustment for X (in male colums)
+  if(onX) {
+    homoz = which(allgenos[,1] == allgenos[,2])
+    probs.subset[, sx == 1] = match(probs.subset[, sx == 1], homoz)
+  }
 
   ### Likelihood setup
 
@@ -128,9 +144,7 @@ oneMarkerDistribution <- function(x, ids, partialmarker, loop_breakers = NULL,
   if (marginal == 0)
       stop2("Partial marker is impossible")
 
-  # Compute likelihood of each combo
-  probs = array(0, dim = lengths(geno.names, use.names = F), dimnames = geno.names)
-  probs[grid.subset] = apply(grid.subset, 1, function(allg_rows) {
+  probs[probs.subset] = apply(grid.subset, 1, function(allg_rows) {
       m[int.ids, ] = allgenos[allg_rows, ]
       likelihood(x, marker1 = m, eliminate = eliminate, setup = setup)
   })

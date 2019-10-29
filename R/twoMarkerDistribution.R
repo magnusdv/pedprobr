@@ -72,6 +72,7 @@ twoMarkerDistribution <- function(x, id, partialmarker1, partialmarker2, theta, 
     stop2("Partial markers are on different chromosomes: ", toString(c(chrom(m1), chrom(m2))))
 
   onX = isXmarker(m1)
+  XandMale = onX && getSex(x, id) == 1
 
   if (verbose) {
     cat(sprintf("Partial markers (%s):\n", ifelse(onX, "X-linked", "autosomal")))
@@ -114,19 +115,35 @@ twoMarkerDistribution <- function(x, id, partialmarker1, partialmarker2, theta, 
   alleles1 = alleles(m1)
   alleles2 = alleles(m2)
 
-  if (!onX || getSex(x, id) == 2) {
+  # Character with genotype labels
+  if (XandMale) {
+    geno.names = list(alleles1, alleles2)
+  }
+  else {
     gt1.strings = paste(alleles1[allgenos1[, 1]], alleles1[allgenos1[, 2]], sep = "/")
     gt2.strings = paste(alleles2[allgenos2[, 1]], alleles2[allgenos2[, 2]], sep = "/")
     geno.names = list(gt1.strings, gt2.strings)
   }
-  else geno.names = list(alleles1, alleles2)
+
+  # Create output array. Will hold likelihood of each genotype combo
+  probs = array(0, dim = lengths(geno.names, use.names = F), dimnames = geno.names)
+
+  # Subset of `probs` that is affected by grid.subset
+  probs.subset = grid.subset
+
+  # Needs adjustment for X if `id` is male
+  if(XandMale) {
+    homoz1 = which(allgenos1[,1] == allgenos1[,2])
+    homoz2 = which(allgenos2[,1] == allgenos2[,2])
+    probs.subset[, 1] = match(probs.subset[, 1], homoz1)
+    probs.subset[, 2] = match(probs.subset[, 2], homoz2)
+  }
 
   marginal = likelihood(x, marker1 = m1, marker2 = m2, theta = theta, eliminate = eliminate)
   if (marginal == 0)
     stop2("Partial marker data is impossible")
 
-  probs = array(0, dim = lengths(geno.names, use.names = F), dimnames = geno.names)
-  probs[grid.subset] = apply(grid.subset, 1, function(allg_rows) {
+  probs[probs.subset] = apply(grid.subset, 1, function(allg_rows) {
     m1[int.id, ] = allgenos1[allg_rows[1], ]
     m2[int.id, ] = allgenos2[allg_rows[2], ]
     likelihood(x, marker1 = m1, marker2 = m2, theta = theta, eliminate = eliminate)
