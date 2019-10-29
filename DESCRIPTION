@@ -13,6 +13,7 @@ Description: An implementation of the Elston-Stewart algorithm for calculating
     is part of the ped suite, a collection of packages for pedigree analysis in R, 
     based on 'pedtools' for handling pedigrees and markers.
 License: GPL-3
+URL: https://github.com/magnusdv/pedprobr
 Encoding: UTF-8
 Language: en-GB
 LazyData: true
