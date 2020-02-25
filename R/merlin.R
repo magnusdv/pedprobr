@@ -6,7 +6,7 @@
 #' and correctly pointed to in the PATH variable.
 #'
 #' By default the following MERLIN command is run via [system()], after creating
-#' appropriate files in the current working directory:
+#' appropriate files in the directory indicated by `dir`:
 #'
 #' \preformatted{% merlin -p _merlin.ped -d _merlin.dat -m _merlin.map -f
 #' _merlin.freq --likelihood --bits:100 --megabytes:4000 --quiet }
@@ -22,6 +22,7 @@
 #'   in the current directory. If FALSE, no files are created.
 #' @param cleanup a logical. If TRUE, the MERLIN input files are deleted after
 #'   the call to MERLIN.
+#'
 #' @param logfile a character. If this is given, the MERLIN screen output will
 #'   be written to a file with this name.
 #'
@@ -57,7 +58,7 @@ likelihoodMerlin = function(x, markers = seq_len(nMarkers(x)), logbase = NULL,
   x = selectMarkers(x, markers)
 
   # MERLIN or MINX?
-  xchrom = vapply(x$MARKERS, isXmarker, FUN.VALUE = FALSE)
+  xchrom = isXmarker(x)
   if(all(xchrom)) {
     message("All markers are X-linked; calling MINX")
     program = "minx"
@@ -143,4 +144,64 @@ likelihoodMerlin = function(x, markers = seq_len(nMarkers(x)), logbase = NULL,
   return(round(exp(total), 3))
 }
 
+
+#' @export
+merlin = function(x, options, markers = seq_len(nMarkers(x)), verbose = TRUE,
+                  generateFiles = TRUE, cleanup = TRUE, dir = tempdir(),
+                  logfile = NULL) {
+  if(!is.ped(x)) stop2("Input is not a `ped` object")
+
+  # Select markers
+  if (!hasMarkers(x))
+    stop2("Pedigree has no attached markers")
+  x = selectMarkers(x, markers)
+
+  # MERLIN or MINX?
+  xchrom = isXmarker(x)
+  if(all(xchrom)) {
+    if(verbose) cat("All markers are X-linked; calling MINX\n")
+    program = "minx"
+  }
+  else if(all(!xchrom)) {
+    program = "merlin"
+  }
+  else
+    stop2("Both autosomal and X-linked markers are selected\n",
+          "Please use the `markers` argument to run these in separate calls")
+
+  prefix = file.path(dir, "_merlin")
+  # Generate input files to MERLIN/MINX
+  if (generateFiles) {
+    files = writePed(x, prefix = prefix, merlin = TRUE,
+                     what = c("ped", "dat", "map", "freq"), verbose = verbose)
+
+    if(cleanup)
+      on.exit({unlink(files); if (verbose) cat("MERLIN input files removed\n")})
+  }
+
+  commandArgs = c(program,
+                  sprintf("-p %s.ped", prefix),
+                  sprintf("-d %s.dat", prefix),
+                  sprintf("-m %s.map", prefix),
+                  sprintf("-f %s.freq", prefix),
+                  options)
+  command = paste(commandArgs, collapse = " ")
+
+  if (verbose)
+    cat("\nExecuting the following command:\n", paste0(commandArgs, collapse = "\n  "), "\n", sep = "")
+
+  # Run MERLIN and store output
+  mout = suppressWarnings(system(command, intern = TRUE))
+
+  # Write logfile if indicated
+  if (!is.null(logfile))
+    write(mout, logfile)
+
+  if (any(substr(mout, 1, 11) == "FATAL ERROR")) {
+    warning(paste0(mout, collapse = "\n"), "\nFATAL ERROR reported by merlin")
+  }
+  else if (verbose) cat("\nMERLIN run completed\n")
+
+  invisible(mout)
+}
 
