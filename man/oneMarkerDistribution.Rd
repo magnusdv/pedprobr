@@ -4,8 +4,15 @@
 \alias{oneMarkerDistribution}
 \title{Genotype distribution for a single marker}
 \usage{
-oneMarkerDistribution(x, ids, partialmarker, loop_breakers = NULL,
-  eliminate = 0, grid.subset = NULL, verbose = TRUE)
+oneMarkerDistribution(
+  x,
+  ids,
+  partialmarker,
+  loop_breakers = NULL,
+  eliminate = 0,
+  grid.subset = NULL,
+  verbose = TRUE
+)
 }
 \arguments{
 \item{x}{A \code{ped} object.}

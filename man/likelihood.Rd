@@ -9,15 +9,22 @@
 \usage{
 likelihood(x, ...)
 
-\method{likelihood}{ped}(x, marker1, marker2 = NULL, theta = NULL,
-  setup = NULL, eliminate = 0, logbase = NULL,
-  loop_breakers = NULL, verbose = FALSE, ...)
+\method{likelihood}{ped}(
+  x,
+  marker1,
+  marker2 = NULL,
+  theta = NULL,
+  setup = NULL,
+  eliminate = 0,
+  logbase = NULL,
+  loop_breakers = NULL,
+  verbose = FALSE,
+  ...
+)
 
-\method{likelihood}{singleton}(x, marker1, marker2 = NULL,
-  logbase = NULL, ...)
+\method{likelihood}{singleton}(x, marker1, marker2 = NULL, logbase = NULL, ...)
 
-\method{likelihood}{list}(x, marker1, marker2 = NULL, logbase = NULL,
-  total = TRUE, ...)
+\method{likelihood}{list}(x, marker1, marker2 = NULL, logbase = NULL, total = TRUE, ...)
 }
 \arguments{
 \item{x}{a \code{ped} object, a \code{singleton} object, or a list of such objects.}

@@ -12,7 +12,7 @@ form of indices of \code{afreq}}
 
 \item{afreq}{A numeric vector with allele frequencies}
 
-\item{f}{A single number in \code{[0, 1]}; the inbreeding coefficient}
+\item{f}{A single number in \verb{[0, 1]}; the inbreeding coefficient}
 }
 \value{
 A numeric vector of the same length as \code{allele1} and  \code{allele2}

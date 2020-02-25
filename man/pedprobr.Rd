@@ -3,7 +3,6 @@
 \docType{package}
 \name{pedprobr}
 \alias{pedprobr}
-\alias{pedprobr-package}
 \title{pedprobr: Probability Computations on Pedigrees}
 \description{
 An implementation of the Elston-Stewart algorithm for calculating pedigree

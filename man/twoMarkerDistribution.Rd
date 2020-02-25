@@ -4,8 +4,16 @@
 \alias{twoMarkerDistribution}
 \title{Genotype distribution for two linked markers}
 \usage{
-twoMarkerDistribution(x, id, partialmarker1, partialmarker2, theta,
-  loop_breakers = NULL, eliminate = 99, verbose = TRUE)
+twoMarkerDistribution(
+  x,
+  id,
+  partialmarker1,
+  partialmarker2,
+  theta,
+  loop_breakers = NULL,
+  eliminate = 99,
+  verbose = TRUE
+)
 }
 \arguments{
 \item{x}{A \code{ped} object.}
@@ -15,7 +23,7 @@ twoMarkerDistribution(x, id, partialmarker1, partialmarker2, theta,
 \item{partialmarker1, partialmarker2}{Either a \code{marker} object, or the name (or
 index) of a marker attached to \code{x}.}
 
-\item{theta}{A single numeric in the interval \code{[0, 0.5]}: the recombination
+\item{theta}{A single numeric in the interval \verb{[0, 0.5]}: the recombination
 fraction between the two markers.}
 
 \item{loop_breakers}{(Only relevant if the pedigree has loops). A vector with
