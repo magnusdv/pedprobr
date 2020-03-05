@@ -3,6 +3,14 @@
 pedprobr <img src="man/figures/logo.png" align="right" height=140 />
 ====================================================================
 
+<!-- badges: start -->
+
+[![CRAN
+status](https://www.r-pkg.org/badges/version/pedprobr)](https://CRAN.R-project.org/package=pedprobr)
+[![](https://cranlogs.r-pkg.org/badges/grand-total/pedprobr?color=yellow)](https://cran.r-project.org/package=pedprobr)
+[![](https://cranlogs.r-pkg.org/badges/last-month/pedprobr?color=yellow)](https://cran.r-project.org/package=pedprobr)
+<!-- badges: end -->
+
 Introduction
 ------------
 
@@ -28,13 +36,18 @@ which works in a variety of situations:
 Installation
 ------------
 
-To get the latest version of pedprobr, install from GitHub as follows:
+To get the current official version of `pedprobr`, install from CRAN as
+follows:
 
 ``` r
- # First install devtools if needed
-if(!require(devtools)) install.packages("devtools")
+install.packages("pedprobr")
+```
 
-# Install pedprobr from github
+Alternatively, you can obtain the latest development version from
+GitHub:
+
+``` r
+# install.packages("devtools") # install devtools if needed
 devtools::install_github("magnusdv/pedprobr")
 ```
 
@@ -68,7 +81,7 @@ x
 plot(x, m)
 ```
 
-![](man/figures/README-unnamed-chunk-6-1.png)
+![](man/figures/README-pedplot-1.png)
 
 The pedigree likelihood, i,.e., the probability of observing these
 genotypes given the pedigree, may now be obtained as follows:
@@ -100,8 +113,8 @@ The answer is easily found as follows:
 
 ``` r
 oneMarkerDistribution(x, ids = 1:2, partialmarker = 1, verbose = F)
-#>            1/1       2/2        1/2
-#> 1/1 0.00000000 0.1379310 0.01724138
-#> 2/2 0.13793103 0.0000000 0.27586207
-#> 1/2 0.01724138 0.2758621 0.13793103
+#>            1/1        1/2       2/2
+#> 1/1 0.00000000 0.01724138 0.1379310
+#> 1/2 0.01724138 0.13793103 0.2758621
+#> 2/2 0.13793103 0.27586207 0.0000000
 ```
