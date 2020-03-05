@@ -36,7 +36,8 @@
 #'
 #' @return `merlin()` returns the screen output of MERLIN invisibly.
 #'
-#'   `likelihoodMerlin()` returns a single number; the total likelihood using all indicated markers.
+#'   `likelihoodMerlin()` returns a single number; the total likelihood using
+#'   all indicated markers.
 #'
 #' @author Magnus Dehli Vigeland
 #' @references <http://csg.sph.umich.edu/abecasis/Merlin/>

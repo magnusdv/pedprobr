@@ -21,7 +21,10 @@ longer actively developed.
 
 pedprobr is part of the ped suite, a collection of packages for pedigree
 analysis in R, based on [pedtools](https://github.com/magnusdv/pedtools)
-for basic handling of pedigrees and marker data.
+for basic handling of pedigrees and marker data. In particular, pedprobr
+does much of the hard work in the
+[forrel](https://github.com/magnusdv/forrel) package for relatedness
+analysis and forensic pedigree analysis.
 
 The workhorse of the pedprobr package is the `likelihood()` function,
 which works in a variety of situations:

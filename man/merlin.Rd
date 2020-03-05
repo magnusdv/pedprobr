@@ -47,7 +47,8 @@ be dumped to a file with this name.}
 \value{
 \code{merlin()} returns the screen output of MERLIN invisibly.
 
-\code{likelihoodMerlin()} returns a single number; the total likelihood using all indicated markers.
+\code{likelihoodMerlin()} returns a single number; the total likelihood using
+all indicated markers.
 }
 \description{
 For this functions to work, the program MERLIN (see References below) must be
