@@ -1,8 +1,7 @@
 ^\R\.*$
 ^.*\.Rproj$
 ^\.Rproj\.user$
-^notes$
 ^README\.Rmd$
-^README-.*\.png$
+^notes-private$
 ^cran-comments\.md$
 ^CRAN-RELEASE$
