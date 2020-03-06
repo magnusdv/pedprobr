@@ -255,6 +255,9 @@ startdata_MM_AUT = function(x, marker1, marker2, eliminate = 0, treatAsFounder =
     .genotypeMatrix(gt, n, unordered, COMPLETE)
   })
 
+  #als = alleles(marker)
+  #genolist = lapply(genolist, function(g) {colnames(g) = paste(als[g[1,]], als[g[2,]], sep = "/"); g})
+
   attr(genolist, "impossible") = FALSE
 
   # If mutations, don't eliminate any genotypes

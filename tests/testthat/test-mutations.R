@@ -37,7 +37,7 @@ test_that("trio - someTyped - mutation", {
 test_that("likelihoods are correct in trio SNP examples", {
   x = nuclearPed(1)
   p = 0.2; q = 1 - p
-skip("")
+
   # All heterozygous
   m1 = marker(x, '1'=1:2, '2'=1:2, '3'=1:2, alleles=1:2, afreq=c(p,q))
   expect_equal(likelihood(x, m1), 2*p^2*q^2)
@@ -50,7 +50,7 @@ skip("")
 test_that("likelihoods are correct in sibling SNP example", {
   x = nuclearPed(2)
   p = 0.2; q = 1 - p
-  skip("")
+
   # Both homozygous
   m = marker(x, '3'=2, '4'=2, alleles=1:2, afreq=c(p,q))
   expect_equal(likelihood(x, m), 1/4*q^2*(1+q)^2)
@@ -61,8 +61,8 @@ test_that("likelihoods are correct in 3 generat. SNP example", {
   x = addParents(x, 1)
   x = addParents(x, 2)
   p = 0.2; q = 1 - p
-  skip("")
-  # Both homozygous
+
+    # Both homozygous
   m = marker(x, '4'=1:2, '7'=1:2, '3'=1:2, alleles=1:2, afreq=c(p,q))
   expect_equal(likelihood(x, m), (2*p*q)^2 * (3/8 + p*q/2))
 })
@@ -70,7 +70,7 @@ test_that("likelihoods are correct in 3 generat. SNP example", {
 test_that("loops - mutation", {
   x = fullSibMating(1)
   p = 0.1; q = 0.2; r = 1-p-q
-  skip("")
+
   m1 = marker(x, '5'=1:2, '6'=1:2, alleles=1:3, afreq=c(p,q,r))
   m2 = marker(x, '5'=1:2, '6'=1:2, alleles=1:4, afreq=c(p,q,r/2,r/2))
   expect_equal(likelihood(x, m1, verbose=F),
@@ -90,4 +90,20 @@ test_that("ancestral ped - non-stationary mut", {
   m = marker(x, '3'=2, '6'=2, alleles=1:2, mutmod=mut)
   # plot(x,m)
   expect_equal(likelihood(x,m), 1)
+})
+
+test_that("lumped mutation model is robust to allele ordering", {
+  x = nuclearPed(2)
+  m1 = m2 = marker(x, alleles = 1:4, afreq = c(.1,.2,.3,.4),
+                   mutmod = "prop", rate = 0.5)
+  genotype(m1, '3') = 3:4
+  genotype(m2, '3') = 4:3
+  expect_identical(likelihood(x, m1), likelihood(x, m2))
+
+  genotype(m1, '3') = 3
+  genotype(m1, '4') = 4
+
+  genotype(m2, '3') = 4
+  genotype(m2, '4') = 3
+  expect_identical(likelihood(x, m1), likelihood(x, m2))
 })

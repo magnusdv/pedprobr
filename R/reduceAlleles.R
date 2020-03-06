@@ -9,7 +9,7 @@ reduceAlleles = function(marker) {
   origAlleles = attrs$alleles
 
   # Index of observed alleles
-  presentIdx = unique.default(marker[marker > 0])
+  presentIdx = sort.int(unique.default(marker[marker > 0]))
 
   # No lumping if all, or all but one, are observed
   if (length(presentIdx) >= length(origAlleles) - 1)
