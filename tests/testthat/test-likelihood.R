@@ -112,4 +112,27 @@ test_that("likelihoods are correct in looped ped", {
                likelihood(x, m4, verbose=F))
 })
 
-
+# test_that("pedprobr and Familias give identical results", {
+#   skip("")
+#   library(forrel)
+#   library(pedlikCompare)
+#   testRandom = function() {
+#     x = randomPed(6)
+#     if(!is.ped(x)) return(NULL)
+#     ids = sample(labels(x), size = sample(pedsize(x), 1))
+#     nals = sample.int(5, size = 1) + 1
+#     afr = runif(nals, .2, .8)
+#     afr = afr/sum(afr)
+#     sims = markerSim(x, N=10, ids = ids, alleles = sample.int(10, size = nals),
+#                      afreq = afr, mutmod = "prop", rate = 0.1, verbose = FALSE)
+#     for(i in 1:10) {
+#       tes = compare(sims, i, verbose = FALSE, programs = c("pedprobr", "Familias"))
+#       if(nrow(tes) < 2) break
+#       if(!all.equal(tes[1,2], tes[2,2])) {
+#         message("MISMATCH!")
+#         print(selectMarkers(x, i))
+#       }
+#     }
+#   }
+#   for(i in 1:100) testRandom()
+# })
