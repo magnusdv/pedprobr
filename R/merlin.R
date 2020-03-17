@@ -61,7 +61,7 @@
 merlin = function(x, options, markers = NULL, verbose = TRUE,
                   generateFiles = TRUE, cleanup = TRUE, dir = tempdir(),
                   logfile = NULL) {
-  if(!is.ped(x)) stop2("Input is not a `ped` object")
+  #if(!is.ped(x)) stop2("Input is not a `ped` object")
 
   # Select markers
   if (!hasMarkers(x))
@@ -133,9 +133,12 @@ likelihoodMerlin = function(x, ...) {
   if (!is.na(skipped <- which(substr(mout, 3, 9) == "SKIPPED")[1]))
     stop2(paste(mout[c(skipped - 1, skipped)], collapse = "\n"))
 
-  # Extract likelihood value
+  # Different chromosomes?
   chromLines = which(substr(mout, 1, 20) == "Analysing Chromosome")
-  likLines = which(substr(mout, 1, 27) == "lnLikelihood for 1 families")
+
+  # Lines with loglik results
+  nFam = if(is.pedList(x)) length(x) else 1
+  likLines = which(substr(mout, 1, 27) == sprintf("lnLikelihood for %d families", nFam))
 
   # If single output value: Return likelihood
   if(length(chromLines) == 0 && length(likLines) == 1) {
