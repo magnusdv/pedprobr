@@ -102,10 +102,10 @@ test_that("X-likelihoods are correct in 3 gener. SNP example", {
   x = addParents(x, 1)
   x = addParents(x, 2)
   p = 0.2; q = 1 - p
-  skip("")
+
   # Both homozygous
-  m = marker(x, '4'=1:2, '7'=1:2, '3'=1:2, alleles=1:2, afreq=c(p,q), chrom=23)
-  expect_equal(likelihood(x, m), (2*p*q)^2 * (3/8 + p*q/2))
+  m = marker(x, '5'=1, '6'=1, '7'=2, '3'=1:2, alleles=1:2, afreq=c(p,q), chrom=23)
+  expect_equal(likelihood(x, m), p^2*p*(2*p*q))
 })
 
 test_that("X-likelihoods are correct in looped ped", {
