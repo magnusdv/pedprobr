@@ -92,6 +92,8 @@ likelihood = function(x, ...) UseMethod("likelihood", x)
 likelihood.ped = function(x, marker1, marker2 = NULL, theta = NULL, setup = NULL,
                           eliminate = 0, logbase = NULL, loop_breakers = NULL,
                           verbose = FALSE, ...) {
+  if(hasSelfing(x))
+    stop2("Likelihood of pedigrees with selfing is not implemented.\nContact the maintainer if this is important to you.")
 
   twolocus = !is.null(marker2)
   if (twolocus && is.null(theta))
