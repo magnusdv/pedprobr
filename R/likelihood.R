@@ -94,12 +94,11 @@ likelihood.ped = function(x, marker1, marker2 = NULL, theta = NULL, setup = NULL
                           verbose = FALSE, ...) {
 
   twolocus = !is.null(marker2)
-  if(twolocus && is.null(theta))
+  if (twolocus && is.null(theta))
     stop2("Argument `theta` is missing")
 
-  if(missing(marker1) || is.null(marker1))
+  if (missing(marker1) || is.null(marker1))
     stop2("Argument `marker1` is missing")
-
 
   if (!is.marker(marker1)) {
     if(length(marker1) != 1)
@@ -112,6 +111,9 @@ likelihood.ped = function(x, marker1, marker2 = NULL, theta = NULL, setup = NULL
       stop2("Length of `marker2` must be 1")
     marker2 = getMarkers(x, markers = marker2)[[1]]
   }
+
+  if(twolocus && hasInbredFounders(x))
+    stop2("Likelihood of linked markers is not implemented in pedigrees with founder inbreeding.\n(Note that this is usually not well-defined)")
 
   marker1 = reduceAlleles(marker1)
   marker2 = reduceAlleles(marker2)  # unchanged if NULL
@@ -203,6 +205,9 @@ likelihood.singleton = function(x, marker1, marker2 = NULL, logbase = NULL, ...)
 
   if(missing(marker1) || is.null(marker1))
     stop2("Argument `marker1` is missing")
+
+  if(!is.null(marker2) && hasInbredFounders(x))
+    stop2("Likelihood of linked markers is not implemented in pedigrees with founder inbreeding.\n(Note that this is usually not well-defined)")
 
   # If two markers: Linkage is irrelevant for singletons
   if (!is.null(marker2)) {

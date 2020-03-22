@@ -45,3 +45,18 @@ test_that("likelihood of nuc with inbred founder is correct", {
   expect_equal(lik_y_het, 0.25 * 0 + 0.75 * 2*p*q)
 })
 
+test_that("founder inb raises error in likelihood of linked markers", {
+  x = nuclearPed(1)
+  m = marker(x, "1" = 1, alleles = 1:2)
+  founderInbreeding(x, 1) = 1
+
+  # ped method
+  expect_error(likelihood(x, m, m, theta = 0.1),
+               "Likelihood of linked markers is not implemented in pedigrees with founder inbreeding.")
+
+  # singleton method
+  s = subset(x, 1)
+  expect_error(likelihood(s, m, m, theta = 0.1),
+               "Likelihood of linked markers is not implemented in pedigrees with founder inbreeding.")
+
+  })
