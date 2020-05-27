@@ -53,15 +53,24 @@
 #' x = setMarkers(x, list(m1,m2))
 #'
 #' # Likelihood computation by MERLIN:
-#' likelihoodMerlin(x, verbose = FALSE)
-#' likelihoodMerlin(x, markers = 1, verbose = FALSE)
+#' lik1 = likelihoodMerlin(x, markers = 1, verbose = FALSE)
+#' lik2 = likelihoodMerlin(x, markers = 2, verbose = FALSE)
+#' likTot = likelihoodMerlin(x, verbose = FALSE)
+#' stopifnot(all.equal(
+#'   round(c(lik1, lik2, likTot), c(3,3,4)), c(1/2, 1/8, 1/16)))
+#'
+#' y = list(singleton(1), singleton(2))
+#' y = setMarkers(y, locus = list(alleles=1:2))
+#' genotype(y[[1]], marker = 1, id = '1') = 1:2
+#' genotype(y[[2]], marker = 1, id = '2') = 1
+#' lik = likelihoodMerlin(y, verbose = FALSE)
+#' stopifnot(all.equal(round(lik, 3), 1/8))
 #' }
 #'
 #' @export
 merlin = function(x, options, markers = NULL, verbose = TRUE,
                   generateFiles = TRUE, cleanup = TRUE, dir = tempdir(),
                   logfile = NULL) {
-  #if(!is.ped(x)) stop2("Input is not a `ped` object")
 
   # Select markers
   if (!hasMarkers(x))
