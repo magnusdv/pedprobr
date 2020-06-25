@@ -167,19 +167,23 @@ choosePeeler = function(twolocus, theta, Xchrom, SEX, mutmat) {
   # childhap = vector of any length (parental allele);
   # mutmat = mutation matrix
   # output: Vector of probs, length ncol(par)*child. See debug below
-  sq = seq_len(ncol(parent))
+  np = ncol(parent)
+  nc = length(childhap)
+  hap1 = rep(parent[1,], each = nc)
+  hap2 = rep(parent[2,], each = nc)
+  chHap = rep(childhap, np)
+  #sq = seq_len(ncol(parent))
   if (is.null(mutmat))
-    prob = unlist(lapply(sq, function(i)
-      ((parent[1, i] == childhap) + (parent[2, i] == childhap))/2))
+    prob = ((hap1 == chHap) + (hap2 == chHap))/2
   else
-    prob = unlist(lapply(sq, function(i)
-      (mutmat[parent[1, i], childhap] + mutmat[parent[2, i], childhap])/2))
+    prob = (mutmat[cbind(hap1, chHap)] + mutmat[cbind(hap2, chHap)])/2
 
   # DEBUG:
   # print(matrix(prob, ncol = ncol(parent), dimnames = list(childhap, pasteHap(parent))))
 
   prob
 }
+
 
 #####################
 ## TWO LINKED MARKERS
