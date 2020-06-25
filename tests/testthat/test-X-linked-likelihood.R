@@ -136,3 +136,4 @@ test_that("X-likelihoods are correct after 'treat-as-founders' trimming", {
   expect_equal(likelihood(x, m1), 0.9)
   expect_equal(likelihood(x, m2), 0.81)
 })
+

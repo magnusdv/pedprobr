@@ -176,14 +176,12 @@ likelihood.ped = function(x, marker1, marker2 = NULL, theta = NULL, setup = NULL
       for (i in seq_along(origs)) {
         orig.int = origs[i]
         copy.int = copies[i]
-        orighap = dat[[orig.int]]$hap
-        origprob = dat[[orig.int]]$prob
-        hap = if (is.matrix(orighap))  orighap[, r[i], drop = FALSE] else orighap[r[i]]
-        prob = origprob[r[i]]
+        origDat = dat[[orig.int]]
+        dat1[[orig.int]] = dat1[[copy.int]] = lapply(origDat, function(vec) vec[r[i]])
+        prob = dat1[[orig.int]]$prob
         if (sum(prob) == 0)
           message("The likelihood algorithm reached a strange place. The maintainer would be grateful to see this example.")
-        dat1[[orig.int]] = list(hap = hap, prob = prob)
-        dat1[[copy.int]] = list(hap = hap, prob = 1)
+        dat1[[copy.int]]$prob = rep.int(1, length(prob))
       }
 
       for (sub in setup$informativeNucs) {

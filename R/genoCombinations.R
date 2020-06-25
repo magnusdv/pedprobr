@@ -26,18 +26,23 @@ genoCombinations = function(x, partialmarker, ids, make.grid = TRUE) {
     homoz = which(allg[,1] == allg[,2])
     allgRef = 1000 * (allg[, 1] + allg[, 2]) + abs(allg[, 1] - allg[, 2])
 
-    matchRefRows = function(genomatr) {
-      # In: matrix with 2 rows (each column a genotype). Out: vector of 'allg' row numbers
-      row1 = genomatr[1, ]
-      row2 = genomatr[2, ]
-      sort.int(unique.default(match(1000 * (row1 + row2) + abs(row1 - row2), allgRef)))
+    matchRefRows = function(g) {
+      # In: list of vectors pat and mat
+      # Out: vector of 'allg' row numbers
+      pat = g$pat
+      mat = g$mat
+      sort.int(unique.default(match(1000 * (pat + mat) + abs(pat - mat), allgRef)))
     }
 
     if (isXmarker(partialmarker)) {
       SEX = x$SEX
       glist = .buildGenolistX(x, partialmarker, eliminate = ifelse(mutations, 0, 100))
-      if (attr(glist, "impossible")) stop2("Impossible partial marker")
-      rows = lapply(int.ids, function(i) switch(SEX[i], homoz[glist[[i]]], matchRefRows(glist[[i]])))
+      if (attr(glist, "impossible"))
+        stop2("Impossible partial marker")
+      rows = lapply(int.ids, function(i)
+        switch(SEX[i],
+          homoz[glist[[i]]$mat],
+          matchRefRows(glist[[i]])))
     }
     else {
       glist = .buildGenolist(x, partialmarker, eliminate = ifelse(mutations, 0, 100))
