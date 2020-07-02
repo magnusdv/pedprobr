@@ -8,7 +8,7 @@
 #' @param id A single ID label.
 #' @param partialmarker1,partialmarker2 Either a `marker` object, or the name (or
 #'   index) of a marker attached to `x`.
-#' @param theta A single numeric in the interval `[0, 0.5]`: the recombination
+#' @param rho A single numeric in the interval `[0, 0.5]`: the recombination
 #'   fraction between the two markers.
 #' @param loop_breakers (Only relevant if the pedigree has loops). A vector with
 #'   ID labels of individuals to be used as loop breakers. If NULL (default)
@@ -17,7 +17,9 @@
 #'   in the internal algorithm for reducing the genotype space. Positive values
 #'   can save time if `partialmarker1` and/or `partialmarker2` have many
 #'   alleles.
+#' @param theta deprecated; renamed to `rho`.
 #' @param verbose A logical.
+#'
 #' @return A named matrix giving the joint genotype distribution.
 #' @author Magnus Dehli Vigeland
 #' @seealso [oneMarkerDistribution()]
@@ -32,21 +34,26 @@
 #'
 #' plot(x, marker = list(SNP1, SNP2))
 #'
-#' # Genotype distribution for the brother: Depends on theta
-#' twoMarkerDistribution(x, id = "bro2", SNP1, SNP2, theta = 0)
-#' twoMarkerDistribution(x, id = "bro2", SNP1, SNP2, theta = 0.5)
+#' # Genotype distribution for the brother: Depends on rho
+#' twoMarkerDistribution(x, id = "bro2", SNP1, SNP2, rho = 0)
+#' twoMarkerDistribution(x, id = "bro2", SNP1, SNP2, rho = 0.5)
 #'
 #' # X-linked
 #' chrom(SNP1) = chrom(SNP2) = "X"
 #'
 #' plot(x, marker = list(SNP1, SNP2))
 #'
-#' twoMarkerDistribution(x, id = "bro2", SNP1, SNP2, theta = 0)
-#' twoMarkerDistribution(x, id = "bro2", SNP1, SNP2, theta = 0.5)
+#' twoMarkerDistribution(x, id = "bro2", SNP1, SNP2, rho = 0)
+#' twoMarkerDistribution(x, id = "bro2", SNP1, SNP2, rho = 0.5)
 #'
 #' @export
-twoMarkerDistribution <- function(x, id, partialmarker1, partialmarker2, theta, loop_breakers = NULL,
-                                  eliminate = 99, verbose = TRUE) {
+twoMarkerDistribution <- function(x, id, partialmarker1, partialmarker2, rho, loop_breakers = NULL,
+                                  eliminate = 99, theta = NULL, verbose = TRUE) {
+  if(!is.null(theta)) {
+    message("Argument `theta` has been renamed to `rho`")
+    rho = theta
+  }
+
   if(!is.ped(x))
     stop2("Input is not a `ped` object")
   if(!isCount(eliminate, minimum = 0))
@@ -90,7 +97,7 @@ twoMarkerDistribution <- function(x, id, partialmarker1, partialmarker2, theta, 
     print(data.frame(as.list(afreq(m1)), check.names = FALSE), row.names = FALSE)
     cat("\nAllele frequencies, marker 2:\n")
     print(data.frame(as.list(afreq(m2)), check.names = FALSE), row.names = FALSE)
-    cat("\nRecombination rate:", theta, "\n")
+    cat("\nRecombination rate:", rho, "\n")
 
     cat("=============================\n")
     cat("Computing the joint genotype probability distribution for individual:", id, "\n")
@@ -139,14 +146,14 @@ twoMarkerDistribution <- function(x, id, partialmarker1, partialmarker2, theta, 
     probs.subset[, 2] = match(probs.subset[, 2], homoz2)
   }
 
-  marginal = likelihood(x, marker1 = m1, marker2 = m2, theta = theta, eliminate = eliminate)
+  marginal = likelihood(x, marker1 = m1, marker2 = m2, rho = rho, eliminate = eliminate)
   if (marginal == 0)
     stop2("Partial marker data is impossible")
 
   probs[probs.subset] = apply(grid.subset, 1, function(allg_rows) {
     m1[int.id, ] = allgenos1[allg_rows[1], ]
     m2[int.id, ] = allgenos2[allg_rows[2], ]
-    likelihood(x, marker1 = m1, marker2 = m2, theta = theta, eliminate = eliminate)
+    likelihood(x, marker1 = m1, marker2 = m2, rho = rho, eliminate = eliminate)
   })
 
   res = probs/marginal

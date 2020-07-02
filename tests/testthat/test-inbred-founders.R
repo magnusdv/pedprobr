@@ -51,12 +51,13 @@ test_that("founder inb raises error in likelihood of linked markers", {
   founderInbreeding(x, 1) = 1
 
   # ped method
-  expect_error(likelihood(x, m, m, theta = 0.1),
+  expect_error(likelihood(x, m, m, rho = 0.1),
                "Likelihood of linked markers is not implemented in pedigrees with founder inbreeding.")
 
   # singleton method
   s = subset(x, 1)
-  expect_error(likelihood(s, m, m, theta = 0.1),
+  expect_error(likelihood(s, m, m, rho = 0.1),
                "Likelihood of linked markers is not implemented in pedigrees with founder inbreeding.")
 
   })
+

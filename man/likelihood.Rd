@@ -13,12 +13,13 @@ likelihood(x, ...)
   x,
   marker1,
   marker2 = NULL,
-  theta = NULL,
+  rho = NULL,
   setup = NULL,
   eliminate = 0,
   logbase = NULL,
   loop_breakers = NULL,
   verbose = FALSE,
+  theta = NULL,
   ...
 )
 
@@ -37,8 +38,8 @@ then \code{marker1} must be a list of corresponding \code{marker} objects.}
 \item{marker2}{either NULL, or a \code{\link[=marker]{marker()}} object compatible with \code{x}. See
 Details.}
 
-\item{theta}{the recombination rate between \code{marker1} and \code{marker2}. To make
-biological sense \code{theta} should be between 0 and 0.5.}
+\item{rho}{the recombination rate between \code{marker1} and \code{marker2}. To make
+biological sense \code{rho} should be between 0 and 0.5.}
 
 \item{setup}{for internal use.}
 
@@ -53,7 +54,9 @@ with \code{logbase} as basis for the logarithm.}
 (default), automatic selection of loop breakers will be performed. See
 \code{\link[=breakLoops]{breakLoops()}}.}
 
-\item{verbose}{a logical}
+\item{verbose}{a logical.}
+
+\item{theta}{deprecated; renamed to \code{rho}.}
 
 \item{total}{a logical; if TRUE, the product of the likelihoods is returned,
 otherwise a vector with the likelihoods for each pedigree in the list.}

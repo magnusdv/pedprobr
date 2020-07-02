@@ -1,9 +1,9 @@
 context("likelihoods of linked markers")
 
 liktest = function(x, m1, m2) {
-  th_0.0 = likelihood(x, m1, m2, theta=0, verbose=F)
-  th_0.25 = likelihood(x, m1, m2, theta=0.25, verbose=F)
-  th_0.5 = likelihood(x, m1, m2, theta=0.5, verbose=F)
+  th_0.0 = likelihood(x, m1, m2, rho=0, verbose=F)
+  th_0.25 = likelihood(x, m1, m2, rho=0.25, verbose=F)
+  th_0.5 = likelihood(x, m1, m2, rho=0.5, verbose=F)
   c(th_0.0, th_0.25, th_0.5)
 }
 
@@ -24,7 +24,7 @@ test_that("linked empty markers give likelihood 1", {
   expect_equal(liktest(x3, m3, m3), c(1,1,1))
 })
 
-test_that("two linked HW-like markers are indep of theta", {
+test_that("two linked HW-like markers are indep of rho", {
   p = 0.9; q = 1-p
   r = 0.8; s = 1-r
 
@@ -46,7 +46,7 @@ test_that("two linked HW-like markers are indep of theta", {
   expect_equal(liktest(y, m5, m6), rep(answ,3))
 })
 
-test_that("two X-linked HW-like markers are indep of theta", {
+test_that("two X-linked HW-like markers are indep of rho", {
   p = 0.9; q = 1-p
   r = 0.8; s = 1-r
 

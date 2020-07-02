@@ -22,8 +22,8 @@
 #'   then `marker1` must be a list of corresponding `marker` objects.
 #' @param marker2 either NULL, or a [marker()] object compatible with `x`. See
 #'   Details.
-#' @param theta the recombination rate between `marker1` and `marker2`. To make
-#'   biological sense `theta` should be between 0 and 0.5.
+#' @param rho the recombination rate between `marker1` and `marker2`. To make
+#'   biological sense `rho` should be between 0 and 0.5.
 #' @param eliminate mostly for internal use: a non-negative integer indicating
 #'   the number of iterations in the internal genotype-compatibility algorithm.
 #'   Positive values can save time if the number of alleles is large.
@@ -33,9 +33,10 @@
 #'   (default), automatic selection of loop breakers will be performed. See
 #'   [breakLoops()].
 #' @param setup for internal use.
-#' @param verbose a logical
+#' @param verbose a logical.
 #' @param total a logical; if TRUE, the product of the likelihoods is returned,
 #'   otherwise a vector with the likelihoods for each pedigree in the list.
+#' @param theta deprecated; renamed to `rho`.
 #' @param \dots further arguments.
 
 #' @return The likelihood of the data. If the parameter `logbase` is a
@@ -89,15 +90,20 @@ likelihood = function(x, ...) UseMethod("likelihood", x)
 
 #' @export
 #' @rdname likelihood
-likelihood.ped = function(x, marker1, marker2 = NULL, theta = NULL, setup = NULL,
+likelihood.ped = function(x, marker1, marker2 = NULL, rho = NULL, setup = NULL,
                           eliminate = 0, logbase = NULL, loop_breakers = NULL,
-                          verbose = FALSE, ...) {
+                          verbose = FALSE, theta = NULL, ...) {
+  if(!is.null(theta)) {
+    message("Argument `theta` has been renamed to `rho`")
+    rho = theta
+  }
+
   if(hasSelfing(x))
     stop2("Likelihood of pedigrees with selfing is not implemented.\nContact the maintainer if this is important to you.")
 
   twolocus = !is.null(marker2)
-  if (twolocus && is.null(theta))
-    stop2("Argument `theta` is missing")
+  if (twolocus && is.null(rho))
+    stop2("Argument `rho` is missing")
 
   if (missing(marker1) || is.null(marker1))
     stop2("Argument `marker1` is missing")
@@ -138,7 +144,7 @@ likelihood.ped = function(x, marker1, marker2 = NULL, theta = NULL, setup = NULL
 
   Xchrom = isXmarker(marker1)
   mut = mutmod(marker1)
-  PEEL = choosePeeler(twolocus, theta, Xchrom, x$SEX, mut)
+  PEEL = choosePeeler(twolocus, rho, Xchrom, x$SEX, mut)
 
   if (is.null(dups <- x$LOOP_BREAKERS)) {
     for (sub in setup$informativeNucs) {

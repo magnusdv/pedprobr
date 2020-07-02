@@ -74,19 +74,19 @@ test_that("twoMarkerDist works in conditional nuclear example", {
 test_that("recombination rate is recovered", {
 
   x = linearPed(2, sex = 2:1)
-  theta = 0.15
+  rho = 0.15
 
   # Autosomal
   m1 = marker(x, `1`=1, `2`=2, `4`=1, `5`=1, alleles=1:2, afreq = c(p,q))
   m2 = marker(x, `1`=1, `2`=2, `4`=1, `5`=0, alleles=1:2, afreq = c(p,q))
   # plot(x, list(m1,m2))
-  expect_equal(TMD(x, pm1=m1, pm2=m2, id=5, th=theta)["1/1", "1/2"], theta)
+  expect_equal(TMD(x, pm1=m1, pm2=m2, id=5, th=rho)["1/1", "1/2"], rho)
 
   # X-linked
   mX1 = marker(x, `1`=1, `2`=2, `5`=1, alleles=1:2, afreq = c(p,q), chrom=23)
   mX2 = marker(x, `1`=1, `2`=2, `5`=0, alleles=1:2, afreq = c(p,q), chrom=23)
   # plot(x, list(mX1,mX2))
-  expect_equal(TMD(x, pm1=mX1, pm2=mX2, id=5, th=theta)["1", "2"], theta)
+  expect_equal(TMD(x, pm1=mX1, pm2=mX2, id=5, th=rho)["1", "2"], rho)
 
 })
 

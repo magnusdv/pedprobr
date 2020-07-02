@@ -9,9 +9,10 @@ twoMarkerDistribution(
   id,
   partialmarker1,
   partialmarker2,
-  theta,
+  rho,
   loop_breakers = NULL,
   eliminate = 99,
+  theta = NULL,
   verbose = TRUE
 )
 }
@@ -23,7 +24,7 @@ twoMarkerDistribution(
 \item{partialmarker1, partialmarker2}{Either a \code{marker} object, or the name (or
 index) of a marker attached to \code{x}.}
 
-\item{theta}{A single numeric in the interval \verb{[0, 0.5]}: the recombination
+\item{rho}{A single numeric in the interval \verb{[0, 0.5]}: the recombination
 fraction between the two markers.}
 
 \item{loop_breakers}{(Only relevant if the pedigree has loops). A vector with
@@ -34,6 +35,8 @@ loop breakers are selected automatically. See \code{\link[=breakLoops]{breakLoop
 in the internal algorithm for reducing the genotype space. Positive values
 can save time if \code{partialmarker1} and/or \code{partialmarker2} have many
 alleles.}
+
+\item{theta}{deprecated; renamed to \code{rho}.}
 
 \item{verbose}{A logical.}
 }
@@ -55,17 +58,17 @@ SNP1 = SNP2 = marker(x, bro1 = c(1,1), alleles = 1:2)
 
 plot(x, marker = list(SNP1, SNP2))
 
-# Genotype distribution for the brother: Depends on theta
-twoMarkerDistribution(x, id = "bro2", SNP1, SNP2, theta = 0)
-twoMarkerDistribution(x, id = "bro2", SNP1, SNP2, theta = 0.5)
+# Genotype distribution for the brother: Depends on rho
+twoMarkerDistribution(x, id = "bro2", SNP1, SNP2, rho = 0)
+twoMarkerDistribution(x, id = "bro2", SNP1, SNP2, rho = 0.5)
 
 # X-linked
 chrom(SNP1) = chrom(SNP2) = "X"
 
 plot(x, marker = list(SNP1, SNP2))
 
-twoMarkerDistribution(x, id = "bro2", SNP1, SNP2, theta = 0)
-twoMarkerDistribution(x, id = "bro2", SNP1, SNP2, theta = 0.5)
+twoMarkerDistribution(x, id = "bro2", SNP1, SNP2, rho = 0)
+twoMarkerDistribution(x, id = "bro2", SNP1, SNP2, rho = 0.5)
 
 }
 \seealso{
