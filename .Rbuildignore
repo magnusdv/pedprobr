@@ -1,6 +1,7 @@
 ^\R\.*$
 ^.*\.Rproj$
 ^\.Rproj\.user$
+^Rprof\.out$
 ^README\.Rmd$
 ^notes-private$
 ^cran-comments\.md$
