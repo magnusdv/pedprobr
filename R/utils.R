@@ -11,6 +11,10 @@ isCount = function(x, minimum = 1) {
          x >= minimum)
 }
 
+`%||%` = function(x, y) {
+  if(is.null(x)) y else x
+}
+
 .mysetdiff = function(x, y) {
   unique.default(x[match(x, y, 0L) == 0L])
 }

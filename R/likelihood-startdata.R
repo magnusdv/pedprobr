@@ -1,5 +1,22 @@
 #### FUNCTIONS FOR CREATING THE INTITIAL HAPLOTYPE COMBINATIONS W/PROBABILITIES.
 
+startData = function(x, marker1, marker2, Xchrom, eliminate = 0, treatAsFounder = NULL) {
+
+  if(is.null(marker2)) {
+    if(Xchrom)
+      startdata_M_X(x, marker1, eliminate, treatAsFounder)
+    else
+      startdata_M_AUT(x, marker1, eliminate, treatAsFounder)
+  }
+  else {
+    if(Xchrom)
+      startdata_MM_X(x, marker1, marker2, eliminate, treatAsFounder)
+    else
+      startdata_MM_AUT(x, marker1, marker2, eliminate, treatAsFounder)
+  }
+}
+
+# TODO: Remove?
 startdata_M = function(x, marker, eliminate = 0, treatAsFounder = NULL) {
   if(isXmarker(marker))
     startdata_M_X(x, marker, eliminate, treatAsFounder)
@@ -264,8 +281,7 @@ startdata_MM_AUT = function(x, marker1, marker2, eliminate = 0, treatAsFounder =
   nseq = seq_len(n)
 
   # The complete matrix can (should!) be supplied to avoid making it each time
-  if(is.null(complete))
-    complete = list(pat = rep(nseq, each = n), mat = rep.int(nseq, times = n))
+  complete = complete %||% list(pat = rep(nseq, each = n), mat = rep.int(nseq, times = n))
 
   a = gt[1]
   b = gt[2]

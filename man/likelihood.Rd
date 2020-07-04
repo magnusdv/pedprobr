@@ -3,7 +3,6 @@
 \name{likelihood}
 \alias{likelihood}
 \alias{likelihood.ped}
-\alias{likelihood.singleton}
 \alias{likelihood.list}
 \title{Pedigree likelihood}
 \usage{
@@ -11,10 +10,10 @@ likelihood(x, ...)
 
 \method{likelihood}{ped}(
   x,
-  marker1,
+  marker1 = NULL,
   marker2 = NULL,
   rho = NULL,
-  setup = NULL,
+  setup = list(),
   eliminate = 0,
   logbase = NULL,
   loop_breakers = NULL,
@@ -22,8 +21,6 @@ likelihood(x, ...)
   theta = NULL,
   ...
 )
-
-\method{likelihood}{singleton}(x, marker1, marker2 = NULL, logbase = NULL, ...)
 
 \method{likelihood}{list}(x, marker1, marker2 = NULL, logbase = NULL, total = TRUE, ...)
 }

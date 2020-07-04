@@ -128,16 +128,11 @@ oneMarkerDistribution = function(x, ids, partialmarker, loop_breakers = NULL,
 
   ### Likelihood setup
 
-  # Ensure peeling order is set (otherwise it is done multiple times)
-  if(is.null(attr(x, "PEELING_ORDER")))
-    attr(x, "PEELING_ORDER") = peelingOrder(x)
-
   # Precompute informative nucs
   mDummy = m
   mDummy[int.ids, ] = 1
-  inform = informativeSubnucs(x, mDummy)
-  setup = list(informativeNucs = inform$subnucs,
-               treatAsFounder = inform$newfounders)
+  informative = informativeSubnucs(x, mDummy, peelOrder = peelingOrder(x))
+  setup = list(informative = informative)
 
   # Compute marginal
   marginal = likelihood(x, marker1 = m, eliminate = eliminate)

@@ -1,45 +1,45 @@
 ###### OTHER AUXILIARY FUNCTIONS
 
-informativeSubnucs = function(x, marker1, marker2 = NULL) {
+informativeSubnucs = function(x, mlist, peelOrder = peelingOrder(x)) {
   # Trim pedigree by removing leaves without genotypes.
   # Also remove nucs that are completely uninformative
 
-  nucs = attr(x, "PEELING_ORDER")
-  if(is.null(nucs))
-    nucs = attr(x, "PEELING_ORDER") = peelingOrder(x)
+  if(is.marker(mlist)) mlist = list(mlist)
+  stationary = all(unlist(lapply(mlist, hasStationaryModel)))
 
-  stationary = hasStationaryModel(marker1) &&
-    (is.null(marker2) || hasStationaryModel(marker2))
+  # Find untyped individuals
+  nInd = pedsize(x)
+  markermat = unlist(mlist)
+  dim(markermat) = c(nInd, length(markermat)/nInd)
+  untyped = rowSums(markermat) == 0
+  typed = !untyped
 
-  isMiss = marker1[, 1] == 0 & marker1[, 2] == 0
-  if(!is.null(marker2))
-    isMiss = isMiss & marker2[, 1] == 0 & marker2[, 2] == 0
+  nucs = peelOrder
 
   # Quick return if x is nuclear
   if(length(nucs) == 1) {
     if (stationary) {
       sub = nucs[[1]]
-      sub$children = sub$children[!isMiss[sub$children]]
+      sub$children = sub$children[typed[sub$children]]
       goodNucs = list(sub)
     }
     else {
       goodNucs = nucs
     }
-    return(list(subnucs = goodNucs, newfounders = numeric(0)))
+    return(list(subnucs = goodNucs, treatAsFounder = numeric(0)))
   }
 
   # Return unchanged if all are genotyped
-  if (!any(isMiss))
-    return(list(subnucs = nucs, newfounders = numeric(0)))
+  if (all(typed))
+    return(list(subnucs = nucs, treatAsFounder = numeric(0)))
 
-
-  newfounders = numeric(0)
+  treatAsFounder = numeric(0)
   goodNucs = list()
   NONFOU = nonfounders(x, internal = TRUE)
   LEAVES = leaves(x, internal = TRUE)
 
-  isMiss[x$LOOP_BREAKERS] = FALSE  # works (and quick) also if no loops.
-  isUninfLeaf = isUninfFou = isMiss
+  untyped[x$LOOP_BREAKERS] = FALSE  # works (and quick) also if no loops.
+  isUninfLeaf = isUninfFou = untyped
 
   isUninfLeaf[-LEAVES] = FALSE  # logical with T only if uninformative leaf
   isUninfFou[NONFOU] = FALSE  # logical with T only if uninformative founder
@@ -65,8 +65,7 @@ informativeSubnucs = function(x, marker1, marker2 = NULL) {
     # NB: Only skip if stationary mutation model!
     if (stationary && nkeep == 1 && link == keepOffs &&
         isUninfFou[fa] && isUninfFou[mo]) {
-
-      newfounders = c(newfounders, link)
+      treatAsFounder = c(treatAsFounder, link)
       next
     }
     sub$children = keepOffs
@@ -74,6 +73,6 @@ informativeSubnucs = function(x, marker1, marker2 = NULL) {
     goodNucs = c(goodNucs, list(sub))
     isUninfFou[link] = FALSE  #added in v0.8-1 to correct a bug marking certain 'middle' subnucs uninformative
   }
-  list(subnucs = goodNucs, newfounders = newfounders)
+  list(subnucs = goodNucs, treatAsFounder = treatAsFounder)
 }
 
