@@ -1,3 +1,28 @@
+# pedprobr 0.3
+
+## New features
+
+* The `likelihood()` function now handles multiple marker inputs. For example, 
+the call `likelihood(x, 1:nMarkers(x))` results in a vector with the likelihood 
+of each marker attached to `x`. 
+
+For likelihoods involving linked markers, e.g., likelihood(x, marker1, marker2, rho)`,
+`marker1` may be a vector of marker indices, while `marker2` must still refer 
+to a single marker.
+
+* Recombination parameter `theta` is renamed to `rho` everywhere, to align 
+with other ped suite packages. `theta` still works, though.
+
+## Other changes
+
+* Many input checks have been added, giving more useful error messages
+
+* The data structure used in likelihood calculations is simplified and more 
+efficient.
+
+* Likelihood computation of two linked markers (and therefore also 
+`twoMarkerDistribution()`) is much faster now.
+
 # pedprobr 0.2.0
 
 ## New features
