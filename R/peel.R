@@ -31,7 +31,7 @@ choosePeeler = function(twolocus, rho, Xchrom, SEX, mutmat) {
     transPat = .transProbM(faDat, chDat$pat, mutmat = mutmat$male)
     transMat = .transProbM(moDat, chDat$mat, mutmat = mutmat$female)
     dim(transMat) = c(chLen, moLen)
-    transMat_rep = as.numeric(do.call(rbind, rep(list(transMat), faLen)))
+    transMat_rep = transMat[rep(seq_len(chLen), faLen), ] #as.numeric(do.call(rbind, rep(list(transMat), faLen)))
     mm = .colSums((transPat * chprob) * transMat_rep, chLen, faLen * moLen)
     likel = likel * mm
   }
@@ -120,7 +120,7 @@ choosePeeler = function(twolocus, rho, Xchrom, SEX, mutmat) {
 
       transMat = .transProbM(moDat, chDat$mat, mutmat = mutmat$female)
       dim(transMat) = c(chLen, moLen)
-      transMat_rep = as.numeric(do.call(rbind, rep(list(transMat), faLen)))
+      transMat_rep = transMat[rep(seq_len(chLen), faLen), ] # as.numeric(do.call(rbind, rep(list(transMat), faLen)))
       mm = .colSums((transPat * chprob) * transMat_rep, chLen, faLen * moLen)
     }
     likel = likel * mm
@@ -236,7 +236,7 @@ choosePeeler = function(twolocus, rho, Xchrom, SEX, mutmat) {
     transPat = .transProbMM(faDat, chDat[c('pat1', 'pat2')], rho = rho)
     transMat = .transProbMM(moDat, chDat[c('mat1', 'mat2')], rho = rho)
     dim(transMat) = c(chLen, moLen)
-    transMat_rep = as.numeric(do.call(rbind, rep(list(transMat), faLen)))
+    transMat_rep = transMat[rep(seq_len(chLen), faLen), ] # as.numeric(do.call(rbind, rep(list(transMat), faLen)))
     mm = .colSums((transPat * chprob) * transMat_rep, chLen, faLen * moLen)
     likel = likel * mm
   }
@@ -329,7 +329,7 @@ choosePeeler = function(twolocus, rho, Xchrom, SEX, mutmat) {
 
       transMat = .transProbMM(moDat, chDat[c('mat1', 'mat2')], rho = rho)
       dim(transMat) = c(chLen, moLen)
-      transMat_rep = as.numeric(do.call(rbind, rep(list(transMat), faLen)))
+      transMat_rep = transMat[rep(seq_len(chLen), faLen), ] # as.numeric(do.call(rbind, rep(list(transMat), faLen)))
       mm = .colSums((transPat * chprob) * transMat_rep, chLen, faLen * moLen)
     }
 
