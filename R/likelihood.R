@@ -43,7 +43,7 @@
 #' positive number, the output is `log(likelihood, logbase)`.
 
 #' @author Magnus Dehli Vigeland
-#' @references Elston and Stewart (1971), \doi{10.1159/000152448}
+#' @references Elston and Stewart (1971), \doi{https://doi.org/10.1159/000152448}
 #'
 #' @examples
 #'

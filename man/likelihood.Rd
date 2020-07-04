@@ -119,7 +119,7 @@ stopifnot(all.equal(lik1, lik2))
 
 }
 \references{
-Elston and Stewart (1971), \doi{10.1159/000152448}
+Elston and Stewart (1971), \doi{https://doi.org/10.1159/000152448}
 }
 \author{
 Magnus Dehli Vigeland
