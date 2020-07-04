@@ -4,8 +4,9 @@
 #' pedigree (or a list of pedigrees) given genotypes for a marker or a pair of
 #' linked markers.
 #'
-#' The implementation is based on the peeling algorithm of Elston and Stewart (1971). A
-#' variety of situations are covered; see the Examples section for some demonstrations.
+#' The implementation is based on the peeling algorithm of Elston and Stewart
+#' (1971). A variety of situations are covered; see the Examples section for
+#' some demonstrations.
 #'
 #' * complex inbred pedigrees
 #'
@@ -17,33 +18,43 @@
 #'
 #' * markers with mutation models
 #'
-#' @param x a `ped` object, a `singleton` object, or a list of such objects.
-#' @param marker1 a [marker()] object compatible with `x`. If `x` is a list,
-#'   then `marker1` must be a list of corresponding `marker` objects.
-#' @param marker2 either NULL, or a [marker()] object compatible with `x`. See
+#' @param x A `ped` object, a `singleton` object, or a list of such objects.
+#' @param marker1 One or several markers compatible with `x`. Several input
+#'   forms are possible:
+#'
+#'   * A [marker()] object compatible with `x`.
+#'
+#'   * A list of marker objects
+#'
+#'   * A vector of names or indices of markers attached to `x`. If `x` is a
+#'   list, this is the only valid input.
+#'
+#' @param marker2 Either NULL, or a single marker compatible with `x`. See
 #'   Details.
-#' @param rho the recombination rate between `marker1` and `marker2`. To make
+#' @param rho The recombination rate between `marker1` and `marker2`. To make
 #'   biological sense `rho` should be between 0 and 0.5.
-#' @param eliminate mostly for internal use: a non-negative integer indicating
+#' @param eliminate Mostly for internal use: a non-negative integer indicating
 #'   the number of iterations in the internal genotype-compatibility algorithm.
 #'   Positive values can save time if the number of alleles is large.
-#' @param logbase a numeric, or NULL. If numeric the log-likelihood is returned,
+#' @param logbase A numeric, or NULL. If numeric the log-likelihood is returned,
 #'   with `logbase` as basis for the logarithm.
-#' @param loop_breakers a vector of ID labels indicating loop breakers. If NULL
+#' @param loop_breakers A vector of ID labels indicating loop breakers. If NULL
 #'   (default), automatic selection of loop breakers will be performed. See
 #'   [breakLoops()].
-#' @param setup for internal use.
-#' @param verbose a logical.
-#' @param total a logical; if TRUE, the product of the likelihoods is returned,
-#'   otherwise a vector with the likelihoods for each pedigree in the list.
-#' @param theta deprecated; renamed to `rho`.
-#' @param \dots further arguments.
+#' @param setup For internal use.
+#' @param verbose A logical.
+#' @param total A logical; if TRUE, the product of the likelihoods is returned,
+#'   otherwise a vector with the individual likelihoods.
+#' @param theta Deprecated; renamed to `rho`.
+#' @param \dots Further arguments.
 
-#' @return The likelihood of the data. If the parameter `logbase` is a
-#' positive number, the output is `log(likelihood, logbase)`.
+#' @return A numeric with the same length as the number of markers indicated by
+#'   `marker1`. If `logbase` is a positive number, the output is
+#'   `log(likelihood, logbase)`.
 
 #' @author Magnus Dehli Vigeland
-#' @references Elston and Stewart (1971), \doi{https://doi.org/10.1159/000152448}
+#' @references Elston and Stewart (1971). _A General Model for the Genetic
+#'   Analysis of Pedigree Data_. \doi{https://doi.org/10.1159/000152448}
 #'
 #' @examples
 #'
