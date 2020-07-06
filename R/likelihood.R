@@ -42,8 +42,6 @@
 #'   [breakLoops()].
 #' @param peelOrder For internal use.
 #' @param verbose A logical.
-#' @param total A logical; if TRUE, the product of the likelihoods is returned,
-#'   otherwise a vector with the individual likelihoods.
 #' @param theta Deprecated; renamed to `rho`.
 #' @param \dots Further arguments.
 
@@ -240,7 +238,7 @@ peelingProcess = function(x, m, startdata, peeler, peelOrder = NULL) {
 
 #' @export
 #' @rdname likelihood
-likelihood.list = function(x, markers, logbase = NULL, total = TRUE, ...) {
+likelihood.list = function(x, markers, logbase = NULL, ...) {
   if(!is.pedList(x))
     stop2("Input is a list, but not a list of `ped` objects")
 
@@ -248,16 +246,13 @@ likelihood.list = function(x, markers, logbase = NULL, total = TRUE, ...) {
     stop2("`likelihood.list()`requires `markers` to be a vector or marker names or indices. Received: ", class(markers))
 
   liks = vapply(x, function(comp)
-    likelihood.ped(comp, markers, logbase = logbase, total = FALSE, ...),
+    likelihood.ped(comp, markers, logbase = logbase, ...),
     FUN.VALUE = numeric(length(markers)))
 
   if(length(markers) == 1)
     dim(liks) = c(1, length(x))
 
-  if (total)
-    if(is.numeric(logbase)) sum(liks) else prod(liks)
-  else
-    if(is.numeric(logbase)) rowSums(liks) else apply(liks,1,prod)
+  if(is.numeric(logbase)) rowSums(liks) else apply(liks,1,prod)
 }
 
 

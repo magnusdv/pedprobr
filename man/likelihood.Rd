@@ -23,7 +23,7 @@ likelihood(x, ...)
   ...
 )
 
-\method{likelihood}{list}(x, markers, logbase = NULL, total = TRUE, ...)
+\method{likelihood}{list}(x, markers, logbase = NULL, ...)
 
 likelihood2(x, ...)
 
@@ -73,9 +73,6 @@ with \code{logbase} as basis for the logarithm.}
 \item{verbose}{A logical.}
 
 \item{theta}{Deprecated; renamed to \code{rho}.}
-
-\item{total}{A logical; if TRUE, the product of the likelihoods is returned,
-otherwise a vector with the individual likelihoods.}
 
 \item{marker1, marker2}{Single markers compatible with \code{x}.}
 

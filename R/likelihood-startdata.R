@@ -28,11 +28,8 @@ startdata_M_AUT = function(x, marker, eliminate = 0, treatAsFounder = NULL) {
 
   glist = .buildGenolist(x, marker, eliminate, treatAsFounder)
 
-  if (attr(glist, "impossible")) {
-    dat = list()
-    attr(dat, "impossible") = TRUE
-    return(dat)
-  }
+  if (attr(glist, "impossible"))
+    return(structure(list(), impossible = TRUE))
 
   FOU = founders(x, internal = TRUE)
 
@@ -49,11 +46,18 @@ startdata_M_AUT = function(x, marker, eliminate = 0, treatAsFounder = NULL) {
 
   # Add probabilities to each genotype
   dat = lapply(1:pedsize(x), function(i) {
+
+    # If impossible, speed through
+    if(impossible)
+      return(NULL)
+
     g = glist[[i]]
     if (i %in% FOU) {
       prob = HWprob(g$pat, g$mat, afr, f = FOU_INB[i])
-      if (sum(prob) == 0)
+      if (sum(prob) == 0){
         impossible = TRUE
+        return(NULL)
+      }
     }
     else
       prob = rep.int(1, length(g$mat))
@@ -70,11 +74,8 @@ startdata_M_X = function(x, marker, eliminate = 0, treatAsFounder = NULL) {
 
   glist = .buildGenolistX(x, marker, eliminate, treatAsFounder = treatAsFounder)
 
-  if (attr(glist, "impossible")) {
-    dat = list()
-    attr(dat, "impossible") = TRUE
-    return(dat)
-  }
+  if (attr(glist, "impossible"))
+    return(structure(list(), impossible = TRUE))
 
   FOU = founders(x, internal = TRUE)
 
@@ -86,11 +87,18 @@ startdata_M_X = function(x, marker, eliminate = 0, treatAsFounder = NULL) {
   impossible = FALSE
 
   dat = lapply(1:pedsize(x), function(i) {
+
+    # If impossible, speed through
+    if(impossible)
+      return(NULL)
+
     g = glist[[i]]
     if (i %in% FOU) {
       prob = switch(sex[i], afr[g$mat], HWprob(g$pat, g$mat, afr))
-      if (sum(prob) == 0)
+      if (sum(prob) == 0) {
         impossible = TRUE
+        return(NULL)
+      }
     }
     else
       prob = rep.int(1, length(g$mat))
@@ -157,6 +165,11 @@ startdata_MM_X = function(x, marker1, marker2, eliminate = 0, treatAsFounder = N
   impossible = FALSE
 
   dat = lapply(1:pedsize(x), function(i) {
+
+    # If impossible, speed through
+    if(impossible)
+      return(NULL)
+
     sexi = sex[i]
     g1 = glist1[[i]]
     g2 = glist2[[i]]
@@ -196,8 +209,10 @@ startdata_MM_X = function(x, marker1, marker2, eliminate = 0, treatAsFounder = N
     g$prob = prob
 
     keep = prob > 0
-    if (!any(keep))
+    if (!any(keep)){
       impossible = TRUE
+      return(NULL)
+    }
 
     if(!all(keep))
       g[] = lapply(g, function(vec) vec[keep])
@@ -223,6 +238,11 @@ startdata_MM_AUT = function(x, marker1, marker2, eliminate = 0, treatAsFounder =
   impossible = FALSE
 
   dat = lapply(1:pedsize(x), function(i) {
+
+    # If impossible, speed through
+    if(impossible)
+      return(NULL)
+
     g1 = glist1[[i]]
     g2 = glist2[[i]]
     len1 = length(g1$mat)
@@ -256,16 +276,13 @@ startdata_MM_AUT = function(x, marker1, marker2, eliminate = 0, treatAsFounder =
     g$prob = prob
 
     keep = prob > 0
-    if (!any(keep))
+    if (!any(keep)){
       impossible = TRUE
-
-    if(!all(keep)) {
-      g$pat1 = pat1[keep]
-      g$mat1 = mat1[keep]
-      g$pat2 = pat2[keep]
-      g$mat2 = mat2[keep]
-      g$prob = g$prob[keep]
+      return(NULL)
     }
+
+    if(!all(keep))
+      g[] = lapply(g, function(vec) vec[keep])
 
     g
   })
