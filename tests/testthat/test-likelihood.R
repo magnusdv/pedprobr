@@ -12,8 +12,8 @@ test_that("empty markers give likelihood 1", {
   x3 = halfCousinPed(0)
   expect_equal(likelihood(x3, marker(x3)), 1)
 
-  #x4 = cousinPed(0, child=T)
-  #expect_equal(likelihood(x4, marker(x4)), 1)
+  x4 = cousinPed(0, child=T)
+  expect_equal(likelihood(x4, marker(x4)), 1)
 })
 
 test_that("nuclear likelihoods are correct, HW-like", {

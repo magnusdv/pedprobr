@@ -4,34 +4,36 @@ informativeSubnucs = function(x, mlist, peelOrder = peelingOrder(x)) {
   # Trim pedigree by removing leaves without genotypes.
   # Also remove nucs that are completely uninformative
 
-  if(is.marker(mlist)) mlist = list(mlist)
-  stationary = all(unlist(lapply(mlist, hasStationaryModel)))
-
-  # Find untyped individuals
-  nInd = pedsize(x)
-  markermat = unlist(mlist)
-  dim(markermat) = c(nInd, length(markermat)/nInd)
-  untyped = rowSums(markermat) == 0
-  typed = !untyped
-
-  nucs = peelOrder
-
-  # Quick return if x is nuclear
-  if(length(nucs) == 1) {
-    if (stationary) {
-      sub = nucs[[1]]
-      sub$children = sub$children[typed[sub$children]]
-      goodNucs = list(sub)
-    }
-    else {
-      goodNucs = nucs
-    }
-    return(list(subnucs = goodNucs, treatAsFounder = numeric(0)))
+  if(is.marker(mlist)) {
+    stationary = hasStationaryModel(mlist)
+    untyped = mlist[,1] + mlist[,2] == 0
   }
+  else {
+    stationary = all(unlist(lapply(mlist, hasStationaryModel)))
+
+    # Find untyped individuals
+    nInd = pedsize(x)
+    markermat = unlist(mlist)
+    dim(markermat) = c(nInd, length(markermat)/nInd)
+    untyped = rowSums(markermat) == 0
+  }
+
+  typed = !untyped
 
   # Return unchanged if all are genotyped
   if (all(typed))
-    return(list(subnucs = nucs, treatAsFounder = numeric(0)))
+    return(peelOrder)
+
+  # Quick return if x is nuclear
+  if(length(peelOrder) == 1) {
+    if (!stationary)
+      return(peelOrder)
+
+    ch = peelOrder[[1]]$children
+    peelOrder[[1]]$children = ch[typed[ch]]
+    return(peelOrder)
+  }
+
 
   treatAsFounder = numeric(0)
   goodNucs = list()
@@ -44,11 +46,11 @@ informativeSubnucs = function(x, mlist, peelOrder = peelingOrder(x)) {
   isUninfLeaf[-LEAVES] = FALSE  # logical with T only if uninformative leaf
   isUninfFou[NONFOU] = FALSE  # logical with T only if uninformative founder
 
-  for (sub in nucs) {
-    fa = sub$father
-    mo = sub$mother
-    offs = sub$children
-    link = sub$link
+  for (nuc in peelOrder) {
+    fa = nuc$father
+    mo = nuc$mother
+    offs = nuc$children
+    link = nuc$link
     isUninfLeaf[link] = FALSE # just in case link is an untyped child. TODO: necessary??
 
     # Keep only genotyped leaves
@@ -68,11 +70,14 @@ informativeSubnucs = function(x, mlist, peelOrder = peelingOrder(x)) {
       treatAsFounder = c(treatAsFounder, link)
       next
     }
-    sub$children = keepOffs
+    nuc$children = keepOffs
 
-    goodNucs = c(goodNucs, list(sub))
-    isUninfFou[link] = FALSE  #added in v0.8-1 to correct a bug marking certain 'middle' subnucs uninformative
+    goodNucs = c(goodNucs, list(nuc))
+    isUninfFou[link] = FALSE  #added in v0.8-1 to correct a bug marking certain 'middle' nucs uninformative
   }
-  list(subnucs = goodNucs, treatAsFounder = treatAsFounder)
+
+  attr(goodNucs, "treatAsFounder") = treatAsFounder
+
+  goodNucs
 }
 

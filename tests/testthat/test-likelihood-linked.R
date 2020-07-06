@@ -1,9 +1,9 @@
 context("likelihoods of linked markers")
 
 liktest = function(x, m1, m2) {
-  th_0.0 = likelihood(x, m1, m2, rho=0, verbose=F)
-  th_0.25 = likelihood(x, m1, m2, rho=0.25, verbose=F)
-  th_0.5 = likelihood(x, m1, m2, rho=0.5, verbose=F)
+  th_0.0 = likelihood2(x, m1, m2, rho=0, verbose=F)
+  th_0.25 = likelihood2(x, m1, m2, rho=0.25, verbose=F)
+  th_0.5 = likelihood2(x, m1, m2, rho=0.5, verbose=F)
   c(th_0.0, th_0.25, th_0.5)
 }
 

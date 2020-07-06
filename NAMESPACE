@@ -2,10 +2,13 @@
 
 S3method(likelihood,list)
 S3method(likelihood,ped)
+S3method(likelihood2,list)
+S3method(likelihood2,ped)
 export(HWprob)
 export(allGenotypes)
 export(genoCombinations)
 export(likelihood)
+export(likelihood2)
 export(likelihoodMerlin)
 export(merlin)
 export(oneMarkerDistribution)

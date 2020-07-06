@@ -82,7 +82,7 @@ twoMarkerDistribution <- function(x, id, partialmarker1, partialmarker2, rho, lo
   XandMale = onX && getSex(x, id) == 1
 
   if (verbose) {
-    cat(sprintf("Partial markers (%s):\n", ifelse(onX, "X-linked", "autosomal")))
+    cat("Known genotypes:\n")
 
     df = as.data.frame(setMarkers(x, list(m1, m2)))[-(2:4)]
 
@@ -97,10 +97,10 @@ twoMarkerDistribution <- function(x, id, partialmarker1, partialmarker2, rho, lo
     print(data.frame(as.list(afreq(m1)), check.names = FALSE), row.names = FALSE)
     cat("\nAllele frequencies, marker 2:\n")
     print(data.frame(as.list(afreq(m2)), check.names = FALSE), row.names = FALSE)
-    cat("\nRecombination rate:", rho, "\n")
 
-    cat("=============================\n")
-    cat("Computing the joint genotype probability distribution for individual:", id, "\n")
+    cat("\nRecombination rate :", rho)
+    cat("\nChromosome type    :", ifelse(onX, "X-linked", "autosomal"))
+    cat("\nTarget individual  :", id, "\n")
   }
 
   # Start timer
@@ -146,20 +146,25 @@ twoMarkerDistribution <- function(x, id, partialmarker1, partialmarker2, rho, lo
     probs.subset[, 2] = match(probs.subset[, 2], homoz2)
   }
 
-  marginal = likelihood(x, marker1 = m1, marker2 = m2, rho = rho, eliminate = eliminate)
+  marginal = likelihood2(x, marker1 = m1, marker2 = m2, rho = rho, eliminate = eliminate)
   if (marginal == 0)
     stop2("Partial marker data is impossible")
+
+  if(verbose) {
+    cat("Marginal likelihood:", marginal, "\n")
+    cat("Calculations needed:", nrow(grid.subset), "\n")
+  }
 
   probs[probs.subset] = apply(grid.subset, 1, function(allg_rows) {
     m1[int.id, ] = allgenos1[allg_rows[1], ]
     m2[int.id, ] = allgenos2[allg_rows[2], ]
-    likelihood(x, marker1 = m1, marker2 = m2, rho = rho, eliminate = eliminate)
+    likelihood2(x, marker1 = m1, marker2 = m2, rho = rho, eliminate = eliminate)
   })
 
-  res = probs/marginal
-  if (verbose) {
-    cat("\nAnalysis finished in", round(Sys.time() - starttime, 2), " seconds\n")
-  }
+  # Timing
+  totalTime = format(Sys.time() - starttime, digits = 3)
+  if(verbose)
+    cat("\nAnalysis finished in", totalTime, "\n")
 
-  res
+  probs/marginal
 }

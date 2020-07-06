@@ -78,14 +78,10 @@ oneMarkerDistribution = function(x, ids, partialmarker, loop_breakers = NULL,
   onX = isXmarker(m)
 
   if (verbose) {
-    cat(sprintf("Partial marker (%s):\n", ifelse(onX, "X-linked", "autosomal")))
+    cat("Known genotypes:\n")
     print(m)
-    cat("==============================\n")
-    msg = "Computing the %sgenotype probability distribution for individual%s: %s\n"
-    if(length(ids) == 1)
-      cat(sprintf(msg, "", "", ids))
-    else
-      cat(sprintf(msg, "joint ", "s", toString(ids)))
+    cat("\nChromosome type    :", ifelse(onX, "X-linked", "autosomal"))
+    cat("\nTarget individuals :", toString(ids), "\n")
   }
 
   starttime = Sys.time()
@@ -127,9 +123,14 @@ oneMarkerDistribution = function(x, ids, partialmarker, loop_breakers = NULL,
   }
 
   # Compute marginal
-  marginal = likelihood(x, marker1 = m, eliminate = eliminate)
+  marginal = likelihood(x, markers = m, eliminate = eliminate)
   if (marginal == 0)
       stop2("Partial marker is impossible")
+
+  if(verbose) {
+    cat("Marginal likelihood:", marginal, "\n")
+    cat("Calculations needed:", nrow(grid.subset), "\n")
+  }
 
   # Create list of all markers
   mlist = lapply(1:nrow(grid.subset), function(i) {
@@ -139,10 +140,10 @@ oneMarkerDistribution = function(x, ids, partialmarker, loop_breakers = NULL,
   # Calculate likelihoods and insert in result array
   probs[probs.subset] = likelihood(x, mlist, eliminate = eliminate)
 
-  res = probs/marginal
-  if (verbose) {
-    cat("\nAnalysis finished in", round(Sys.time() - starttime, 2), " seconds\n")
-  }
+  # Timing
+  totalTime = format(Sys.time() - starttime, digits = 3)
+  if(verbose)
+    cat("\nAnalysis finished in", totalTime, "\n")
 
-  res
+  probs/marginal
 }
