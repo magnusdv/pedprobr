@@ -105,15 +105,24 @@ likelihood.ped = function(x, markers = NULL, peelOrder = NULL,
     stop2("Likelihood of pedigrees with selfing is not implemented.\n",
           "Contact the maintainer if this is important to you.")
 
+  # Catch erroneous input
+  if(is.ped(peelOrder))
+    stop2("Invalid input for argument `peelOrder`. Received object type: ", class(peelOrder))
+
   if(is.null(markers))
     markers = x$MARKERS
+  else if(is.vector(markers) && !is.list(markers))
+    markers = getMarkers(x, markers = markers)
   else if(is.marker(markers))
     markers = list(markers)
-  else if(is.atomic(markers))
-    markers = getMarkers(x, markers = markers)
+  else if(!is.markerList(markers))
+    stop2("Invalid input for argument `markers`. Received object type: ", class(markers))
 
   if(verbose)
     message("Number of markers: ", length(markers))
+
+  if(length(markers) == 0)
+    return(numeric(0))
 
   ### Quick calculations if singleton
   if(is.singleton(x)) {
@@ -137,6 +146,7 @@ likelihood.ped = function(x, markers = NULL, peelOrder = NULL,
   # Peeling order: Same for all markers
   if(is.null(peelOrder))
     peelOrder = informativeSubnucs(x, mlist = markers, peelOrder = peelingOrder(x))
+
   if(verbose)
     message(sprintf("%d informative %s", length(peelOrder), if(length(peelOrder) == 1) "nucleus" else "nuclei"))
 
@@ -167,6 +177,8 @@ likelihood.ped = function(x, markers = NULL, peelOrder = NULL,
 
   if(is.numeric(logbase)) log(res, logbase) else res
 }
+
+
 
 # Internal function: likelihood of a single marker
 peelingProcess = function(x, m, startdata, peeler, peelOrder = NULL) {
@@ -238,12 +250,17 @@ peelingProcess = function(x, m, startdata, peeler, peelOrder = NULL) {
 
 #' @export
 #' @rdname likelihood
-likelihood.list = function(x, markers, logbase = NULL, ...) {
+likelihood.list = function(x, markers = NULL, logbase = NULL, ...) {
   if(!is.pedList(x))
     stop2("Input is a list, but not a list of `ped` objects")
 
-  if (!is.atomic(markers))
-    stop2("`likelihood.list()`requires `markers` to be a vector or marker names or indices. Received: ", class(markers))
+  if(is.null(markers))
+    markers = seq_len(nMarkers(x))
+  else if (!(is.vector(markers) && !is.list(markers)))
+    stop2("`likelihood.list()` requires `markers` to be a vector of marker names or indices. Received: ", class(markers))
+
+  if(length(markers) == 0)
+    return(numeric(0))
 
   liks = vapply(x, function(comp)
     likelihood.ped(comp, markers, logbase = logbase, ...),

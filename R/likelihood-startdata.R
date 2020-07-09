@@ -45,29 +45,25 @@ startdata_M_AUT = function(x, marker, eliminate = 0, treatAsFounder = NULL) {
   impossible = FALSE
 
   # Add probabilities to each genotype
-  dat = lapply(1:pedsize(x), function(i) {
-
-    # If impossible, speed through
-    if(impossible)
-      return(NULL)
+  for(i in seq_along(glist)) {
 
     g = glist[[i]]
     if (i %in% FOU) {
       prob = HWprob(g$pat, g$mat, afr, f = FOU_INB[i])
+
       if (sum(prob) == 0){
         impossible = TRUE
-        return(NULL)
+        break
       }
     }
     else
       prob = rep.int(1, length(g$mat))
 
-    g$prob = as.numeric(prob)
-    g
-  })
+    glist[[i]]$prob = as.numeric(prob)
+  }
 
-  attr(dat, "impossible") = impossible
-  dat
+  attr(glist, "impossible") = impossible
+  glist
 }
 
 startdata_M_X = function(x, marker, eliminate = 0, treatAsFounder = NULL) {

@@ -1,5 +1,32 @@
 context("likelihoods")
 
+
+test_that("likelihood() catches input errors", {
+  x = singleton(1)
+  y = nuclearPed(1)
+  m = marker(x)
+  expect_error(likelihood(x, y), "Invalid input for argument `markers`")
+  expect_error(likelihood(x, y, m), "Invalid input for argument `markers`")
+  expect_error(likelihood(x, y, marker = m), "Invalid input for argument `peelOrder`")
+
+  expect_error(likelihood(x, marker = list(1)), "Invalid input for argument `markers`.")
+  expect_error(likelihood(x, marker = NA), "`markers` is a logical of length 1")
+  expect_error(likelihood(x, marker = 1), "Marker index out of range: 1")
+  expect_error(likelihood(x, marker = "a"), "Unknown marker name: a")
+
+  peds = list(x,y)
+  expect_error(likelihood(peds, m), fixed = T,
+               "`likelihood.list()` requires `markers` to be a vector of marker names or indices.")
+  expect_error(likelihood(peds, list()), fixed = T,
+               "`likelihood.list()` requires `markers` to be a vector of marker names or indices.")
+  expect_error(likelihood(peds, 1), "Marker index out of range: 1")
+
+  peds2 = list(setMarkers(x,marker(x)), y)
+  expect_error(likelihood(peds2), "The pedigree components have different number of markers attached")
+  expect_error(likelihood(peds2,1), "Marker index out of range: 1")
+})
+
+
 test_that("empty markers give likelihood 1", {
   x = nuclearPed(1)
   expect_equal(likelihood(x, marker(x)), 1)

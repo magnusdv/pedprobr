@@ -58,6 +58,20 @@ test_that("founder inb raises error in likelihood of linked markers", {
   s = subset(x, 1)
   expect_error(likelihood2(s, m, m, rho = 0.1),
                "Likelihood of linked markers is not implemented in pedigrees with founder inbreeding.")
+})
 
-  })
+test_that("complete inbreeding + heterozygosity = 0", {
+  s = singleton(1)
+  founderInbreeding(s, 1) = 1
+  s = setMarkers(s, marker(s, '1' = 1:2))
+  expect_equal(likelihood(s), 0)
 
+  x = nuclearPed(1)
+  founderInbreeding(x, 1) = 1
+  x = setMarkers(x, marker(x, '1' = 1:2))
+  expect_equal(likelihood(x), 0)
+
+  y = list(x,s)
+  expect_equal(likelihood(y), 0)
+
+})

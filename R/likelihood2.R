@@ -13,9 +13,6 @@ likelihood2.ped = function(x, marker1, marker2, rho, peelOrder = NULL,
     rho = theta
   }
 
-  if(is.null(rho))
-    stop2("Argument `rho` is missing")
-
   if(hasInbredFounders(x))
     stop2("Likelihood of linked markers is not implemented in pedigrees with founder inbreeding.\n",
           "(Note that this is usually not well-defined)")
@@ -24,18 +21,24 @@ likelihood2.ped = function(x, marker1, marker2, rho, peelOrder = NULL,
     stop2("Likelihood of pedigrees with selfing is not implemented.\n",
           "Contact the maintainer if this is important to you.")
 
-  if(!is.marker(marker1)) {
-    if(is.atomic(marker1) && length(marker1) == 1)
-      marker1 = getMarkers(x, markers = marker1)[[1]]
-    else
-      stop2("Argument `marker1` must be a single marker")
-  }
+  if(is.vector(marker1) && !is.list(marker1) && length(marker1) == 1)
+    marker1 = getMarkers(x, markers = marker1)[[1]]
+  else if(!is.marker(marker1))
+      stop2("Argument `marker1` must be a single marker. Received: ", class(marker1))
 
-  if(!is.marker(marker2)) {
-    if(is.atomic(marker2) && length(marker2) == 1)
-      marker2 = getMarkers(x, markers = marker2)[[1]]
+  if(is.atomic(marker2) && !is.list(marker2) && length(marker2) == 1)
+    marker2 = getMarkers(x, markers = marker2)[[1]]
+  else if(!is.marker(marker2))
+    stop2("Argument `marker2` must be a single marker. Received: ", class(marker2))
+
+  # Check rho
+  if(missing(rho) || is.null(rho))
+    stop2("Argument `rho` is missing")
+  if(!is.numeric(rho) || length(rho) != 1) {
+    if(is.ped(rho) || is.marker(rho))
+      stop2("Wrong input syntax. Argument `rho` should be a single number, but received: ", class(rho))
     else
-      stop2("Argument `marker2` must be a single marker")
+      stop2("Argument `rho` must be a single number: ", rho)
   }
 
   ### Quick return if singleton (linkage is then irrelevant)
@@ -114,10 +117,10 @@ likelihood2.list = function(x, marker1, marker2, logbase = NULL, ...) {
   if(!is.pedList(x))
     stop2("Input is a list, but not a list of `ped` objects")
 
-  if (!is.atomic(marker1))
-    stop2("`likelihood.list()`requires `marker1` to be a vector or marker names or indices. Received: ", class(marker1))
-  if (!is.atomic(marker2))
-    stop2("`likelihood.list()`requires `marker2` to be a vector or marker names or indices. Received: ", class(marker2))
+  if (!(is.vector(marker1) && !is.list(marker1)))
+    stop2("`likelihood.list()` requires `marker1` to be a vector of marker names or indices. Received: ", class(marker1))
+  if (!(is.vector(marker2) && !is.list(marker2)))
+    stop2("`likelihood.list()` requires `marker2` to be a vector of marker names or indices. Received: ", class(marker2))
 
   likel = vapply(x, function(comp)
     likelihood2.ped(comp, marker1, marker2, logbase = logbase, ...),

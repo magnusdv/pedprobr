@@ -23,7 +23,7 @@ likelihood(x, ...)
   ...
 )
 
-\method{likelihood}{list}(x, markers, logbase = NULL, ...)
+\method{likelihood}{list}(x, markers = NULL, logbase = NULL, ...)
 
 likelihood2(x, ...)
 
