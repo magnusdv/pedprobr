@@ -105,7 +105,7 @@ likelihood2.ped = function(x, marker1, marker2, rho, peelOrder = NULL,
   else
     startdata = startdata_MM_AUT(x, marker1, marker2, eliminate, treatAsFou)
 
-  res = peelingProcess(x, startdata = startdata, peeler = peeler, peelOrder = peelOrder)
+  res = peelingProcess(x, m = NULL, startdata = startdata, peeler = peeler, peelOrder = peelOrder)
 
   if(is.numeric(logbase)) log(res, logbase) else res
 }
