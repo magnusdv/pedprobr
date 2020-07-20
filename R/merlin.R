@@ -33,6 +33,9 @@
 #' @param dir the name of the directory where input files should be written.
 #' @param logfile a character. If this is given, the MERLIN screen output will
 #'   be dumped to a file with this name.
+#' @param merlinpath the path to the folder containing the merlin executables.
+#'   If the executables are on the system's search path, this can be left as
+#'   NULL (default).
 #'
 #' @return `merlin()` returns the screen output of MERLIN invisibly.
 #'
@@ -70,7 +73,7 @@
 #' @export
 merlin = function(x, options, markers = NULL, verbose = TRUE,
                   generateFiles = TRUE, cleanup = TRUE, dir = tempdir(),
-                  logfile = NULL) {
+                  logfile = NULL, merlinpath = NULL) {
 
   # Select markers
   if (!hasMarkers(x))
@@ -83,14 +86,17 @@ merlin = function(x, options, markers = NULL, verbose = TRUE,
   xchrom = isXmarker(x)
   if(all(xchrom)) {
     if(verbose) cat("All markers are X-linked; calling MINX\n")
-    program = "minx"
+    program = "minx.exe"
   }
   else if(all(!xchrom)) {
-    program = "merlin"
+    program = "merlin.exe"
   }
   else
     stop2("Both autosomal and X-linked markers are selected\n",
           "Please use the `markers` argument to run these in separate calls")
+
+  if(!is.null(merlinpath))
+    program = file.path(merlinpath, program)
 
   prefix = file.path(dir, "_merlin")
   # Generate input files to MERLIN/MINX

@@ -13,7 +13,8 @@ merlin(
   generateFiles = TRUE,
   cleanup = TRUE,
   dir = tempdir(),
-  logfile = NULL
+  logfile = NULL,
+  merlinpath = NULL
 )
 
 likelihoodMerlin(x, ...)
@@ -41,6 +42,10 @@ deleted after the call to MERLIN.}
 
 \item{logfile}{a character. If this is given, the MERLIN screen output will
 be dumped to a file with this name.}
+
+\item{merlinpath}{the path to the folder containing the merlin executables.
+If the executables are on the system's search path, this can be left as
+NULL (default).}
 
 \item{...}{Further arguments passed on to \code{merlin}}
 }
