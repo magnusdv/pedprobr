@@ -12,7 +12,6 @@ twoMarkerDistribution(
   rho,
   loop_breakers = NULL,
   eliminate = 99,
-  theta = NULL,
   verbose = TRUE
 )
 }
@@ -35,8 +34,6 @@ loop breakers are selected automatically. See \code{\link[=breakLoops]{breakLoop
 in the internal algorithm for reducing the genotype space. Positive values
 can save time if \code{partialmarker1} and/or \code{partialmarker2} have many
 alleles.}
-
-\item{theta}{deprecated; renamed to \code{rho}.}
 
 \item{verbose}{A logical.}
 }

@@ -29,8 +29,9 @@
   g
 }
 
-.buildGenolist = function(x, marker, eliminate = 0, treatAsFounder = NULL) {
+.buildGenolist = function(x, marker, eliminate = 0, treatAsFounder = NULL, foundersUnordered = TRUE) {
   n = nAlleles(marker)
+
 
   # Founders (except loop breaker copies) need only *unordered* genotypes
   founderNotLB = logical(pedsize(x))
@@ -45,7 +46,7 @@
   # Building a list of genotypes for each indiv.
   genolist = lapply(1:pedsize(x), function(i) {
     gt = marker[i, ]
-    unordered = founderNotLB[i]
+    unordered = founderNotLB[i] && foundersUnordered
     .genotypeHaploList(gt, n, unordered, COMPLETE)
   })
 

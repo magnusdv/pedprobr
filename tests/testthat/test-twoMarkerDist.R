@@ -16,9 +16,9 @@ test_that("twoMarkerDist works in empty autosomal examples", {
   x = nuclearPed(1)
   m = marker(x, alleles=1:2, afreq = c(p,q))
 
-  expect_equal(TMD(x, pm1=m, pm2=m, id=1, th=0),
+  expect_equal(TMD(x, pm1=m, pm2=m, id=1, rho=0),
                HW_ARRAY %o% HW_ARRAY)
-  expect_equal(TMD(x, pm1=m, pm2=m, id=3, th=0.25),
+  expect_equal(TMD(x, pm1=m, pm2=m, id=3, rho=0.25),
                HW_ARRAY %o% HW_ARRAY)
 
   ### Singleton
@@ -27,7 +27,7 @@ test_that("twoMarkerDist works in empty autosomal examples", {
   ms2 = marker(s, alleles=letters[1:2], afreq = c(p,q))
   HW_ab = setNames(HW_ARRAY, c("a/a","a/b","b/b"))
 
-  expect_equal(TMD(s, pm1=ms1, pm2=ms2, id="a", th=0),
+  expect_equal(TMD(s, pm1=ms1, pm2=ms2, id="a", rho=0),
                HW_ARRAY %o% HW_ab)
 })
 
@@ -37,9 +37,9 @@ test_that("twoMarkerDist works in empty X-linked examples", {
   x = nuclearPed(1, sex = 2)
   m = marker(x, alleles=1:2, afreq = c(p,q), chrom = 23)
 
-  expect_equal(TMD(x, pm1=m, pm2=m, id=1, th=0),
+  expect_equal(TMD(x, pm1=m, pm2=m, id=1, rho=0),
                PQ_ARRAY %o% PQ_ARRAY)
-  expect_equal(TMD(x, pm1=m, pm2=m, id=3, th=0.25),
+  expect_equal(TMD(x, pm1=m, pm2=m, id=3, rho=0.25),
                HW_ARRAY %o% HW_ARRAY)
 
   ### Singleton
@@ -49,9 +49,9 @@ test_that("twoMarkerDist works in empty X-linked examples", {
   ms2 = marker(s1, alleles=letters[1:2], afreq = c(p,q), chrom = 23)
   HW_ab = setNames(HW_ARRAY, c("a/a","a/b","b/b"))
   PQ_ab = setNames(PQ_ARRAY, c("a","b"))
-  expect_equal(TMD(s1, pm1=ms1, pm2=ms2, id=1, th=0),
+  expect_equal(TMD(s1, pm1=ms1, pm2=ms2, id=1, rho=0),
                PQ_ARRAY %o% PQ_ab)
-  expect_equal(TMD(s2, pm1=ms1, pm2=ms2, id=1, th=0),
+  expect_equal(TMD(s2, pm1=ms1, pm2=ms2, id=1, rho=0),
                HW_ARRAY %o% HW_ab)
 })
 
@@ -62,13 +62,13 @@ test_that("twoMarkerDist works in conditional nuclear example", {
   # Autosomal
   m1 = m2 = marker(x, `3` = 2, alleles=1:2, afreq = c(p,q))
   h = HW_ARRAY; h[] = c(0, p, q); res1 = h %o% h
-  expect_equal(TMD(x, pm1=m1, pm2=m2, id=1, th=0), res1)
+  expect_equal(TMD(x, pm1=m1, pm2=m2, id=1, rho=0), res1)
 
   # X-linked
   mX1 = mX2 = marker(x, `3` = 2, alleles=1:2, afreq = c(p,q), chrom=23)
   res2 = PQ_ARRAY %o% PQ_ARRAY; res2[] = c(0,0,0,1)
-  expect_equal(TMD(x, pm1=mX1, pm2=mX2, id=1, th=0), res2)
-  expect_equal(TMD(x, pm1=mX1, pm2=mX2, id=2, th=0), res1)
+  expect_equal(TMD(x, pm1=mX1, pm2=mX2, id=1, rho=0), res2)
+  expect_equal(TMD(x, pm1=mX1, pm2=mX2, id=2, rho=0), res1)
 })
 
 test_that("recombination rate is recovered", {
@@ -80,13 +80,13 @@ test_that("recombination rate is recovered", {
   m1 = marker(x, `1`=1, `2`=2, `4`=1, `5`=1, alleles=1:2, afreq = c(p,q))
   m2 = marker(x, `1`=1, `2`=2, `4`=1, `5`=0, alleles=1:2, afreq = c(p,q))
   # plot(x, list(m1,m2))
-  expect_equal(TMD(x, pm1=m1, pm2=m2, id=5, th=rho)["1/1", "1/2"], rho)
+  expect_equal(TMD(x, pm1=m1, pm2=m2, id=5, rho=rho)["1/1", "1/2"], rho)
 
   # X-linked
   mX1 = marker(x, `1`=1, `2`=2, `5`=1, alleles=1:2, afreq = c(p,q), chrom=23)
   mX2 = marker(x, `1`=1, `2`=2, `5`=0, alleles=1:2, afreq = c(p,q), chrom=23)
   # plot(x, list(mX1,mX2))
-  expect_equal(TMD(x, pm1=mX1, pm2=mX2, id=5, th=rho)["1", "2"], rho)
+  expect_equal(TMD(x, pm1=mX1, pm2=mX2, id=5, rho=rho)["1", "2"], rho)
 
 })
 

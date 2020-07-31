@@ -17,7 +17,6 @@
 #'   in the internal algorithm for reducing the genotype space. Positive values
 #'   can save time if `partialmarker1` and/or `partialmarker2` have many
 #'   alleles.
-#' @param theta deprecated; renamed to `rho`.
 #' @param verbose A logical.
 #'
 #' @return A named matrix giving the joint genotype distribution.
@@ -48,11 +47,8 @@
 #'
 #' @export
 twoMarkerDistribution <- function(x, id, partialmarker1, partialmarker2, rho, loop_breakers = NULL,
-                                  eliminate = 99, theta = NULL, verbose = TRUE) {
-  if(!is.null(theta)) {
-    message("Argument `theta` has been renamed to `rho`")
-    rho = theta
-  }
+                                  eliminate = 99, verbose = TRUE) {
+
 
   if(!is.ped(x))
     stop2("Input is not a `ped` object")

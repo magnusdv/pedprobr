@@ -6,12 +6,7 @@ likelihood2 = function(x, ...) UseMethod("likelihood2", x)
 #' @rdname likelihood
 likelihood2.ped = function(x, marker1, marker2, rho, peelOrder = NULL,
                           eliminate = 0, logbase = NULL, loop_breakers = NULL,
-                          verbose = FALSE, theta = NULL, ...) {
-
-  if(!is.null(theta)) {
-    message("Argument `theta` has been renamed to `rho`")
-    rho = theta
-  }
+                          verbose = FALSE, ...) {
 
   if(hasInbredFounders(x))
     stop2("Likelihood of linked markers is not implemented in pedigrees with founder inbreeding.\n",
