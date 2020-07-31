@@ -114,14 +114,10 @@ allGenotypes = function(n) {
   )
 }
 
-# Debug tools: Paste genotypes given as 2*k matrices
-pasteHap = function(hapmat) {
-  if(is.matrix(hapmat)) {
-    stopifnot(nrow(hapmat) == 2)
-    return(paste(hapmat[1, ], hapmat[2, ], sep = "/"))
-  }
-  stopifnot(is.numeric(hapmat))
-  as.character(hapmat)
+# Debug tool, pretty-print "startdata" probs
+pasteGenoProb = function(g) {
+  nms = paste(g$pat, g$mat, sep="/")
+  setNames(g$prob, nms)
 }
 
 
