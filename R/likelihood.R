@@ -42,7 +42,7 @@
 #'   [breakLoops()].
 #' @param peelOrder For internal use.
 #' @param verbose A logical.
-#' @param theta Deprecated; renamed to `rho`.
+#' @param theta Theta correction (experimental)
 #' @param \dots Further arguments.
 
 #' @return A numeric with the same length as the number of markers indicated by
@@ -99,7 +99,7 @@ likelihood = function(x, ...) UseMethod("likelihood", x)
 #' @rdname likelihood
 likelihood.ped = function(x, markers = NULL, peelOrder = NULL,
                           eliminate = 0, logbase = NULL, loop_breakers = NULL,
-                          verbose = FALSE, theta = NULL, ...) {
+                          verbose = FALSE, theta = 0, ...) {
 
   if(hasSelfing(x))
     stop2("Likelihood of pedigrees with selfing is not implemented.\n",
@@ -128,7 +128,7 @@ likelihood.ped = function(x, markers = NULL, peelOrder = NULL,
   if(is.singleton(x)) {
     if(verbose)
       message("Passing to singleton method")
-    liks = vapply(markers, function(m) likelihoodSingleton(x, m), FUN.VALUE = 1)
+    liks = vapply(markers, function(m) likelihoodSingleton(x, m, theta = theta), FUN.VALUE = 1)
     return(if(is.numeric(logbase)) log(liks, logbase) else liks)
   }
 
@@ -153,13 +153,15 @@ likelihood.ped = function(x, markers = NULL, peelOrder = NULL,
   treatAsFou = attr(peelOrder, "treatAsFounder")
 
   # Autosomal or X?
-  isX = vapply(markers, pedtools:::isXmarker.marker, logical(1))
+  isX = vapply(markers, isXmarker, logical(1))
   Xchrom = all(isX)
   if(!Xchrom && any(isX))
     stop2("Cannot mix autosomal and X-linked markers in the same likelihood calculation")
   if(verbose)
     message("Chromosome type: ", if(Xchrom) "X" else "autosomal")
 
+  # Select tools for peeling
+  # TODO: Orgainse better, e.g., skip startdata if theta > 0
   if(Xchrom) {
     starter = function(x, m) startdata_M_X(x, m, eliminate = eliminate, treatAsFounder = treatAsFou)
     peeler = function(x, m) function(dat, sub) .peel_M_X(dat, sub, SEX = x$SEX, mutmat = mutmod(m))
@@ -170,8 +172,14 @@ likelihood.ped = function(x, markers = NULL, peelOrder = NULL,
   }
 
   # Loop over markers
-  resList = lapply(markers, function(m)
-    peelingProcess(x, m, starter(x,m), peeler(x,m), peelOrder))
+  resList = lapply(markers, function(m) {
+
+    # If theta correction, go to different function
+    if(theta > 0)
+      likTheta(x, m, theta, peeler(x,m), peelOrder)
+    else
+      peelingProcess(x, m, starter(x,m), peeler(x,m), peelOrder)
+  })
 
   res = unlist(resList)
 
@@ -254,6 +262,10 @@ likelihood.list = function(x, markers = NULL, logbase = NULL, ...) {
   if(!is.pedList(x))
     stop2("Input is a list, but not a list of `ped` objects")
 
+  # Theta correction not implemented for lists
+  if("theta" %in% names(list(...)))
+    stop2("Theta correction is not implemented for lists")
+
   if(is.null(markers))
     markers = seq_len(nMarkers(x))
   else if (!(is.vector(markers) && !is.list(markers)))
@@ -298,7 +310,7 @@ matchDat = function(dat1, dat2) {
   }
 }
 
-likelihoodSingleton = function(x, m) {
+likelihoodSingleton = function(x, m, theta = 0) {
   m1 = m[1]
   m2 = m[2]
 
@@ -308,19 +320,27 @@ likelihoodSingleton = function(x, m) {
 
   afr = afreq(m)
   chromX = isXmarker(m)
-  finb = founderInbreeding(x, chromType = if(chromX) "x" else "autosomal")
 
+  # Theta correction or founder inbreeding
+  if(theta > 0)
+    f = theta
+  else
+    f = founderInbreeding(x, chromType = if(chromX) "x" else "autosomal")
+
+  # Male on X
   if (chromX && x$SEX == 1) {
     if (all(m > 0) && m1 != m2)
       stop2("Heterozygous genotype at X-linked marker in male singleton")
-    res = afr[m1]
+    return(afr[m1])
   }
-  else if (m1 == 0 || m2 == 0) {
+
+  # One missing allele
+  if (m1 == 0 || m2 == 0) {
     p = afr[m[m != 0]]
     res = p^2 + 2 * p * (1 - p)
+    return(res)
   }
-  else {#print(list(m1, m2, afr, finb))
-    res = HWprob(m1, m2, afr, finb)
-  }
-  res
+
+  # Otherwise: The usual HW formula, possibly with inbreeding correction
+  HWprob(m1, m2, afr, f = f)
 }

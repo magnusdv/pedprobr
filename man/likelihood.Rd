@@ -19,7 +19,7 @@ likelihood(x, ...)
   logbase = NULL,
   loop_breakers = NULL,
   verbose = FALSE,
-  theta = NULL,
+  theta = 0,
   ...
 )
 
@@ -37,7 +37,6 @@ likelihood2(x, ...)
   logbase = NULL,
   loop_breakers = NULL,
   verbose = FALSE,
-  theta = NULL,
   ...
 )
 
@@ -72,7 +71,7 @@ with \code{logbase} as basis for the logarithm.}
 
 \item{verbose}{A logical.}
 
-\item{theta}{Deprecated; renamed to \code{rho}.}
+\item{theta}{Theta correction (experimental)}
 
 \item{marker1, marker2}{Single markers compatible with \code{x}.}
 

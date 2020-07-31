@@ -116,8 +116,9 @@ allGenotypes = function(n) {
 
 # Debug tool, pretty-print "startdata" probs
 pasteGenoProb = function(g) {
-  nms = paste(g$pat, g$mat, sep="/")
-  setNames(g$prob, nms)
+  p = g$prob
+  names(p) = paste(g$pat, g$mat, sep="/")
+  p
 }
 
 
