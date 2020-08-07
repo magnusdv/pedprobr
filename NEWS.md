@@ -1,4 +1,4 @@
-# pedprobr 0.3
+# pedprobr 0.3.0
 
 ## New features
 
