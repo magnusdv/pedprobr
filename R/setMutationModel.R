@@ -56,6 +56,9 @@
 #' # Inspect model
 #' mutmod(x, 1)
 #'
+#' # Likelihood
+#' likelihood(x, 1)
+#'
 #' }
 #'
 #' @importFrom pedmut mutationModel
@@ -65,6 +68,8 @@ setMutationModel = function(x, markers = NULL, model, ...) {
     stop2("Package `pedmut` must be installed in order to include mutation models")
 
   opts = list(...)
+
+  markers = markers %||% seq_len(nMarkers(x))
 
   mIdx = whichMarkers(x, markers)
   for(i in mIdx) {
