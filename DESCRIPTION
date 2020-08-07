@@ -1,7 +1,7 @@
 Package: pedprobr
 Type: Package
 Title: Probability Computations on Pedigrees
-Version: 0.3
+Version: 0.3.9000
 Authors@R: person("Magnus Dehli", "Vigeland", 
                   email = "m.d.vigeland@medisin.uio.no", 
                   role = c("aut", "cre"),
