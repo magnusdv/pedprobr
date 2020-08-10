@@ -64,6 +64,9 @@ x = setMutationModel(x, marker = 1, model = "equal", rate = 0.01)
 # Inspect model
 mutmod(x, 1)
 
+# Likelihood
+likelihood(x, 1)
+
 }
 
 }
