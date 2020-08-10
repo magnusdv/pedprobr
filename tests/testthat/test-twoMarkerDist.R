@@ -77,8 +77,8 @@ test_that("recombination rate is recovered", {
   rho = 0.15
 
   # Autosomal
-  m1 = marker(x, `1`=1, `2`=2, `4`=1, `5`=1, alleles=1:2, afreq = c(p,q))
-  m2 = marker(x, `1`=1, `2`=2, `4`=1, `5`=0, alleles=1:2, afreq = c(p,q))
+  m1 = marker(x, `1`=1, `2`=2, `3`=1, `5`=1, alleles=1:2, afreq = c(p,q))
+  m2 = marker(x, `1`=1, `2`=2, `3`=1, `5`=0, alleles=1:2, afreq = c(p,q))
   # plot(x, list(m1,m2))
   expect_equal(TMD(x, pm1=m1, pm2=m2, id=5, rho=rho)["1/1", "1/2"], rho)
 
