@@ -18,6 +18,12 @@
 #' values from the MERLIN output. Note that the output is the *total* likelihood
 #' including all markers.
 #'
+#' For likelihood computations with linked markers, the argument `rho` should
+#' indicate the recombination fractions between each consecutive pair of markers
+#' (i.e., `rho[i]` is the recombination rate between markers `i-1` and `i`).
+#' These will be converted to centiMorgan distances using Haldane's map
+#' function, and used to create genetic marker map in a MERLIN-friendly format.
+#'
 #' @param x a [`ped`] object.
 #' @param options a single string containing all arguments to merlin except for
 #'   the input file indications.
@@ -36,6 +42,8 @@
 #' @param merlinpath the path to the folder containing the merlin executables.
 #'   If the executables are on the system's search path, this can be left as
 #'   NULL (default).
+#' @param rho A vector of length one less than the number of markers, specifying
+#'   the recombination rate between each consecutive pair.
 #'
 #' @return `merlin()` returns the screen output of MERLIN invisibly.
 #'
@@ -50,24 +58,39 @@
 #' \donttest{
 #' ### Requires MERLIN to be installed ###
 #'
+#' ### Trivial example for validation
 #' x = nuclearPed(1)
 #' m1 = marker(x, "1" = 1:2)           # likelihood = 1/2
-#' m2 = marker(x, "1" = 1, "3" = 1:2)    # likelihood = 1/8
-#' x = setMarkers(x, list(m1,m2))
+#' m2 = marker(x, "1" = 1, "3" = 1:2)  # likelihood = 1/8
+#' x = setMarkers(x, list(m1, m2))
 #'
-#' # Likelihood computation by MERLIN:
+#' # MERLIN likelihoods
 #' lik1 = likelihoodMerlin(x, markers = 1, verbose = FALSE)
 #' lik2 = likelihoodMerlin(x, markers = 2, verbose = FALSE)
 #' likTot = likelihoodMerlin(x, verbose = FALSE)
 #' stopifnot(all.equal(
 #'   round(c(lik1, lik2, likTot), c(3,3,4)), c(1/2, 1/8, 1/16)))
 #'
+#' # Example with ped lists
 #' y = list(singleton(1), singleton(2))
-#' y = setMarkers(y, locus = list(alleles=1:2))
+#' y = setMarkers(y, locus = list(alleles = 1:2))
 #' genotype(y[[1]], marker = 1, id = '1') = 1:2
 #' genotype(y[[2]], marker = 1, id = '2') = 1
 #' lik = likelihoodMerlin(y, verbose = FALSE)
 #' stopifnot(all.equal(round(lik, 3), 1/8))
+#'
+#' ### Linked markers
+#' z = nuclearPed(2)
+#' m = marker(z, geno = c("1/1", "1/2", "1/2", "1/2"))
+#' z = setMarkers(z, list(m, m))
+#'
+#' # By MERLIN...
+#' L1 = likelihoodMerlin(z, markers = 1:2, rho = 0.25, verbose = FALSE)
+#'
+#' # ...and by pedprobr
+#' L2 = likelihood2(z, marker1 = 1, marker2 = 2, rho = 0.25)
+#'
+#' stopifnot(all.equal(round(L1, 6), round(L2, 6)))
 #' }
 #'
 #' @export
@@ -138,7 +161,19 @@ merlin = function(x, options, markers = NULL, verbose = TRUE,
 #'
 #' @rdname merlin
 #' @export
-likelihoodMerlin = function(x, ...) {
+likelihoodMerlin = function(x, markers = NULL, rho = NULL, ...) {
+
+  # Select markers
+  x = selectMarkers(x, markers %||% seq_len(nMarkers(x)))
+
+  # If rho given, replace map
+  if(!is.null(rho)) {
+    if(length(rho) != nMarkers(x) - 1)
+      stop2("Argument `rho` must have length one less than the number of markers")
+    cM = c(0, -50 * log(1 - 2 * rho))
+    map = data.frame(chrom = 1, marker = NA, pos = cM)
+    x = setMap(x, map, matchNames = FALSE)
+  }
 
   # Run MERLIN
   args = "--likelihood --bits:100 --megabytes:4000 --quiet"
