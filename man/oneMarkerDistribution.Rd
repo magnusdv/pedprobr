@@ -70,12 +70,12 @@ oneMarkerDistribution(trio, ids = "ch", partialmarker = m1)
 m2 = marker(trio, ch = 1:2, alleles = 1:2, afreq = c(0.5, 0.5))
 oneMarkerDistribution(trio, ids = c("fa", "mo"), partialmarker = m2)
 
-# A different example: The genotype distribution of an individual (id = 5)
+# A different example: The genotype distribution of an individual (id = 8)
 # whose half cousin (id = 9) is homozygous for a rare allele.
 y = halfCousinPed(degree = 1)
 snp = marker(y, `9` = "a", alleles = c("a", "b"), afreq = c(0.01, 0.99))
 plot(y, snp)
-oneMarkerDistribution(y, ids = 5, partialmarker = snp)
+oneMarkerDistribution(y, ids = 8, partialmarker = snp)
 
 }
 \seealso{

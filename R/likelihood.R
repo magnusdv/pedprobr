@@ -89,8 +89,6 @@
 #' stopifnot(all.equal(lik1, lik2))
 #'
 #'
-#' ### Example 3: Modelling mutations
-#' # TODO after next pedtools release
 #'
 #' @export
 likelihood = function(x, ...) UseMethod("likelihood", x)

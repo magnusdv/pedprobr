@@ -136,8 +136,6 @@ lik2 = likelihood(y, markers = 1)
 stopifnot(all.equal(lik1, lik2))
 
 
-### Example 3: Modelling mutations
-# TODO after next pedtools release
 
 }
 \references{
