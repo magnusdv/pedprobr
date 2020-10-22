@@ -149,19 +149,27 @@ merlin = function(x, options, markers = NULL, verbose = TRUE,
   if (!is.null(logfile))
     write(mout, logfile)
 
-  if (any(substr(mout, 1, 11) == "FATAL ERROR")) {
-    warning(paste0(mout, collapse = "\n"), "\nFATAL ERROR reported by merlin")
-  }
-  else if (verbose) cat("\nMERLIN run completed\n")
+  err = NULL
+  if (any(fatal <- substr(mout, 1, 11) == "FATAL ERROR"))
+    err = mout[which(fatal)[1]:length(mout)]
+  else if (any(warn <- substr(mout, 2, 8) == "WARNING"))
+    err = mout[which(warn)[1] + 0:5]
+
+  if(!is.null(err))
+    warning(paste0(err, collapse = "\n"), call. = FALSE)
+  else if (verbose)
+    cat("\nMERLIN run completed\n")
 
   invisible(mout)
 }
 
-#' @param ... Further arguments passed on to `merlin`
+#' @param ... Further arguments passed on to `merlin()`.
 #'
 #' @rdname merlin
 #' @export
-likelihoodMerlin = function(x, markers = NULL, rho = NULL, ...) {
+likelihoodMerlin = function(x, markers = NULL, rho = NULL,
+                            options = "--likelihood --bits:100 --megabytes:4000 --quiet",
+                            ...) {
 
   # Select markers
   x = selectMarkers(x, markers %||% seq_len(nMarkers(x)))
@@ -176,12 +184,15 @@ likelihoodMerlin = function(x, markers = NULL, rho = NULL, ...) {
   }
 
   # Run MERLIN
-  args = "--likelihood --bits:100 --megabytes:4000 --quiet"
-  mout = merlin(x, args, ...)
+  mout = merlin(x, options = options, ...)
 
-  # Catch possible error
-  if (!is.na(skipped <- which(substr(mout, 3, 9) == "SKIPPED")[1]))
-    stop2(paste(mout[c(skipped - 1, skipped)], collapse = "\n"))
+  # Catch possible errors
+  if (any(skipped <- substr(mout, 3, 9) == "SKIPPED"))
+    stop2(paste(mout[sort(c(which(skipped)-1, which(skipped)))], collapse = "\n"))
+
+  # Bad inheritance? Return 0
+  if (any(grepl("Skipping Marker .* [BAD INHERITANCE]", mout)))
+    return(0)
 
   # Different chromosomes?
   chromLines = which(substr(mout, 1, 20) == "Analysing Chromosome")
@@ -189,6 +200,9 @@ likelihoodMerlin = function(x, markers = NULL, rho = NULL, ...) {
   # Lines with loglik results
   nFam = if(is.pedList(x)) length(x) else 1
   likLines = which(substr(mout, 1, 27) == sprintf("lnLikelihood for %d families", nFam))
+
+  if(length(likLines) == 0)
+    return(0)
 
   # If single output value: Return likelihood
   if(length(chromLines) == 0 && length(likLines) == 1) {
@@ -199,7 +213,6 @@ likelihoodMerlin = function(x, markers = NULL, rho = NULL, ...) {
   #---------------
   # Otherwise: Return total likelihood
   #---------------
-  message("NB: Several chromosomes - output is total likelihood.")
 
   if(length(chromLines) != length(likLines))
     stop2(mout)

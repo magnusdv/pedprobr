@@ -17,7 +17,13 @@ merlin(
   merlinpath = NULL
 )
 
-likelihoodMerlin(x, markers = NULL, rho = NULL, ...)
+likelihoodMerlin(
+  x,
+  markers = NULL,
+  rho = NULL,
+  options = "--likelihood --bits:100 --megabytes:4000 --quiet",
+  ...
+)
 }
 \arguments{
 \item{x}{a \code{\link{ped}} object.}
@@ -50,7 +56,7 @@ NULL (default).}
 \item{rho}{A vector of length one less than the number of markers, specifying
 the recombination rate between each consecutive pair.}
 
-\item{...}{Further arguments passed on to \code{merlin}}
+\item{...}{Further arguments passed on to \code{merlin()}.}
 }
 \value{
 \code{merlin()} returns the screen output of MERLIN invisibly.
