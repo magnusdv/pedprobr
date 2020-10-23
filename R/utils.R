@@ -133,3 +133,13 @@ hasStationaryModel = function(m) {
   isStationary(mut$male, afr) &&
     (isTRUE(sexEq) || isStationary(mut$female, afr))
 }
+
+haldane = function(cM = NULL, rho = NULL) {
+  if(is.null(cM) + is.null(rho) != 1)
+    stop2("Exactly one of `cM` and `rho` must be NULL")
+
+  if(is.null(cM))
+    -50 * log(1 - 2 * rho)
+  else
+    .5 * (1 - exp(-cM/50))
+}

@@ -124,8 +124,7 @@ merlin = function(x, options, markers = NULL, verbose = TRUE,
   prefix = file.path(dir, "_merlin")
   # Generate input files to MERLIN/MINX
   if (generateFiles) {
-    files = writePed(x, prefix = prefix, merlin = TRUE,
-                     what = c("ped", "dat", "map", "freq"), verbose = verbose)
+    files = writePed(x, prefix = prefix, merlin = TRUE, verbose = verbose)
 
     if(cleanup)
       on.exit({unlink(files); if (verbose) cat("MERLIN input files removed\n")})
@@ -178,9 +177,12 @@ likelihoodMerlin = function(x, markers = NULL, rho = NULL,
   if(!is.null(rho)) {
     if(length(rho) != nMarkers(x) - 1)
       stop2("Argument `rho` must have length one less than the number of markers")
-    cM = c(0, -50 * log(1 - 2 * rho))
-    map = data.frame(chrom = 1, marker = NA, pos = cM)
-    x = setMap(x, map, matchNames = FALSE)
+
+    # Avoid infinities
+    rho[rho == 0.5] = haldane(cM = 500)
+
+    # Set centiMorgan positions (using the posMb slot, but this is interpreted as cM by Merlin)
+    posMb(x) = c(0, haldane(rho = rho))
   }
 
   # Run MERLIN
