@@ -1,4 +1,3 @@
-context("likelihoods with mutations")
 
 test_that("empty marker (with mutations) give likelihood 1", {
   x = nuclearPed(1)

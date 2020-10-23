@@ -1,4 +1,3 @@
-context("oneMarkerDistribution")
 
 OMD = function(...) oneMarkerDistribution(..., verbose = F)
 

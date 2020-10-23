@@ -1,4 +1,3 @@
-context("likelihoods on X")
 
 test_that("empty X-markers give likelihood 1", {
   x1 = nuclearPed(1)

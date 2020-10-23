@@ -1,4 +1,3 @@
-context("likelihood of pedlist")
 
 test_that("pedlist with empty markers give likelihood 1", {
   x = list(singleton("NN"), nuclearPed(1))

@@ -1,4 +1,3 @@
-context("twoMarkerDistribution")
 
 TMD = function(x, pm1, pm2, ...)
   twoMarkerDistribution(x, partialmarker1 = pm1, partialmarker2 = pm2, ..., verbose = F)

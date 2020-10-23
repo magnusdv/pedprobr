@@ -1,4 +1,3 @@
-context("likelihoods of linked markers")
 
 liktest = function(x, m1, m2) {
   th_0.0 = likelihood2(x, m1, m2, rho=0, verbose=F)

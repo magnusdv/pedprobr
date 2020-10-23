@@ -1,5 +1,3 @@
-context("likelihoods")
-
 
 test_that("likelihood() catches input errors", {
   x = singleton(1)

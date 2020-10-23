@@ -1,4 +1,3 @@
-context("inbred founders")
 
 test_that("likelihood of inbred singleton agrees with expanded pedigree, and theory", {
   p = 0.1; q = 1-p
