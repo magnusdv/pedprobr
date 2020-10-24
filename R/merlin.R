@@ -224,6 +224,6 @@ likelihoodMerlin = function(x, markers = NULL, rho = NULL,
 
   # Return total
   total = sum(lnliks)
-  return(round(exp(total), 3))
+  return(exp(total))
 }
 
