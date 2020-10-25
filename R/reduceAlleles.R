@@ -1,15 +1,59 @@
+#' Allele lumping
+#'
+#' Perform allele lumping (i.e., merging unobserved alleles) for all markers
+#' attached to the input pedigree.
+#'
+#' @param x A `ped` object or a list of such.
+#' @param markers A vector of names or indices referring to markers attached to
+#'   `x`. (Default: All markers.)
+#' @param verbose A logical.
+#'
+#' @return An object similar to `x`, but whose attached markers have reduced
+#'   allele set.
+#'
+#' @examples
+#' x = nuclearPed()
+#' x = setMarkers(x, marker(x, geno = c("1/1", NA, NA), alleles = 1:4))
+#'
+#' # Before lumping
+#' afreq(x, 1)
+#'
+#' # Lump
+#' y = lumpAlleles(x, verbose = TRUE)
+#' afreq(y, 1)
+#'
+#' @export
+lumpAlleles = function(x, markers = NULL, verbose = FALSE) {
+  markers = markers %||% seq_len(nMarkers(x))
 
-#' @importFrom utils modifyList
+  if(is.pedList(x))
+    return(lapply(x, function(comp) lumpAlleles(comp, markers, verbose = verbose)))
+
+  if(!is.ped(x))
+    stop2("Input must be a `ped` object or a list of such")
+
+  mlist = getMarkers(x, markers)
+  mlistLumped = lapply(seq_along(mlist), function(i) {
+    m = mlist[[i]]
+    label = name(m)
+    if(is.na(label)) label = i
+    if(verbose) message("Marker ",label, ". ", appendLF = FALSE)
+    reduceAlleles(m, verbose = verbose)
+  })
+
+  setMarkers(x, mlistLumped)
+}
+
 #' @importFrom pedmut isLumpable lumpedMatrix mutationModel
 reduceAlleles = function(marker, verbose = FALSE) {
 
   if (is.null(marker)) {
-    if(verbose) message("Allele lumping: Not needed - NULL marker")
+    if(verbose) message("Lumping not needed - NULL marker")
     return(NULL)
   }
 
   if (all(marker != 0)) {
-    if(verbose) message("Allele lumping: Not needed - all members genotyped")
+    if(verbose) message("Lumping not needed - all members genotyped")
     return(marker)
   }
 
@@ -21,7 +65,7 @@ reduceAlleles = function(marker, verbose = FALSE) {
 
   # No lumping if all, or all but one, are observed
   if (length(presentIdx) >= length(origAlleles) - 1) {
-    if(verbose) message("Allele lumping: Not needed - all (or all but one) alleles present")
+    if(verbose) message("Lumping not needed - all (or all but one) alleles present")
     return(marker)
   }
 
@@ -31,7 +75,7 @@ reduceAlleles = function(marker, verbose = FALSE) {
   # No lumping if mutation model is present and not lumpable for this lump
   mut = attrs$mutmod
   if(!is.null(mut) && !isLumpable(mut, lump)) {
-    if(verbose) message("Allele lumping: mutation model is not lumpable")
+    if(verbose) message("Mutation model is not lumpable")
     return(marker)
   }
 
@@ -47,7 +91,7 @@ reduceAlleles = function(marker, verbose = FALSE) {
     mutmod(marker) = mutationModel(list(female = lumpedFemale, male = lumpedMale))
   }
 
-  if(verbose) message(sprintf("Allele lumping: %d alleles -> %d alleles",
+  if(verbose) message(sprintf("Lumping: %d -> %d alleles",
               length(origAlleles), length(presentIdx) + 1))
   marker
 }
