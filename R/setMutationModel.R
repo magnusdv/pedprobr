@@ -35,7 +35,7 @@
 #'
 #' @param x A `ped` object or a list of such.
 #' @param markers A vector of names or indices referring to markers attached to
-#'   `x`.
+#'   `x`. (Default: All markers.)
 #' @param model A model name implemented by [pedmut::mutationModel()]. See
 #'   Details.
 #' @param ... Arguments forwarded to [pedmut::mutationModel()], e.g., `rate`.

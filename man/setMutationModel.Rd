@@ -10,7 +10,7 @@ setMutationModel(x, markers = NULL, model, ...)
 \item{x}{A \code{ped} object or a list of such.}
 
 \item{markers}{A vector of names or indices referring to markers attached to
-\code{x}.}
+\code{x}. (Default: All markers.)}
 
 \item{model}{A model name implemented by \code{\link[pedmut:mutationModel]{pedmut::mutationModel()}}. See
 Details.}
