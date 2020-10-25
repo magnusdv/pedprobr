@@ -1,8 +1,9 @@
 #' Pedigree likelihood
 #'
-#' This function is the heart of pedprobr. It computes the likelihood of a
-#' pedigree (or a list of pedigrees) given genotypes for a marker or a pair of
-#' linked markers.
+#' The `likelihood()` and `likelihood2()` functions constitute the heart of
+#' **pedprobr**. The former computes the pedigree likelihood for each indicated
+#' marker. The latter computer the likelihood for a pair of linked markers
+#' separated by a given recombination rate.
 #'
 #' The implementation is based on the peeling algorithm of Elston and Stewart
 #' (1971). A variety of situations are covered; see the Examples section for
@@ -24,7 +25,7 @@
 #'
 #'   * A [marker()] object compatible with `x`.
 #'
-#'   * A list of marker objects
+#'   * A list of marker objects.
 #'
 #'   * A vector of names or indices of markers attached to `x`. If `x` is a
 #'   list, this is the only valid input.
@@ -35,14 +36,14 @@
 #' @param eliminate Mostly for internal use: a non-negative integer indicating
 #'   the number of iterations in the internal genotype-compatibility algorithm.
 #'   Positive values can save time if the number of alleles is large.
-#' @param logbase A numeric, or NULL. If numeric the log-likelihood is returned,
-#'   with `logbase` as basis for the logarithm.
+#' @param logbase Either NULL (default) or a positive number indicating the
+#'   basis for logarithmic output. Typical values are `exp(1)` and 10.
 #' @param loop_breakers A vector of ID labels indicating loop breakers. If NULL
 #'   (default), automatic selection of loop breakers will be performed. See
 #'   [breakLoops()].
 #' @param peelOrder For internal use.
 #' @param verbose A logical.
-#' @param theta Theta correction (experimental)
+#' @param theta Theta correction.
 #' @param \dots Further arguments.
 
 #' @return A numeric with the same length as the number of markers indicated by
