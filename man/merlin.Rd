@@ -3,6 +3,7 @@
 \name{merlin}
 \alias{merlin}
 \alias{likelihoodMerlin}
+\alias{checkMerlin}
 \title{Pedigree likelihood computed by MERLIN}
 \usage{
 merlin(
@@ -24,6 +25,8 @@ likelihoodMerlin(
   options = "--likelihood --bits:100 --megabytes:4000 --quiet",
   ...
 )
+
+checkMerlin()
 }
 \arguments{
 \item{x}{a \code{\link{ped}} object.}
@@ -63,9 +66,12 @@ the recombination rate between each consecutive pair.}
 
 \code{likelihoodMerlin()} returns a single number; the total likelihood using
 all indicated markers.
+
+\code{checkMerlin()} returns TRUE if MERLIN is installed and available on the
+system path, and FALSE otherwise.
 }
 \description{
-For this functions to work, the program MERLIN (see References below) must be
+For these functions to work, the program MERLIN (see References below) must be
 installed and correctly pointed to in the PATH variable. The \code{merlin()}
 function is a general wrapper which runs MERLIN with the indicated options,
 after creating the appropriate input files. For convenience, MERLIN's
@@ -91,8 +97,9 @@ function, and used to create genetic marker map in a MERLIN-friendly format.
 }
 \examples{
 
-\donttest{
-### Requires MERLIN to be installed ###
+merlinInstalled = checkMerlin()
+
+if(merlinInstalled) {
 
 ### Trivial example for validation
 x = nuclearPed(1)

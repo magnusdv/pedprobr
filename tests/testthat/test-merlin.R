@@ -1,4 +1,4 @@
-if(Sys.which("merlin.exe") == "")
+if(!checkMerlin())
   skip("Merlin not installed")
 
 lm = function(..., verbose = FALSE)

@@ -1,6 +1,6 @@
 #' Pedigree likelihood computed by MERLIN
 #'
-#' For this functions to work, the program MERLIN (see References below) must be
+#' For these functions to work, the program MERLIN (see References below) must be
 #' installed and correctly pointed to in the PATH variable. The `merlin()`
 #' function is a general wrapper which runs MERLIN with the indicated options,
 #' after creating the appropriate input files. For convenience, MERLIN's
@@ -47,16 +47,20 @@
 #'
 #' @return `merlin()` returns the screen output of MERLIN invisibly.
 #'
-#'   `likelihoodMerlin()` returns a single number; the total likelihood using
+#'  `likelihoodMerlin()` returns a single number; the total likelihood using
 #'   all indicated markers.
+#'
+#'  `checkMerlin()` returns TRUE if MERLIN is installed and available on the
+#' system path, and FALSE otherwise.
 #'
 #' @author Magnus Dehli Vigeland
 #' @references <http://csg.sph.umich.edu/abecasis/Merlin/>
 #'
 #' @examples
 #'
-#' \donttest{
-#' ### Requires MERLIN to be installed ###
+#' merlinInstalled = checkMerlin()
+#'
+#' if(merlinInstalled) {
 #'
 #' ### Trivial example for validation
 #' x = nuclearPed(1)
@@ -181,6 +185,10 @@ likelihoodMerlin = function(x, markers = NULL, rho = NULL,
     # Avoid infinities
     rho[rho == 0.5] = haldane(cM = 500)
 
+    # If no chromosome info given, place all markers on chrom 1
+    if(all(is.na(chrom(x))))
+      chrom(x) = 1
+
     # Set centiMorgan positions (using the posMb slot, but this is interpreted as cM by Merlin)
     posMb(x) = c(0, haldane(rho = rho))
   }
@@ -227,3 +235,10 @@ likelihoodMerlin = function(x, markers = NULL, rho = NULL,
   return(exp(total))
 }
 
+
+
+#' @rdname merlin
+#' @export
+checkMerlin = function() {
+  Sys.which("merlin.exe") != ""
+}
