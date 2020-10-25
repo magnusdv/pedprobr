@@ -22,6 +22,7 @@ likelihoodMerlin(
   x,
   markers = NULL,
   rho = NULL,
+  logbase = NULL,
   options = "--likelihood --bits:100 --megabytes:4000 --quiet",
   ...
 )
@@ -59,6 +60,9 @@ NULL (default).}
 \item{rho}{A vector of length one less than the number of markers, specifying
 the recombination rate between each consecutive pair.}
 
+\item{logbase}{Either NULL (default) or a positive number indicating the
+basis for logarithmic output. Typical values are \code{exp(1)} and 10.}
+
 \item{...}{Further arguments passed on to \code{merlin()}.}
 }
 \value{
@@ -71,8 +75,8 @@ all indicated markers.
 system path, and FALSE otherwise.
 }
 \description{
-For these functions to work, the program MERLIN (see References below) must be
-installed and correctly pointed to in the PATH variable. The \code{merlin()}
+For these functions to work, the program MERLIN (see References below) must
+be installed and correctly pointed to in the PATH variable. The \code{merlin()}
 function is a general wrapper which runs MERLIN with the indicated options,
 after creating the appropriate input files. For convenience, MERLIN's
 "--likelihood" functionality is wrapped in a separate function.

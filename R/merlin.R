@@ -1,7 +1,7 @@
 #' Pedigree likelihood computed by MERLIN
 #'
-#' For these functions to work, the program MERLIN (see References below) must be
-#' installed and correctly pointed to in the PATH variable. The `merlin()`
+#' For these functions to work, the program MERLIN (see References below) must
+#' be installed and correctly pointed to in the PATH variable. The `merlin()`
 #' function is a general wrapper which runs MERLIN with the indicated options,
 #' after creating the appropriate input files. For convenience, MERLIN's
 #' "--likelihood" functionality is wrapped in a separate function.
@@ -44,14 +44,15 @@
 #'   NULL (default).
 #' @param rho A vector of length one less than the number of markers, specifying
 #'   the recombination rate between each consecutive pair.
-#'
+#' @param logbase Either NULL (default) or a positive number indicating the
+#'   basis for logarithmic output. Typical values are `exp(1)` and 10.
 #' @return `merlin()` returns the screen output of MERLIN invisibly.
 #'
-#'  `likelihoodMerlin()` returns a single number; the total likelihood using
+#'   `likelihoodMerlin()` returns a single number; the total likelihood using
 #'   all indicated markers.
 #'
-#'  `checkMerlin()` returns TRUE if MERLIN is installed and available on the
-#' system path, and FALSE otherwise.
+#'   `checkMerlin()` returns TRUE if MERLIN is installed and available on the
+#'   system path, and FALSE otherwise.
 #'
 #' @author Magnus Dehli Vigeland
 #' @references <http://csg.sph.umich.edu/abecasis/Merlin/>
@@ -170,7 +171,7 @@ merlin = function(x, options, markers = NULL, verbose = TRUE,
 #'
 #' @rdname merlin
 #' @export
-likelihoodMerlin = function(x, markers = NULL, rho = NULL,
+likelihoodMerlin = function(x, markers = NULL, rho = NULL, logbase = NULL,
                             options = "--likelihood --bits:100 --megabytes:4000 --quiet",
                             ...) {
 
@@ -231,8 +232,19 @@ likelihoodMerlin = function(x, markers = NULL, rho = NULL,
   lnliks = as.numeric(unlist(lapply(strsplit(mout[likLines]," = "), '[', 2)))
 
   # Return total
-  total = sum(lnliks)
-  return(exp(total))
+  totalLnLik = sum(lnliks)
+
+  if(!is.null(logbase)) {
+    if(length(logbase) != 1 || !is.numeric(logbase) || logbase <= 0)
+      stop2("`logbase` must be a positive number: ", logbase)
+    if(logbase == exp(1))
+      return(totalLnLik)
+    else
+      return(round(totalLnLik/log(logbase), 3))
+  }
+
+  # Return with 3 significant digits
+  return(signif(exp(totalLnLik), 3))
 }
 
 
