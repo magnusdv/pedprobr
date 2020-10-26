@@ -143,3 +143,21 @@ haldane = function(cM = NULL, rho = NULL) {
   else
     .5 * (1 - exp(-cM/50))
 }
+
+fixMerlinLog = function(a, logbase = NULL) {
+  if(!is.null(logbase)) {
+    if(length(logbase) != 1 || !is.numeric(logbase) || logbase <= 0)
+      stop2("`logbase` must be a positive number: ", logbase)
+
+    if(logbase == exp(1))
+      res = a
+    else
+      res = round(a/log(logbase),3)
+  }
+  else
+    res = signif(exp(a), digits = 3)
+
+  res
+}
+
+

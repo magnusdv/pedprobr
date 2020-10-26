@@ -106,9 +106,7 @@ function, and used to create genetic marker map in a MERLIN-friendly format.
 }
 \examples{
 
-merlinInstalled = checkMerlin()
-
-if(merlinInstalled) {
+if(checkMerlin()) {
 
 ### Trivial example for validation
 x = nuclearPed(1)
@@ -142,7 +140,7 @@ L1 = likelihoodMerlin(z, markers = 1:2, rho = 0.25, verbose = FALSE)
 # ...and by pedprobr
 L2 = likelihood2(z, marker1 = 1, marker2 = 2, rho = 0.25)
 
-stopifnot(all.equal(round(L1, 6), round(L2, 6)))
+stopifnot(all.equal(signif(L1, 3), signif(L2, 3)))
 }
 
 }

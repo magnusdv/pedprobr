@@ -61,9 +61,7 @@
 #'
 #' @examples
 #'
-#' merlinInstalled = checkMerlin()
-#'
-#' if(merlinInstalled) {
+#' if(checkMerlin()) {
 #'
 #' ### Trivial example for validation
 #' x = nuclearPed(1)
@@ -97,7 +95,7 @@
 #' # ...and by pedprobr
 #' L2 = likelihood2(z, marker1 = 1, marker2 = 2, rho = 0.25)
 #'
-#' stopifnot(all.equal(round(L1, 6), round(L2, 6)))
+#' stopifnot(all.equal(signif(L1, 3), signif(L2, 3)))
 #' }
 #'
 #' @export
@@ -232,7 +230,7 @@ likelihoodMerlin = function(x, markers = NULL, linkageMap = NULL, rho = NULL, lo
   # If single output value: Return likelihood
   if(length(chromLines) == 0 && length(likLines) == 1) {
     lnlik = as.numeric(strsplit(mout[likLines]," = ")[[1]][2])
-    return(exp(lnlik))
+    return(fixMerlinLog(lnlik, logbase = logbase))
   }
 
   #---------------
@@ -248,17 +246,7 @@ likelihoodMerlin = function(x, markers = NULL, linkageMap = NULL, rho = NULL, lo
   # Return total
   totalLnLik = sum(lnliks)
 
-  if(!is.null(logbase)) {
-    if(length(logbase) != 1 || !is.numeric(logbase) || logbase <= 0)
-      stop2("`logbase` must be a positive number: ", logbase)
-    if(logbase == exp(1))
-      return(totalLnLik)
-    else
-      return(round(totalLnLik/log(logbase), 3))
-  }
-
-  # Return with 3 significant digits
-  return(signif(exp(totalLnLik), 3))
+  fixMerlinLog(totalLnLik, logbase = logbase)
 }
 
 
