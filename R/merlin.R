@@ -29,6 +29,8 @@
 #'   the input file indications.
 #' @param markers a vector of names or indices of markers attached to `x`.
 #'   (Default: all markers).
+#' @param linkageMap a data frame with three columns (chromosome; marker name;
+#'   centiMorgan position) to be used as the marker map by MERLIN.
 #' @param verbose a logical.
 #' @param generateFiles a logical. If TRUE (default), input files to MERLIN
 #'   named '_merlin.ped', '_merlin.dat', '_merlin.map', and '_merlin.freq' are
@@ -99,13 +101,18 @@
 #' }
 #'
 #' @export
-merlin = function(x, options, markers = NULL, verbose = TRUE,
+merlin = function(x, options, markers = NULL, linkageMap = NULL, verbose = TRUE,
                   generateFiles = TRUE, cleanup = TRUE, dir = tempdir(),
                   logfile = NULL, merlinpath = NULL) {
 
   # Select markers
   if (!hasMarkers(x))
     stop2("Pedigree has no attached markers")
+
+  # Set linkage map if provided
+  if(!is.null(linkageMap))
+    x = setMap(x, map = linkageMap, matchNames = NA)
+
   if(is.null(markers))
     markers = seq_len(nMarkers(x))
   x = selectMarkers(x, markers)
@@ -171,7 +178,7 @@ merlin = function(x, options, markers = NULL, verbose = TRUE,
 #'
 #' @rdname merlin
 #' @export
-likelihoodMerlin = function(x, markers = NULL, rho = NULL, logbase = NULL,
+likelihoodMerlin = function(x, markers = NULL, linkageMap = NULL, rho = NULL, logbase = NULL,
                             options = "--likelihood --bits:100 --megabytes:4000 --quiet",
                             ...) {
 
@@ -180,6 +187,10 @@ likelihoodMerlin = function(x, markers = NULL, rho = NULL, logbase = NULL,
 
   # If rho given, replace map
   if(!is.null(rho)) {
+
+    if(!is.null(linkageMap))
+      stop2("At least one of `rho` and `linkageMap` must be NULL")
+
     if(length(rho) != nMarkers(x) - 1)
       stop2("Argument `rho` must have length one less than the number of markers")
 
@@ -187,15 +198,18 @@ likelihoodMerlin = function(x, markers = NULL, rho = NULL, logbase = NULL,
     rho[rho == 0.5] = haldane(cM = 500)
 
     # If no chromosome info given, place all markers on chrom 1
-    if(all(is.na(chrom(x))))
-      chrom(x) = 1
+    chr = chrom(x)
+    if(all(is.na(chr)))
+      chr = rep_len(1, nMarkers(x))
 
-    # Set centiMorgan positions (using the posMb slot, but this is interpreted as cM by Merlin)
-    posMb(x) = c(0, haldane(rho = rho))
+    # Convert to centiMorgan positions
+    cm = c(0, haldane(rho = rho))
+
+    linkageMap = data.frame(CHROM = chr, MARKER = name(x), CM = cm)
   }
 
   # Run MERLIN
-  mout = merlin(x, options = options, ...)
+  mout = merlin(x, linkageMap = linkageMap, options = options, ...)
 
   # Catch possible errors
   if (any(skipped <- substr(mout, 3, 9) == "SKIPPED"))

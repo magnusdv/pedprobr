@@ -10,6 +10,7 @@ merlin(
   x,
   options,
   markers = NULL,
+  linkageMap = NULL,
   verbose = TRUE,
   generateFiles = TRUE,
   cleanup = TRUE,
@@ -21,6 +22,7 @@ merlin(
 likelihoodMerlin(
   x,
   markers = NULL,
+  linkageMap = NULL,
   rho = NULL,
   logbase = NULL,
   options = "--likelihood --bits:100 --megabytes:4000 --quiet",
@@ -37,6 +39,9 @@ the input file indications.}
 
 \item{markers}{a vector of names or indices of markers attached to \code{x}.
 (Default: all markers).}
+
+\item{linkageMap}{a data frame with three columns (chromosome; marker name;
+centiMorgan position) to be used as the marker map by MERLIN.}
 
 \item{verbose}{a logical.}
 
