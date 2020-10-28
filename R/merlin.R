@@ -213,9 +213,9 @@ likelihoodMerlin = function(x, markers = NULL, linkageMap = NULL, rho = NULL, lo
   if (any(skipped <- substr(mout, 3, 9) == "SKIPPED"))
     stop2(paste(mout[sort(c(which(skipped)-1, which(skipped)))], collapse = "\n"))
 
-  # Bad inheritance? Return 0
+  # Bad inheritance? Return lnLik = -Inf (i.e. L = 0)
   if (any(grepl("Skipping Marker .* [BAD INHERITANCE]", mout)))
-    return(0)
+    return(fixMerlinLog(-Inf, logbase = logbase))
 
   # Different chromosomes?
   chromLines = which(substr(mout, 1, 20) == "Analysing Chromosome")
@@ -225,7 +225,7 @@ likelihoodMerlin = function(x, markers = NULL, linkageMap = NULL, rho = NULL, lo
   likLines = which(substr(mout, 1, 27) == sprintf("lnLikelihood for %d families", nFam))
 
   if(length(likLines) == 0)
-    return(0)
+    return(fixMerlinLog(-Inf, logbase = logbase))
 
   # If single output value: Return likelihood
   if(length(chromLines) == 0 && length(likLines) == 1) {
