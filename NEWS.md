@@ -1,3 +1,24 @@
+# pedprobr 0.4.0
+
+## Breaking changes
+
+* `likelihood()` has been refactored, and the functionality for calculating the likelihood of two linked markers is moved to a separate function, `likelihood2()`. 
+
+## New features
+
+* Theta-correction is implemented in likelihood calculations, through the argument `theta` of `likelihood()`.
+
+* `merlin()` and `likelihoodMerlin()` have been overhauled.
+
+* A new function `checkMerlin()` checks if MERLIN is installed and available.
+
+* `merlin()` now has an argument `linkageMap` facilitating analysis of linked markers.
+
+* `likelihoodMerlin()` gains arguments `rho` and `logbase`.
+
+* New function `lumpAlleles()`.
+
+
 # pedprobr 0.3.0
 
 ## New features
@@ -11,7 +32,7 @@ with other ped suite packages. `theta` still works, though.
 
 ## Other changes
 
-* Many input checks have been added, giving more useful error messages
+* Many input checks have been added, giving more useful error messages.
 
 * The data structure used in likelihood calculations is simplified and more 
 efficient.
