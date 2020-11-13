@@ -1,3 +1,4 @@
+skip("Await pedtools v0.9.6")
 if(!checkMerlin())
   skip("Merlin not installed")
 
