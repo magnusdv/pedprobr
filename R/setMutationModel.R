@@ -73,7 +73,8 @@ setMutationModel = function(x, markers = NULL, model, ...) {
 
   mIdx = whichMarkers(x, markers)
   for(i in mIdx) {
-    args = c(list(model = model, alleles = alleles(x, i), afreq = afreq(x, i)), opts)
+    fr = afreq(x, i)
+    args = c(list(model = model, alleles = names(fr), afreq = fr), opts)
 
     modi = do.call(pedmut::mutationModel, args)
     mutmod(x, i) = modi
