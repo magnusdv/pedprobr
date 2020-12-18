@@ -36,8 +36,8 @@
 #' @param x A `ped` object or a list of such.
 #' @param markers A vector of names or indices referring to markers attached to
 #'   `x`. (Default: All markers.)
-#' @param model A model name implemented by [pedmut::mutationModel()]. See
-#'   Details.
+#' @param model A model name implemented by [pedmut::mutationModel()] (see
+#'   Details), or NULL.
 #' @param ... Arguments forwarded to [pedmut::mutationModel()], e.g., `rate`.
 #'
 #' @return An object similar to `x`.
@@ -51,19 +51,22 @@
 #' x = setMarkers(x, marker(x, geno = c("a/a", NA, "b/b"))) # mutation!
 #'
 #' # Set `equal` model
-#' x = setMutationModel(x, marker = 1, model = "equal", rate = 0.01)
+#' y = setMutationModel(x, marker = 1, model = "equal", rate = 0.01)
 #'
 #' # Inspect model
-#' mutmod(x, 1)
+#' mutmod(y, 1)
 #'
 #' # Likelihood
-#' likelihood(x, 1)
+#' likelihood(y, 1)
 #'
+#' # Remove mutation model
+#' z = setMutationModel(y, model = NULL)
+#' stopifnot(identical(z, x))
 #' }
 #'
 #' @importFrom pedmut mutationModel
 #' @export
-setMutationModel = function(x, markers = NULL, model, ...) {
+setMutationModel = function(x, model, markers = NULL, ...) {
   if (!requireNamespace("pedmut", quietly = TRUE))
     stop2("Package `pedmut` must be installed in order to include mutation models")
 
@@ -73,10 +76,13 @@ setMutationModel = function(x, markers = NULL, model, ...) {
 
   mIdx = whichMarkers(x, markers)
   for(i in mIdx) {
-    fr = afreq(x, i)
-    args = c(list(model = model, alleles = names(fr), afreq = fr), opts)
-
-    modi = do.call(pedmut::mutationModel, args)
+    if(is.null(model))
+      modi = NULL
+    else {
+      fr = afreq(x, i)
+      args = c(list(model = model, alleles = names(fr), afreq = fr), opts)
+      modi = do.call(pedmut::mutationModel, args)
+    }
     mutmod(x, i) = modi
   }
 

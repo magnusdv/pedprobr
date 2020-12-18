@@ -4,16 +4,16 @@
 \alias{setMutationModel}
 \title{Set a mutation model}
 \usage{
-setMutationModel(x, markers = NULL, model, ...)
+setMutationModel(x, model, markers = NULL, ...)
 }
 \arguments{
 \item{x}{A \code{ped} object or a list of such.}
 
+\item{model}{A model name implemented by \code{\link[pedmut:mutationModel]{pedmut::mutationModel()}} (see
+Details), or NULL.}
+
 \item{markers}{A vector of names or indices referring to markers attached to
 \code{x}. (Default: All markers.)}
-
-\item{model}{A model name implemented by \code{\link[pedmut:mutationModel]{pedmut::mutationModel()}}. See
-Details.}
 
 \item{...}{Arguments forwarded to \code{\link[pedmut:mutationModel]{pedmut::mutationModel()}}, e.g., \code{rate}.}
 }
@@ -59,14 +59,17 @@ x = nuclearPed(1)
 x = setMarkers(x, marker(x, geno = c("a/a", NA, "b/b"))) # mutation!
 
 # Set `equal` model
-x = setMutationModel(x, marker = 1, model = "equal", rate = 0.01)
+y = setMutationModel(x, marker = 1, model = "equal", rate = 0.01)
 
 # Inspect model
-mutmod(x, 1)
+mutmod(y, 1)
 
 # Likelihood
-likelihood(x, 1)
+likelihood(y, 1)
 
+# Remove mutation model
+z = setMutationModel(y, model = NULL)
+stopifnot(identical(z, x))
 }
 
 }
