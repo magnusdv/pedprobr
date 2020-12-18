@@ -71,7 +71,6 @@ test_that("twoMarkerDist works in conditional nuclear example", {
 })
 
 test_that("recombination rate is recovered", {
-  skip("Await pedtools v0.9.6")
   x = linearPed(2, sex = 2:1)
   rho = 0.15
 
