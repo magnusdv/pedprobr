@@ -19,7 +19,7 @@ choosePeeler = function(twolocus, rho, Xchrom, SEX, mutmat) {
 
   faDat = dat[[fa]]
   moDat = dat[[mo]]
-  likel = faDat$prob %*% t.default(moDat$prob)
+  likel = tcrossprod(faDat$prob, moDat$prob) # faDat$prob %*% t.default(moDat$prob)
   faLen = nrow(likel)
   moLen = ncol(likel)
 
@@ -96,7 +96,7 @@ choosePeeler = function(twolocus, rho, Xchrom, SEX, mutmat) {
 
   faDat = dat[[fa]]
   moDat = dat[[mo]]
-  likel = faDat$prob %*% t.default(moDat$prob)
+  likel = tcrossprod(faDat$prob, moDat$prob) # faDat$prob %*% t.default(moDat$prob)
   dims = dim(likel)
   faLen = dims[1L]
   moLen = dims[2L]
@@ -223,7 +223,7 @@ choosePeeler = function(twolocus, rho, Xchrom, SEX, mutmat) {
 
   faDat = dat[[fa]]
   moDat = dat[[mo]]
-  likel = faDat$prob %*% t.default(moDat$prob)
+  likel = tcrossprod(faDat$prob, moDat$prob) # faDat$prob %*% t.default(moDat$prob)
   faLen = nrow(likel)
   moLen = ncol(likel)
 
@@ -300,7 +300,7 @@ choosePeeler = function(twolocus, rho, Xchrom, SEX, mutmat) {
 
   faDat = dat[[fa]]
   moDat = dat[[mo]]
-  likel = faDat$prob %*% t.default(moDat$prob)
+  likel = tcrossprod(faDat$prob, moDat$prob) # faDat$prob %*% t.default(moDat$prob)
   faLen = nrow(likel)
   moLen = ncol(likel)
 
