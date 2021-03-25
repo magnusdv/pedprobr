@@ -138,7 +138,7 @@ likelihood.ped = function(x, markers = NULL, peelOrder = NULL,
   if (x$UNBROKEN_LOOPS) {
     if(verbose)
       message("Tip: To optimize speed, consider breaking loops before calling 'likelihood'. See ?breakLoops.")
-    x = breakLoops(setMarkers(x, markers), loop_breakers = loop_breakers, verbose = verbose)
+    x = breakLoops(setMarkers(x, markers), loopBreakers = loop_breakers, verbose = verbose)
     markers = x$MARKERS
   }
 

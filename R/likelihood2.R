@@ -55,7 +55,7 @@ likelihood2.ped = function(x, marker1, marker2, rho, peelOrder = NULL,
   if (x$UNBROKEN_LOOPS) {
     if(verbose)
       message("Tip: To optimize speed, consider breaking loops before calling 'likelihood'. See ?breakLoops.")
-    x = breakLoops(setMarkers(x, list(marker1, marker2)), loop_breakers = loop_breakers, verbose = verbose)
+    x = breakLoops(setMarkers(x, list(marker1, marker2)), loopBreakers = loop_breakers, verbose = verbose)
     marker1 = x$MARKERS[[1]]
     marker2 = x$MARKERS[[2]]
   }

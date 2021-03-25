@@ -93,7 +93,7 @@ oneMarkerDistribution = function(x, ids, partialmarker, loop_breakers = NULL,
     grid.subset = as.matrix(grid.subset)
 
   if (x$UNBROKEN_LOOPS) {
-    x = breakLoops(setMarkers(x, m), loop_breakers = loop_breakers, verbose = verbose)
+    x = breakLoops(setMarkers(x, m), loopBreakers = loop_breakers, verbose = verbose)
     m = x$MARKERS[[1]]
   }
 
