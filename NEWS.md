@@ -1,8 +1,19 @@
+# pedprobr 0.5.0
+
+## New features
+
+* Removing/disabling mutation models is now easier, with `setMutationModel(..., model = NULL)`.
+
+## Bug fixes
+
+* Fixed bug in `setMutationModel()` affecting ped lists.
+
+
 # pedprobr 0.4.0
 
 ## Breaking changes
 
-* `likelihood()` has been refactored, and the functionality for calculating the likelihood of two linked markers is moved to a separate function, `likelihood2()`. 
+* `likelihood()` has been refactored, moving the treatment of (two) linked markers to a separate function, `likelihood2()`. 
 
 ## New features
 
