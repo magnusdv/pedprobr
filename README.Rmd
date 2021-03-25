@@ -25,11 +25,11 @@ knitr::opts_chunk$set(
 
 ## Introduction
 
-The main content of pedprobr is an implementation of the Elston-Stewart algorithm for pedigree likelihoods. It is a reboot of the implementation in [paramlink](https://CRAN.R-project.org/package=paramlink) which is no longer actively developed. 
+The main content of **pedprobr** is an implementation of the Elston-Stewart algorithm for pedigree likelihoods. It is a reboot of the implementation in [paramlink](https://CRAN.R-project.org/package=paramlink) which is no longer actively developed. 
 
-pedprobr is part of the ped suite, a collection of packages for pedigree analysis in R, based on [pedtools](https://github.com/magnusdv/pedtools) for basic handling of pedigrees and marker data. In particular, pedprobr does much of the hard work in the [forrel](https://github.com/magnusdv/forrel) package for relatedness analysis and forensic pedigree analysis. 
+**pedprobr** is part of the *ped suite*, a collection of packages for pedigree analysis in R, based on [pedtools](https://github.com/magnusdv/pedtools) for basic handling of pedigrees and marker data. In particular, **pedprobr** does much of the hard work in the [forrel](https://github.com/magnusdv/forrel) package for relatedness analysis and forensic pedigree analysis. 
 
-The workhorse of the pedprobr package is the `likelihood()` function, which works in a variety of situations:
+The workhorse of the **pedprobr** package is the `likelihood()` function, which works in a variety of situations:
 
 * complex inbred pedigrees
 * pedigrees with inbred founders
@@ -38,10 +38,11 @@ The workhorse of the pedprobr package is the `likelihood()` function, which work
 * markers with mutation models (supported by [pedmut](https://github.com/magnusdv/pedmut))
 
 ## Installation
-To get the current official version of `pedprobr`, install from CRAN as follows:
+To get the current official version of **pedprobr**, install from CRAN as follows:
 ```{r, eval = FALSE}
 install.packages("pedprobr")
 ```
+
 Alternatively, you can obtain the latest development version from GitHub:
 ```{r, eval = FALSE}
 # install.packages("devtools") # install devtools if needed
@@ -53,41 +54,40 @@ devtools::install_github("magnusdv/pedprobr")
 library(pedprobr)
 ```
 
-To set up a simple example, we first use `pedtools` utilities to create a pedigree and attach to it a marker object. The marker has alleles `1` and `2`, with frequencies 0.2 and 0.8 respectively, and both brothers are heterozygous.
-```{r}
+To set up a simple example, we first use **pedtools** utilities to create a pedigree with a single attached marker object. The marker has alleles `a` and `b`, with frequencies 0.2 and 0.8 respectively, and both brothers are heterozygous.
+```{r, fig.keep = "none"}
+# Pedigree
 x = nuclearPed(nch = 2)
-m = marker(x, '3' = 1:2, '4' = 1:2, alleles = 1:2, afreq = c(0.2, 0.8))
 
-x = addMarkers(x, m) # attach the marker
-x
+# Marker
+m = marker(x, geno = c(NA, NA, "a/b", "a/b"), afreq = c(a = 0.2, b = 0.8))
+
+# Plot
+plot(x, marker = m)
 ```
 
-```{r eval = FALSE}
-plot(x, m)
-```
-
-```{r pedplot, echo = FALSE, fig.height=3, fig.width=2.5}
+```{r pedplot, echo = FALSE, fig.height=2.7, fig.width=2.5}
 plot(x, m, margins = c(0,1,1,1))
 ```
 
-The pedigree likelihood, i,.e., the probability of observing these genotypes given the pedigree, may now be obtained as follows:
+The pedigree likelihood, i.e., the probability of observing these genotypes in the given pedigree, is obtained as follows:
 ```{r}
-likelihood(x, marker1 = 1)
+likelihood(x, marker = m)
 ```
 
 ## Genotype probability distributions
-Besides `likelihood()` the most important functions in pedprobr are:
+Besides `likelihood()` the most important functions in **pedprobr** are:
 
 * `oneMarkerDistribution()` : for a subset of family members, compute their joint genotype distribution at a single marker
 * `twoMarkerDistribution()` : for a single family member, compute the joint genotype distribution at two linked markers
 
 In both cases, the distributions are computed conditionally on any known genotypes at the markers in question.
 
-For an illustration of `oneMarkerDistribution()` we may continue our example from above, and answer the following question: _Conditional on the two heterozygous children, what is the joint distribution for the parents?_ 
+To illustrate `oneMarkerDistribution()` we continue our example from above, and consider the following question: _What is the joint genotype distribution of the parents, conditional on the genotypes of the children?_ 
 
-The answer is easily found as follows:
+The answer is found as follows:
 ```{r}
-oneMarkerDistribution(x, ids = 1:2, partialmarker = 1, verbose = F)
+oneMarkerDistribution(x, ids = 1:2, partialmarker = m, verbose = F)
 ```
 
-
+For example, the output confirms the intuitive result that the parents cannot both be homozygous for the same allele. The most likely combination is that one parent is heterozygous `a/b`, while the other is homozygous `b/b`.

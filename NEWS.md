@@ -6,7 +6,7 @@
 
 ## Bug fixes
 
-* Fixed bug in `setMutationModel()` affecting ped lists.
+* Fixed bug in `setMutationModel()` affecting lists of multiple pedigrees.
 
 
 # pedprobr 0.4.0
