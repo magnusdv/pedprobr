@@ -7,7 +7,7 @@
 #' @param ids A numeric with ID labels of one or more pedigree members.
 #' @param partialmarker Either a `marker` object or the name (or index) of a
 #'   marker attached to `x`.
-#' @param loop_breakers (Only relevant if the pedigree has loops). A vector with
+#' @param loopBreakers (Only relevant if the pedigree has loops). A vector with
 #'   ID labels of individuals to be used as loop breakers. If NULL (default)
 #'   loop breakers are selected automatically. See [breakLoops()].
 #' @param eliminate A non-negative integer, indicating the number of iterations
@@ -21,6 +21,8 @@
 #'   alleles for the marker. If the entry in column `j` is the integer `k`, this
 #'   means that the genotype of individual `ids[j]` is row `k` of `M`.
 #' @param verbose A logical.
+#' @param loop_breakers Deprecated; renamed to `loopBreakers`.
+#'
 #' @return A named `k`-dimensional array, where `k = length(ids)`, with the
 #'   joint genotype distribution for the `ids` individuals. The probabilities
 #'   are conditional on the known genotypes and the allele frequencies of
@@ -56,8 +58,15 @@
 #' oneMarkerDistribution(y, ids = 8, partialmarker = snp)
 #'
 #' @export
-oneMarkerDistribution = function(x, ids, partialmarker, loop_breakers = NULL,
-                                 eliminate = 0, grid.subset = NULL, verbose = TRUE) {
+oneMarkerDistribution = function(x, ids, partialmarker, loopBreakers = NULL,
+                                 eliminate = 0, grid.subset = NULL, verbose = TRUE,
+                                 loop_breakers = NULL) {
+
+  if(!is.null(loop_breakers)) {
+    message("`loop_breakers` has been renamed to `loopBreakers` and will be removed in a future version")
+    loopBreakers = loop_breakers
+  }
+
   if(!is.ped(x))
     stop2("Input is not a `ped` object")
   if(!isCount(eliminate, minimum = 0))
@@ -93,7 +102,7 @@ oneMarkerDistribution = function(x, ids, partialmarker, loop_breakers = NULL,
     grid.subset = as.matrix(grid.subset)
 
   if (x$UNBROKEN_LOOPS) {
-    x = breakLoops(setMarkers(x, m), loopBreakers = loop_breakers, verbose = verbose)
+    x = breakLoops(setMarkers(x, m), loopBreakers = loopBreakers, verbose = verbose)
     m = x$MARKERS[[1]]
   }
 

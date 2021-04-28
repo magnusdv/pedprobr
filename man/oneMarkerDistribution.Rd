@@ -8,10 +8,11 @@ oneMarkerDistribution(
   x,
   ids,
   partialmarker,
-  loop_breakers = NULL,
+  loopBreakers = NULL,
   eliminate = 0,
   grid.subset = NULL,
-  verbose = TRUE
+  verbose = TRUE,
+  loop_breakers = NULL
 )
 }
 \arguments{
@@ -22,7 +23,7 @@ oneMarkerDistribution(
 \item{partialmarker}{Either a \code{marker} object or the name (or index) of a
 marker attached to \code{x}.}
 
-\item{loop_breakers}{(Only relevant if the pedigree has loops). A vector with
+\item{loopBreakers}{(Only relevant if the pedigree has loops). A vector with
 ID labels of individuals to be used as loop breakers. If NULL (default)
 loop breakers are selected automatically. See \code{\link[=breakLoops]{breakLoops()}}.}
 
@@ -39,6 +40,8 @@ alleles for the marker. If the entry in column \code{j} is the integer \code{k},
 means that the genotype of individual \code{ids[j]} is row \code{k} of \code{M}.}
 
 \item{verbose}{A logical.}
+
+\item{loop_breakers}{Deprecated; renamed to \code{loopBreakers}.}
 }
 \value{
 A named \code{k}-dimensional array, where \code{k = length(ids)}, with the

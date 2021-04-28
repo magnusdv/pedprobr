@@ -10,9 +10,10 @@ twoMarkerDistribution(
   partialmarker1,
   partialmarker2,
   rho,
-  loop_breakers = NULL,
+  loopBreakers = NULL,
   eliminate = 99,
-  verbose = TRUE
+  verbose = TRUE,
+  loop_breakers = NULL
 )
 }
 \arguments{
@@ -26,7 +27,7 @@ index) of a marker attached to \code{x}.}
 \item{rho}{A single numeric in the interval \verb{[0, 0.5]}: the recombination
 fraction between the two markers.}
 
-\item{loop_breakers}{(Only relevant if the pedigree has loops). A vector with
+\item{loopBreakers}{(Only relevant if the pedigree has loops). A vector with
 ID labels of individuals to be used as loop breakers. If NULL (default)
 loop breakers are selected automatically. See \code{\link[=breakLoops]{breakLoops()}}.}
 
@@ -36,6 +37,8 @@ can save time if \code{partialmarker1} and/or \code{partialmarker2} have many
 alleles.}
 
 \item{verbose}{A logical.}
+
+\item{loop_breakers}{Deprecated; renamed to \code{loopBreakers}.}
 }
 \value{
 A named matrix giving the joint genotype distribution.

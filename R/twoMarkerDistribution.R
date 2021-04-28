@@ -10,7 +10,7 @@
 #'   index) of a marker attached to `x`.
 #' @param rho A single numeric in the interval `[0, 0.5]`: the recombination
 #'   fraction between the two markers.
-#' @param loop_breakers (Only relevant if the pedigree has loops). A vector with
+#' @param loopBreakers (Only relevant if the pedigree has loops). A vector with
 #'   ID labels of individuals to be used as loop breakers. If NULL (default)
 #'   loop breakers are selected automatically. See [breakLoops()].
 #' @param eliminate A non-negative integer, indicating the number of iterations
@@ -18,6 +18,7 @@
 #'   can save time if `partialmarker1` and/or `partialmarker2` have many
 #'   alleles.
 #' @param verbose A logical.
+#' @param loop_breakers Deprecated; renamed to `loopBreakers`.
 #'
 #' @return A named matrix giving the joint genotype distribution.
 #' @author Magnus Dehli Vigeland
@@ -46,9 +47,13 @@
 #' twoMarkerDistribution(x, id = "bro2", SNP1, SNP2, rho = 0.5)
 #'
 #' @export
-twoMarkerDistribution <- function(x, id, partialmarker1, partialmarker2, rho, loop_breakers = NULL,
-                                  eliminate = 99, verbose = TRUE) {
+twoMarkerDistribution <- function(x, id, partialmarker1, partialmarker2, rho, loopBreakers = NULL,
+                                  eliminate = 99, verbose = TRUE, loop_breakers = NULL) {
 
+  if(!is.null(loop_breakers)) {
+    message("`loop_breakers` has been renamed to `loopBreakers` and will be removed in a future version")
+    loopBreakers = loop_breakers
+  }
 
   if(!is.ped(x))
     stop2("Input is not a `ped` object")
@@ -107,7 +112,7 @@ twoMarkerDistribution <- function(x, id, partialmarker1, partialmarker2, rho, lo
                            genoCombinations(x, m2, id, make.grid = FALSE)))
 
   if (x$UNBROKEN_LOOPS) {
-    x = breakLoops(setMarkers(x, list(m1, m2)), loopBreakers = loop_breakers, verbose = verbose)
+    x = breakLoops(setMarkers(x, list(m1, m2)), loopBreakers = loopBreakers, verbose = verbose)
     m1 = x$MARKERS[[1]]
     m2 = x$MARKERS[[2]]
   }
