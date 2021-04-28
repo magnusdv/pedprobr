@@ -33,17 +33,23 @@
 #' @param marker1,marker2 Single markers compatible with `x`.
 #' @param rho The recombination rate between `marker1` and `marker2`. To make
 #'   biological sense `rho` should be between 0 and 0.5.
+#' @param lump Activate allele lumping, i.e., merging unobserved alleles. This
+#'   is an important time saver, and should be applied in nearly all cases. (The
+#'   parameter exists mainly for debugging purposes.) The lumping algorithm will
+#'   detect (and complain) if any markers use a non-lumpable mutation model.
+#'   Default: TRUE.
 #' @param eliminate Mostly for internal use: a non-negative integer indicating
 #'   the number of iterations in the internal genotype-compatibility algorithm.
 #'   Positive values can save time if the number of alleles is large.
 #' @param logbase Either NULL (default) or a positive number indicating the
 #'   basis for logarithmic output. Typical values are `exp(1)` and 10.
-#' @param loop_breakers A vector of ID labels indicating loop breakers. If NULL
+#' @param loopBreakers A vector of ID labels indicating loop breakers. If NULL
 #'   (default), automatic selection of loop breakers will be performed. See
 #'   [breakLoops()].
 #' @param peelOrder For internal use.
 #' @param verbose A logical.
 #' @param theta Theta correction.
+#' @param loop_breakers Deprecated; renamed to `loopBreakers`.
 #' @param \dots Further arguments.
 
 #' @return A numeric with the same length as the number of markers indicated by
@@ -96,9 +102,14 @@ likelihood = function(x, ...) UseMethod("likelihood", x)
 
 #' @export
 #' @rdname likelihood
-likelihood.ped = function(x, markers = NULL, peelOrder = NULL,
-                          eliminate = 0, logbase = NULL, loop_breakers = NULL,
-                          verbose = FALSE, theta = 0, ...) {
+likelihood.ped = function(x, markers = NULL, peelOrder = NULL, lump = TRUE,
+                          eliminate = 0, logbase = NULL, loopBreakers = NULL,
+                          verbose = FALSE, theta = 0, loop_breakers = NULL, ...) {
+
+  if(!is.null(loop_breakers)) {
+    message("`loop_breakers` has been renamed to `loopBreakers` and will be removed in a future version")
+    loopBreakers = loop_breakers
+  }
 
   if(hasSelfing(x))
     stop2("Likelihood of pedigrees with selfing is not implemented.\n",
@@ -132,13 +143,14 @@ likelihood.ped = function(x, markers = NULL, peelOrder = NULL,
   }
 
   # Allele lumping
-  markers = lapply(markers, reduceAlleles, verbose = verbose)
+  if(lump)
+    markers = lapply(markers, function(m) reduceAlleles(m, verbose = verbose))
 
   # Break unbroken loops TODO: move up (avoid re-attaching)
   if (x$UNBROKEN_LOOPS) {
     if(verbose)
       message("Tip: To optimize speed, consider breaking loops before calling 'likelihood'. See ?breakLoops.")
-    x = breakLoops(setMarkers(x, markers), loopBreakers = loop_breakers, verbose = verbose)
+    x = breakLoops(setMarkers(x, markers), loopBreakers = loopBreakers, verbose = verbose)
     markers = x$MARKERS
   }
 

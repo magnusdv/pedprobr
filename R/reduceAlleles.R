@@ -65,7 +65,8 @@ reduceAlleles = function(marker, verbose = FALSE) {
 
   # No lumping if all, or all but one, are observed
   if (length(presentIdx) >= length(origAlleles) - 1) {
-    if(verbose) message("Lumping not needed - all (or all but one) alleles present")
+    if(verbose) message(sprintf("Lumping not needed: %d of %d alleles observed",
+                                length(presentIdx), length(origAlleles)))
     return(marker)
   }
 

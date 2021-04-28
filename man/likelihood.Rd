@@ -15,11 +15,13 @@ likelihood(x, ...)
   x,
   markers = NULL,
   peelOrder = NULL,
+  lump = TRUE,
   eliminate = 0,
   logbase = NULL,
-  loop_breakers = NULL,
+  loopBreakers = NULL,
   verbose = FALSE,
   theta = 0,
+  loop_breakers = NULL,
   ...
 )
 
@@ -35,8 +37,9 @@ likelihood2(x, ...)
   peelOrder = NULL,
   eliminate = 0,
   logbase = NULL,
-  loop_breakers = NULL,
+  loopBreakers = NULL,
   verbose = FALSE,
+  loop_breakers = NULL,
   ...
 )
 
@@ -58,6 +61,12 @@ list, this is the only valid input.
 
 \item{peelOrder}{For internal use.}
 
+\item{lump}{Activate allele lumping, i.e., merging unobserved alleles. This
+is an important time saver, and should be applied in nearly all cases. (The
+parameter exists mainly for debugging purposes.) The lumping algorithm will
+detect (and complain) if any markers use a non-lumpable mutation model.
+Default: TRUE.}
+
 \item{eliminate}{Mostly for internal use: a non-negative integer indicating
 the number of iterations in the internal genotype-compatibility algorithm.
 Positive values can save time if the number of alleles is large.}
@@ -65,13 +74,15 @@ Positive values can save time if the number of alleles is large.}
 \item{logbase}{Either NULL (default) or a positive number indicating the
 basis for logarithmic output. Typical values are \code{exp(1)} and 10.}
 
-\item{loop_breakers}{A vector of ID labels indicating loop breakers. If NULL
+\item{loopBreakers}{A vector of ID labels indicating loop breakers. If NULL
 (default), automatic selection of loop breakers will be performed. See
 \code{\link[=breakLoops]{breakLoops()}}.}
 
 \item{verbose}{A logical.}
 
 \item{theta}{Theta correction.}
+
+\item{loop_breakers}{Deprecated; renamed to \code{loopBreakers}.}
 
 \item{marker1, marker2}{Single markers compatible with \code{x}.}
 
