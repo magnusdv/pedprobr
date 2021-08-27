@@ -111,6 +111,9 @@ likelihood.ped = function(x, markers = NULL, peelOrder = NULL, lump = TRUE,
     loopBreakers = loop_breakers
   }
 
+  if(theta > 0 && hasInbredFounders(x))
+    stop2("Theta correction cannot be used in pedigrees with inbred founders")
+
   if(hasSelfing(x))
     stop2("Likelihood of pedigrees with selfing is not implemented.\n",
           "Contact the maintainer if this is important to you.")
@@ -118,6 +121,7 @@ likelihood.ped = function(x, markers = NULL, peelOrder = NULL, lump = TRUE,
   # Catch erroneous input
   if(is.ped(peelOrder))
     stop2("Invalid input for argument `peelOrder`. Received object type: ", class(peelOrder))
+
 
   if(is.null(markers))
     markers = x$MARKERS
@@ -172,7 +176,7 @@ likelihood.ped = function(x, markers = NULL, peelOrder = NULL, lump = TRUE,
     message("Chromosome type: ", if(Xchrom) "X" else "autosomal")
 
   # Select tools for peeling
-  # TODO: Orgainse better, e.g., skip startdata if theta > 0
+  # TODO: Organise better, e.g., skip startdata if theta > 0
   if(Xchrom) {
     starter = function(x, m) startdata_M_X(x, m, eliminate = eliminate, treatAsFounder = treatAsFou)
     peeler = function(x, m) function(dat, sub) .peel_M_X(dat, sub, SEX = x$SEX, mutmat = mutmod(m))
