@@ -22,8 +22,11 @@ likTheta = function(x, m, theta, peeler, peelOrder) {
       peeler = function(dat, sub) .peel_M_X(dat, sub, SEX = x$SEX, mutmat = mutmod(m))
   }
 
-  if(missing(peelOrder))
-    peelOrder = informativeSubnucs(x, m, peelOrder = peelingOrder(x))
+  if(missing(peelOrder)) {
+    # NB: Don't use `informativeSubnucs()` here: pedigree cannot be trimmed (at least not upwards).
+    peelOrder = peelingOrder(x)
+  }
+
   #----------------------
 
   # Freqs
@@ -65,16 +68,17 @@ likTheta = function(x, m, theta, peeler, peelOrder) {
     # Create startdata with single geno for each founder
     # TODO: better to use prod(probs) in first and 1,1,.. for rest?!
     gli = glist
-    for(i in FOU)
-      gli[[i]] = list(pat = als[2*i-1], mat = als[2*i],
-                      prob = probs[2*i-1]*probs[2*i])
-    for(i in NONFOU)
-      gli[[i]]$prob = rep(1, nGeno[i])
+    for(i in seq_along(FOU)) {
+      idx = FOU[i]
+      gli[[idx]] = list(pat = als[2*i-1], mat = als[2*i],
+                        prob = probs[2*i-1]*probs[2*i])
+    }
+    for(j in NONFOU)
+      gli[[j]]$prob = rep(1, nGeno[j])
 
     attr(gli, "impossible") = any(probs == 0)
 
     li = peelingProcess(x, m, startdata=gli, peeler, peelOrder)
-    #print(lapply(gli, pasteGenoProb)); print(li)
     likel = likel + li
   }
 

@@ -160,7 +160,9 @@ likelihood.ped = function(x, markers = NULL, peelOrder = NULL, lump = TRUE,
 
   # Peeling order: Same for all markers
   if(is.null(peelOrder))
-    peelOrder = informativeSubnucs(x, mlist = markers, peelOrder = peelingOrder(x))
+    peelOrder = peelingOrder(x)
+  if(theta == 0)
+    peelOrder = informativeSubnucs(x, mlist = markers, peelOrder = peelOrder)
 
   if(verbose)
     message(sprintf("%d informative %s", length(peelOrder), if(length(peelOrder) == 1) "nucleus" else "nuclei"))
