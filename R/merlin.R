@@ -119,10 +119,10 @@ merlin = function(x, options, markers = NULL, linkageMap = NULL, verbose = TRUE,
   xchrom = isXmarker(x)
   if(all(xchrom)) {
     if(verbose) cat("All markers are X-linked; calling MINX\n")
-    program = "minx.exe"
+    program = "minx"
   }
   else if(all(!xchrom)) {
-    program = "merlin.exe"
+    program = "merlin"
   }
   else
     stop2("Both autosomal and X-linked markers are selected\n",
@@ -131,7 +131,11 @@ merlin = function(x, options, markers = NULL, linkageMap = NULL, verbose = TRUE,
   if(!is.null(merlinpath))
     program = file.path(merlinpath, program)
 
+  if(!nzchar(Sys.which(program)))
+    stop2("MERLIN executible not found. Suggestion: Use the parameter `merlinpath` to point to the MERLIN folder.")
+
   prefix = file.path(dir, "_merlin")
+
   # Generate input files to MERLIN/MINX
   if (generateFiles) {
     files = writePed(x, prefix = prefix, merlin = TRUE, verbose = verbose)
@@ -254,5 +258,5 @@ likelihoodMerlin = function(x, markers = NULL, linkageMap = NULL, rho = NULL, lo
 #' @rdname merlin
 #' @export
 checkMerlin = function() {
-  Sys.which("merlin.exe") != ""
+  nzchar(Sys.which("merlin"))
 }
