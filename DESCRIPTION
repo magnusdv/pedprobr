@@ -1,26 +1,34 @@
-Package: pedprobr
 Type: Package
+Package: pedprobr
 Title: Probability Computations on Pedigrees
 Version: 0.5.0.9000
-Authors@R: person("Magnus Dehli", "Vigeland", 
-                  email = "m.d.vigeland@medisin.uio.no", 
-                  role = c("aut", "cre"),
-                  comment = c(ORCID = "0000-0002-9134-4962"))
-Description: An implementation of the Elston-Stewart algorithm for calculating
-    pedigree likelihoods given genetic marker data (Elston and Stewart (1971) 
-    <doi:10.1159/000152448>). The standard algorithm is extended to allow inbred 
-    founders. 'pedprobr' is part of the ped suite, a collection of packages for 
-    pedigree analysis in R, based on 'pedtools' for handling pedigrees and 
-    markers. Mutation modelling is supported by the 'pedmut' package.
+Authors@R: 
+    person(given = "Magnus Dehli",
+           family = "Vigeland",
+           role = c("aut", "cre"),
+           email = "m.d.vigeland@medisin.uio.no",
+           comment = c(ORCID = "0000-0002-9134-4962"))
+Description: An implementation of the Elston-Stewart algorithm for
+    calculating pedigree likelihoods given genetic marker data (Elston and
+    Stewart (1971) <doi:10.1159/000152448>). The standard algorithm is
+    extended to allow inbred founders. 'pedprobr' is part of the ped
+    suite, a collection of packages for pedigree analysis in R, based on
+    'pedtools' for handling pedigrees and markers. Mutation modelling is
+    supported by the 'pedmut' package.
 License: GPL-3
 URL: https://github.com/magnusdv/pedprobr
 BugReports: https://github.com/magnusdv/pedprobr/issues
-Encoding: UTF-8
-Language: en-GB
-Depends: R (>= 3.1.0),
-    pedtools
-Imports: pedmut
+Depends: 
+    pedtools,
+    R (>= 3.1.0)
+Imports: 
+    pedmut
 Suggests: 
     testthat
+Encoding: UTF-8
+Language: en-GB
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.1.1
+SystemRequirements: MERLIN
+    (http://csg.sph.umich.edu/abecasis/merlin/index.html) for calculations
+    involving multiple linked markers.
