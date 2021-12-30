@@ -12,8 +12,7 @@ twoMarkerDistribution(
   rho,
   loopBreakers = NULL,
   eliminate = 99,
-  verbose = TRUE,
-  loop_breakers = NULL
+  verbose = TRUE
 )
 }
 \arguments{
@@ -37,8 +36,6 @@ can save time if \code{partialmarker1} and/or \code{partialmarker2} have many
 alleles.}
 
 \item{verbose}{A logical.}
-
-\item{loop_breakers}{Deprecated; renamed to \code{loopBreakers}.}
 }
 \value{
 A named matrix giving the joint genotype distribution.
@@ -54,11 +51,11 @@ between the markers.
 x = nuclearPed(children = c("bro1", "bro2"))
 
 # Two SNP markers; first brother homozygous for the `1` allele
-SNP1 = SNP2 = marker(x, bro1 = c(1,1), alleles = 1:2)
+SNP1 = SNP2 = marker(x, bro1 = "1/1", afreq = c("1" = 0.5, "2" = 0.5))
 
 plot(x, marker = list(SNP1, SNP2))
 
-# Genotype distribution for the brother: Depends on rho
+# Genotype distribution for the brother depends on linkage
 twoMarkerDistribution(x, id = "bro2", SNP1, SNP2, rho = 0)
 twoMarkerDistribution(x, id = "bro2", SNP1, SNP2, rho = 0.5)
 

@@ -55,8 +55,8 @@ normalised so that it sums to 1
 if (requireNamespace("pedmut", quietly = TRUE)){
 
 # A pedigree with data from a single marker
-x = nuclearPed(1)
-x = setMarkers(x, marker(x, geno = c("a/a", NA, "b/b"))) # mutation!
+x = nuclearPed(1) |>
+  addMarker(geno = c("a/a", NA, "b/b")) # mutation!
 
 # Set `equal` model
 y = setMutationModel(x, marker = 1, model = "equal", rate = 0.01)

@@ -21,7 +21,6 @@ likelihood(x, ...)
   loopBreakers = NULL,
   verbose = FALSE,
   theta = 0,
-  loop_breakers = NULL,
   ...
 )
 
@@ -39,7 +38,6 @@ likelihood2(x, ...)
   logbase = NULL,
   loopBreakers = NULL,
   verbose = FALSE,
-  loop_breakers = NULL,
   ...
 )
 
@@ -82,8 +80,6 @@ basis for logarithmic output. Typical values are \code{exp(1)} and 10.}
 
 \item{theta}{Theta correction.}
 
-\item{loop_breakers}{Deprecated; renamed to \code{loopBreakers}.}
-
 \item{marker1, marker2}{Single markers compatible with \code{x}.}
 
 \item{rho}{The recombination rate between \code{marker1} and \code{marker2}. To make
@@ -114,15 +110,31 @@ some demonstrations.
 }
 \examples{
 
-### Example 1: Likelihood of trio with inbred father
+### Simple likelihood ###
+p = 0.1
+q = 1 - p
 
+# Singleton
+s = singleton() |> addMarker(geno = "1/2", afreq = c("1" = p, "2" = q))
+
+stopifnot(all.equal(likelihood(s), 2*p*q))
+
+# Trio
+t = nuclearPed() |>
+  addMarker(geno = c("1/1", "1/2", "1/1"), afreq = c("1" = p, "2" = q))
+
+stopifnot(all.equal(likelihood(t), p^2 * 2*p*q * 0.5))
+
+
+### Example of calculation with inbred founders ###
+
+### Case 1: Trio with inbred father
 x = cousinPed(0, child = TRUE)
 x = addSon(x, 5)
 x = relabel(x, old = 5:7, new = c("father", "mother", "child"))
 
-# Equifrequent SNP marker: father homozygous, child heterozygous
-m = marker(x, father = 1, child = 1:2)
-x = addMarkers(x, m)
+# Add equifrequent SNP; father homozygous, child heterozygous
+x = addMarker(x, father = "1/1", child = "1/2")
 
 # Plot with genotypes
 plot(x, marker = 1)
@@ -131,9 +143,8 @@ plot(x, marker = 1)
 lik1 = likelihood(x, markers = 1)
 
 
-### Example 2: Same as above, but using founder inbreeding
-
-# Extract the trio
+### Case 2: Using founder inbreeding
+# Remove ancestry of father
 y = subset(x, c("father", "mother", "child"))
 
 # Indicate that the father has inbreeding coefficient 1/4

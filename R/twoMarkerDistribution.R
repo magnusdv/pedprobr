@@ -20,6 +20,7 @@
 #' @param verbose A logical.
 #'
 #' @return A named matrix giving the joint genotype distribution.
+#'
 #' @author Magnus Dehli Vigeland
 #' @seealso [oneMarkerDistribution()]
 #'
@@ -29,11 +30,11 @@
 #' x = nuclearPed(children = c("bro1", "bro2"))
 #'
 #' # Two SNP markers; first brother homozygous for the `1` allele
-#' SNP1 = SNP2 = marker(x, bro1 = c(1,1), alleles = 1:2)
+#' SNP1 = SNP2 = marker(x, bro1 = "1/1", afreq = c("1" = 0.5, "2" = 0.5))
 #'
 #' plot(x, marker = list(SNP1, SNP2))
 #'
-#' # Genotype distribution for the brother: Depends on rho
+#' # Genotype distribution for the brother depends on linkage
 #' twoMarkerDistribution(x, id = "bro2", SNP1, SNP2, rho = 0)
 #' twoMarkerDistribution(x, id = "bro2", SNP1, SNP2, rho = 0.5)
 #'
@@ -51,6 +52,7 @@ twoMarkerDistribution <- function(x, id, partialmarker1, partialmarker2, rho, lo
 
   if(!is.ped(x))
     stop2("Input is not a `ped` object")
+
   if(!isCount(eliminate, minimum = 0))
     stop2("`eliminate` must be a nonnegative integer")
 

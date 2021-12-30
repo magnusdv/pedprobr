@@ -12,8 +12,7 @@
 #'   allele set.
 #'
 #' @examples
-#' x = nuclearPed()
-#' x = setMarkers(x, marker(x, geno = c("1/1", NA, NA), alleles = 1:4))
+#' x = nuclearPed() |> addMarker(geno = c("1/1", NA, NA), alleles = 1:4)
 #'
 #' # Before lumping
 #' afreq(x, 1)

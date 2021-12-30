@@ -11,8 +11,7 @@ oneMarkerDistribution(
   loopBreakers = NULL,
   eliminate = 0,
   grid.subset = NULL,
-  verbose = TRUE,
-  loop_breakers = NULL
+  verbose = TRUE
 )
 }
 \arguments{
@@ -40,8 +39,6 @@ alleles for the marker. If the entry in column \code{j} is the integer \code{k},
 means that the genotype of individual \code{ids[j]} is row \code{k} of \code{M}.}
 
 \item{verbose}{A logical.}
-
-\item{loop_breakers}{Deprecated; renamed to \code{loopBreakers}.}
 }
 \value{
 A named \code{k}-dimensional array, where \code{k = length(ids)}, with the
@@ -61,24 +58,24 @@ m = marker(s, alleles = 1:2) # equifrequent SNP
 oneMarkerDistribution(s, ids = 1, partialmarker = m)
 
 # Conditioning on a partial genotype
-genotype(m, id = 1) = c(1, NA)
+genotype(m, id = 1) = "1/-"
 oneMarkerDistribution(s, ids = 1, partialmarker = m)
 
 # Genotype distribution for a child of heterozygous parents
 trio = nuclearPed(father = "fa", mother = "mo", child = "ch")
-m1 = marker(trio, fa = 1:2, mo = 1:2)
+m1 = marker(trio, fa = "1/2", mo = "1/2")
 oneMarkerDistribution(trio, ids = "ch", partialmarker = m1)
 
 # Joint distribution of the parents, given that the child is heterozygous
-m2 = marker(trio, ch = 1:2, alleles = 1:2, afreq = c(0.5, 0.5))
+m2 = marker(trio, ch = "1/2", afreq = c("1" = 0.5, "2" = 0.5))
 oneMarkerDistribution(trio, ids = c("fa", "mo"), partialmarker = m2)
 
 # A different example: The genotype distribution of an individual (id = 8)
 # whose half cousin (id = 9) is homozygous for a rare allele.
-y = halfCousinPed(degree = 1)
-snp = marker(y, `9` = "a", alleles = c("a", "b"), afreq = c(0.01, 0.99))
-plot(y, snp)
-oneMarkerDistribution(y, ids = 8, partialmarker = snp)
+y = halfCousinPed(degree = 1) |>
+  addMarker("9" = "a/a", afreq = c(a = 0.01, b = 0.99))
+
+oneMarkerDistribution(y, ids = 8, partialmarker = 1)
 
 }
 \seealso{

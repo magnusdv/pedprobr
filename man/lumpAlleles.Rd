@@ -23,8 +23,7 @@ Perform allele lumping (i.e., merging unobserved alleles) for all markers
 attached to the input pedigree.
 }
 \examples{
-x = nuclearPed()
-x = setMarkers(x, marker(x, geno = c("1/1", NA, NA), alleles = 1:4))
+x = nuclearPed() |> addMarker(geno = c("1/1", NA, NA), alleles = 1:4)
 
 # Before lumping
 afreq(x, 1)

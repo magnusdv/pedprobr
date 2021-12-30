@@ -109,10 +109,9 @@ function, and used to create genetic marker map in a MERLIN-friendly format.
 if(checkMerlin()) {
 
 ### Trivial example for validation
-x = nuclearPed(1)
-m1 = marker(x, "1" = 1:2)           # likelihood = 1/2
-m2 = marker(x, "1" = 1, "3" = 1:2)  # likelihood = 1/8
-x = setMarkers(x, list(m1, m2))
+x = nuclearPed(1) |>
+  addMarker("1" = "1/2") |>            # likelihood = 1/2
+  addMarker("1" = "1/1", "3" = "1/2")  # likelihood = 1/8
 
 # MERLIN likelihoods
 lik1 = likelihoodMerlin(x, markers = 1, verbose = FALSE)
@@ -124,8 +123,8 @@ stopifnot(all.equal(
 # Example with ped lists
 y = list(singleton(1), singleton(2))
 y = setMarkers(y, locus = list(alleles = 1:2))
-genotype(y[[1]], marker = 1, id = '1') = 1:2
-genotype(y[[2]], marker = 1, id = '2') = 1
+genotype(y[[1]], marker = 1, id = "1") = "1/2"
+genotype(y[[2]], marker = 1, id = "2") = "1/1"
 lik = likelihoodMerlin(y, verbose = FALSE)
 stopifnot(all.equal(round(lik, 3), 1/8))
 
