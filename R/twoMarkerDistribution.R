@@ -18,7 +18,6 @@
 #'   can save time if `partialmarker1` and/or `partialmarker2` have many
 #'   alleles.
 #' @param verbose A logical.
-#' @param loop_breakers Deprecated; renamed to `loopBreakers`.
 #'
 #' @return A named matrix giving the joint genotype distribution.
 #' @author Magnus Dehli Vigeland
@@ -48,12 +47,7 @@
 #'
 #' @export
 twoMarkerDistribution <- function(x, id, partialmarker1, partialmarker2, rho, loopBreakers = NULL,
-                                  eliminate = 99, verbose = TRUE, loop_breakers = NULL) {
-
-  if(!is.null(loop_breakers)) {
-    message("`loop_breakers` has been renamed to `loopBreakers` and will be removed in a future version")
-    loopBreakers = loop_breakers
-  }
+                                  eliminate = 99, verbose = TRUE) {
 
   if(!is.ped(x))
     stop2("Input is not a `ped` object")

@@ -21,7 +21,6 @@
 #'   alleles for the marker. If the entry in column `j` is the integer `k`, this
 #'   means that the genotype of individual `ids[j]` is row `k` of `M`.
 #' @param verbose A logical.
-#' @param loop_breakers Deprecated; renamed to `loopBreakers`.
 #'
 #' @return A named `k`-dimensional array, where `k = length(ids)`, with the
 #'   joint genotype distribution for the `ids` individuals. The probabilities
@@ -59,13 +58,7 @@
 #'
 #' @export
 oneMarkerDistribution = function(x, ids, partialmarker, loopBreakers = NULL,
-                                 eliminate = 0, grid.subset = NULL, verbose = TRUE,
-                                 loop_breakers = NULL) {
-
-  if(!is.null(loop_breakers)) {
-    message("`loop_breakers` has been renamed to `loopBreakers` and will be removed in a future version")
-    loopBreakers = loop_breakers
-  }
+                                 eliminate = 0, grid.subset = NULL, verbose = TRUE) {
 
   if(!is.ped(x))
     stop2("Input is not a `ped` object")

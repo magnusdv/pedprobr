@@ -49,7 +49,6 @@
 #' @param peelOrder For internal use.
 #' @param verbose A logical.
 #' @param theta Theta correction.
-#' @param loop_breakers Deprecated; renamed to `loopBreakers`.
 #' @param \dots Further arguments.
 
 #' @return A numeric with the same length as the number of markers indicated by
@@ -104,12 +103,7 @@ likelihood = function(x, ...) UseMethod("likelihood", x)
 #' @rdname likelihood
 likelihood.ped = function(x, markers = NULL, peelOrder = NULL, lump = TRUE,
                           eliminate = 0, logbase = NULL, loopBreakers = NULL,
-                          verbose = FALSE, theta = 0, loop_breakers = NULL, ...) {
-
-  if(!is.null(loop_breakers)) {
-    message("`loop_breakers` has been renamed to `loopBreakers` and will be removed in a future version")
-    loopBreakers = loop_breakers
-  }
+                          verbose = FALSE, theta = 0, ...) {
 
   if(theta > 0 && hasInbredFounders(x))
     stop2("Theta correction cannot be used in pedigrees with inbred founders")
