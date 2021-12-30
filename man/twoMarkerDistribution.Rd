@@ -16,7 +16,7 @@ twoMarkerDistribution(
 )
 }
 \arguments{
-\item{x}{A \code{ped} object.}
+\item{x}{A \code{ped} object or a list of such.}
 
 \item{id}{A single ID label.}
 

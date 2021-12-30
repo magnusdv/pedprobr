@@ -3,10 +3,11 @@
 #' Computes the genotype probability distribution of one or several pedigree
 #' members, possibly conditional on known genotypes for the marker.
 #'
-#' @param x A `ped` object.
+#' @param x A `ped` object or a list of such.
 #' @param ids A numeric with ID labels of one or more pedigree members.
 #' @param partialmarker Either a `marker` object or the name (or index) of a
-#'   marker attached to `x`.
+#'   marker attached to `x`. If `x` has multiple components, only the latter is
+#'   allowed.
 #' @param loopBreakers (Only relevant if the pedigree has loops). A vector with
 #'   ID labels of individuals to be used as loop breakers. If NULL (default)
 #'   loop breakers are selected automatically. See [breakLoops()].
@@ -60,8 +61,19 @@
 oneMarkerDistribution = function(x, ids, partialmarker, loopBreakers = NULL,
                                  eliminate = 0, grid.subset = NULL, verbose = TRUE) {
 
+  if(is.pedList(x)) {
+    if(is.marker(partialmarker))
+      stop2("When `x` has multiple components, `partialmarker` cannot be an unattached marker object")
+
+    pednr = getComponent(x, ids, checkUnique = TRUE)
+    if(all(pednr == pednr[1]))
+      x = x[[pednr[1]]]
+    else
+      stop2("Individuals from different pedigree components are not implemented yet")
+  }
+
   if(!is.ped(x))
-    stop2("Input is not a `ped` object")
+    stop2("Input is not a pedigree")
 
   if(!isCount(eliminate, minimum = 0))
     stop2("`eliminate` must be a nonnegative integer")

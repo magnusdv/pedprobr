@@ -4,7 +4,7 @@
 #' pedigree member, conditional on known genotypes and the recombination rate
 #' between the markers.
 #'
-#' @param x A `ped` object.
+#' @param x A `ped` object or a list of such.
 #' @param id A single ID label.
 #' @param partialmarker1,partialmarker2 Either a `marker` object, or the name (or
 #'   index) of a marker attached to `x`.
@@ -50,8 +50,16 @@
 twoMarkerDistribution <- function(x, id, partialmarker1, partialmarker2, rho, loopBreakers = NULL,
                                   eliminate = 99, verbose = TRUE) {
 
+  if(is.pedList(x)) {
+    if(is.marker(partialmarker1) || is.marker(partialmarker2))
+      stop2("When `x` has multiple components, the partial markers must be attached")
+
+    pednr = getComponent(x, id, checkUnique = TRUE)
+    x = x[[pednr]]
+  }
+
   if(!is.ped(x))
-    stop2("Input is not a `ped` object")
+    stop2("Input is not a pedigree")
 
   if(!isCount(eliminate, minimum = 0))
     stop2("`eliminate` must be a nonnegative integer")

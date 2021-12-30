@@ -15,12 +15,13 @@ oneMarkerDistribution(
 )
 }
 \arguments{
-\item{x}{A \code{ped} object.}
+\item{x}{A \code{ped} object or a list of such.}
 
 \item{ids}{A numeric with ID labels of one or more pedigree members.}
 
 \item{partialmarker}{Either a \code{marker} object or the name (or index) of a
-marker attached to \code{x}.}
+marker attached to \code{x}. If \code{x} has multiple components, only the latter is
+allowed.}
 
 \item{loopBreakers}{(Only relevant if the pedigree has loops). A vector with
 ID labels of individuals to be used as loop breakers. If NULL (default)
