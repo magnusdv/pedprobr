@@ -62,6 +62,7 @@ oneMarkerDistribution = function(x, ids, partialmarker, loopBreakers = NULL,
 
   if(!is.ped(x))
     stop2("Input is not a `ped` object")
+
   if(!isCount(eliminate, minimum = 0))
     stop2("`eliminate` must be a nonnegative integer")
 

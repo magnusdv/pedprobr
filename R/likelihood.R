@@ -217,6 +217,8 @@ likelihood.ped = function(x, markers = NULL, peelOrder = NULL, lump = TRUE,
 # Internal function: likelihood of a single marker
 peelingProcess = function(x, m, startdata, peeler, peelOrder = NULL) {
 
+  if(hasUnbrokenLoops(x))
+    stop2("Peeling process cannot handle unbroken pedigree loops")
 
   if(is.null(peelOrder))
     peelOrder = informativeSubnucs(x, m)
