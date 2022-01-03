@@ -5,5 +5,5 @@
 ^README\.Rmd$
 ^notes-private$
 ^cran-comments\.md$
-^CRAN-RELEASE$
 ^revdep$
+^CRAN-SUBMISSION$
