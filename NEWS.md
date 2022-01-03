@@ -1,3 +1,30 @@
+# pedprobr 0.6.0
+
+## Breaking changes
+
+* `pedprobr` now depends on R 4.1 and `pedtools` 1.1.0.
+
+* The deprecated argument `loop_breakers` has been completely removed (renamed to `loopBreakers`)
+
+## New features
+
+* `likelihood.ped()` gains a new argument `lump`, which activates allele lumping. This is TRUE by default, and should remain so in most cases.
+
+* Using theta correction in pedigrees with inbred founders now gives an error.
+
+* The internal `peelingProcess()` now checks for unbroken loops in the pedigree. (Of interest for developers mainly.)
+
+## Bug fixes
+
+* Fixed bug affecting likelihood computations with theta correction.
+
+## Other changes
+
+* When calling MERLIN, the window-centric and unnecessary `.exe` extensions has been removed. 
+
+* Many examples have been rewritten in simpler code, taking advantage of `pedtools::addMarker` and the pipe `|>`.
+
+
 # pedprobr 0.5.0
 
 ## New features
