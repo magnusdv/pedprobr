@@ -57,7 +57,7 @@
 #'   system path, and FALSE otherwise.
 #'
 #' @author Magnus Dehli Vigeland
-#' @references <http://csg.sph.umich.edu/abecasis/Merlin/>
+#' @references <https://csg.sph.umich.edu/abecasis/merlin/>
 #'
 #' @examples
 #'

@@ -29,5 +29,5 @@ Language: en-GB
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.1.2
 SystemRequirements: MERLIN
-    (http://csg.sph.umich.edu/abecasis/merlin/index.html) for calculations
+    (https://csg.sph.umich.edu/abecasis/merlin/) for calculations
     involving multiple linked markers.

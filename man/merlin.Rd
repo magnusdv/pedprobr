@@ -144,7 +144,7 @@ L2 = likelihood2(z, marker1 = 1, marker2 = 2, rho = 0.25)
 
 }
 \references{
-\url{http://csg.sph.umich.edu/abecasis/Merlin/}
+\url{https://csg.sph.umich.edu/abecasis/merlin/}
 }
 \author{
 Magnus Dehli Vigeland
