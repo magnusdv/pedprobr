@@ -48,13 +48,21 @@
 #'   the recombination rate between each consecutive pair.
 #' @param logbase Either NULL (default) or a positive number indicating the
 #'   basis for logarithmic output. Typical values are `exp(1)` and 10.
+#' @param program A character containing "merlin", "minx" or both (default),
+#'   optionally including full paths.
+#' @param version A logical. If TRUE (default), it is checked that running
+#'   `program` produces a printout starting with "MERLIN 1.1.2".
+#' @param error A logical, indicating if an error should be raised if `program`
+#'   is not found. Default: FALSE.
+#'
 #' @return `merlin()` returns the screen output of MERLIN invisibly.
 #'
 #'   `likelihoodMerlin()` returns a single number; the total likelihood using
 #'   all indicated markers.
 #'
-#'   `checkMerlin()` returns TRUE if MERLIN is installed and available on the
-#'   system path, and FALSE otherwise.
+#'   `checkMerlin()` returns TRUE if the MERLIN executable indicated by
+#'   `program` is found on the system. Otherwise FALSE, or (if `error = TRUE`)
+#'   an error is raised.
 #'
 #' @author Magnus Dehli Vigeland
 #' @references <https://csg.sph.umich.edu/abecasis/merlin/>
@@ -130,8 +138,7 @@ merlin = function(x, options, markers = NULL, linkageMap = NULL, verbose = TRUE,
   if(!is.null(merlinpath))
     program = file.path(merlinpath, program)
 
-  if(!nzchar(Sys.which(program)))
-    stop2("MERLIN executible not found. Suggestion: Use the parameter `merlinpath` to point to the MERLIN folder.")
+  checkMerlin(program, version = FALSE, error = TRUE)
 
   prefix = file.path(dir, "_merlin")
 
@@ -256,6 +263,33 @@ likelihoodMerlin = function(x, markers = NULL, linkageMap = NULL, rho = NULL, lo
 
 #' @rdname merlin
 #' @export
-checkMerlin = function() {
-  nzchar(Sys.which("merlin"))
+checkMerlin = function(program = NULL, version = TRUE, error = FALSE) {
+
+  # Default NULL for back compatibility
+  if(is.null(program))
+    return(checkMerlin("merlin", version = version, error = error) &&
+             checkMerlin("minx", version = version, error = error))
+
+  if(!is.character(program) || length(program) != 1)
+    stop2("`program` must be a character of length 1")
+
+  if(!nzchar(pth <- Sys.which(program))) {
+    if(error)
+      stop2("Executable not found. Use `merlinpath` to supply the path to the MERLIN folder")
+    return(FALSE)
+  }
+
+  if(version) {
+    out = tryCatch(
+      suppressWarnings(system(program, intern = TRUE)),
+      error = function(e) if(error) stop2(e) else return(FALSE))
+
+    if(!isTRUE(startsWith(out[1], "MERLIN 1.1.2"))) {
+      if(error)
+        stop2(pth, "\nExpected printout to start with 'MERLIN 1.1.2', but received:\n", paste(out, collapse = "\n"))
+      return(FALSE)
+    }
+  }
+
+  TRUE
 }

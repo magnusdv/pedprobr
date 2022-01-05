@@ -29,7 +29,7 @@ likelihoodMerlin(
   ...
 )
 
-checkMerlin()
+checkMerlin(program = NULL, version = TRUE, error = FALSE)
 }
 \arguments{
 \item{x}{a \code{\link{ped}} object.}
@@ -69,6 +69,15 @@ the recombination rate between each consecutive pair.}
 basis for logarithmic output. Typical values are \code{exp(1)} and 10.}
 
 \item{...}{Further arguments passed on to \code{merlin()}.}
+
+\item{program}{A character containing "merlin", "minx" or both (default),
+optionally including full paths.}
+
+\item{version}{A logical. If TRUE (default), it is checked that running
+\code{program} produces a printout starting with "MERLIN 1.1.2".}
+
+\item{error}{A logical, indicating if an error should be raised if \code{program}
+is not found. Default: FALSE.}
 }
 \value{
 \code{merlin()} returns the screen output of MERLIN invisibly.
@@ -76,8 +85,9 @@ basis for logarithmic output. Typical values are \code{exp(1)} and 10.}
 \code{likelihoodMerlin()} returns a single number; the total likelihood using
 all indicated markers.
 
-\code{checkMerlin()} returns TRUE if MERLIN is installed and available on the
-system path, and FALSE otherwise.
+\code{checkMerlin()} returns TRUE if the MERLIN executable indicated by
+\code{program} is found on the system. Otherwise FALSE, or (if \code{error = TRUE})
+an error is raised.
 }
 \description{
 For these functions to work, the program MERLIN (see References below) must
