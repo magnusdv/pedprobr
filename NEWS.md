@@ -1,3 +1,10 @@
+# pedprobr 0.6.1
+
+## Bug fixes
+
+* Fixed a regression error involving the external program MINX (part of MERLIN). The new version of `checkMerlin()` by default checks that both `merlin` and `minx` are available on the system, and that they both come from the latest MERLIN version.
+
+
 # pedprobr 0.6.0
 
 ## Breaking changes
