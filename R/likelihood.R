@@ -2,22 +2,24 @@
 #'
 #' The `likelihood()` and `likelihood2()` functions constitute the heart of
 #' **pedprobr**. The former computes the pedigree likelihood for each indicated
-#' marker. The latter computer the likelihood for a pair of linked markers
+#' marker. The latter computes the likelihood for a pair of linked markers
 #' separated by a given recombination rate.
 #'
 #' The implementation is based on the peeling algorithm of Elston and Stewart
 #' (1971). A variety of situations are covered; see the Examples section for
 #' some demonstrations.
 #'
+#' * autosomal and X-linked markers
+#'
+#' * 1 marker or 2 linked markers
+#'
 #' * complex inbred pedigrees
+#'
+#' * markers with mutation models
 #'
 #' * pedigrees with inbred founders
 #'
-#' * autosomal and X-linked markers
-#'
-#' * a single marker or two linked markers
-#'
-#' * markers with mutation models
+#' For more than two linked markers, see [likelihoodMerlin()].
 #'
 #' @param x A `ped` object, a `singleton` object, or a list of such objects.
 #' @param markers One or several markers compatible with `x`. Several input
@@ -54,7 +56,9 @@
 #' @return A numeric with the same length as the number of markers indicated by
 #'   `markers`. If `logbase` is a positive number, the output is
 #'   `log(likelihood, logbase)`.
-
+#'
+#' @seealso [likelihoodMerlin()], for likelihoods involving more than 2 linked markers.
+#'
 #' @author Magnus Dehli Vigeland
 #' @references Elston and Stewart (1971). _A General Model for the Genetic
 #'   Analysis of Pedigree Data_. \doi{https://doi.org/10.1159/000152448}

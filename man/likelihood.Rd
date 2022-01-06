@@ -93,7 +93,7 @@ A numeric with the same length as the number of markers indicated by
 \description{
 The \code{likelihood()} and \code{likelihood2()} functions constitute the heart of
 \strong{pedprobr}. The former computes the pedigree likelihood for each indicated
-marker. The latter computer the likelihood for a pair of linked markers
+marker. The latter computes the likelihood for a pair of linked markers
 separated by a given recombination rate.
 }
 \details{
@@ -101,12 +101,14 @@ The implementation is based on the peeling algorithm of Elston and Stewart
 (1971). A variety of situations are covered; see the Examples section for
 some demonstrations.
 \itemize{
-\item complex inbred pedigrees
-\item pedigrees with inbred founders
 \item autosomal and X-linked markers
-\item a single marker or two linked markers
+\item 1 marker or 2 linked markers
+\item complex inbred pedigrees
 \item markers with mutation models
+\item pedigrees with inbred founders
 }
+
+For more than two linked markers, see \code{\link[=likelihoodMerlin]{likelihoodMerlin()}}.
 }
 \examples{
 
@@ -164,6 +166,9 @@ stopifnot(all.equal(lik1, lik2))
 \references{
 Elston and Stewart (1971). \emph{A General Model for the Genetic
 Analysis of Pedigree Data}. \doi{https://doi.org/10.1159/000152448}
+}
+\seealso{
+\code{\link[=likelihoodMerlin]{likelihoodMerlin()}}, for likelihoods involving more than 2 linked markers.
 }
 \author{
 Magnus Dehli Vigeland

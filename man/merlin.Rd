@@ -4,7 +4,7 @@
 \alias{merlin}
 \alias{likelihoodMerlin}
 \alias{checkMerlin}
-\title{Pedigree likelihood computed by MERLIN}
+\title{Pedigree likelihoods computed by MERLIN}
 \usage{
 merlin(
   x,
@@ -90,13 +90,17 @@ all indicated markers.
 an error is raised.
 }
 \description{
-For these functions to work, the program MERLIN (see References below) must
-be installed and correctly pointed to in the PATH variable. The \code{merlin()}
-function is a general wrapper which runs MERLIN with the indicated options,
-after creating the appropriate input files. For convenience, MERLIN's
-"--likelihood" functionality is wrapped in a separate function.
+These functions enable users to call MERLIN (Abecasis et al., 2002) from
+within R.
 }
 \details{
+For these functions to work, the program MERLIN must be installed (see link
+in the Reference section below) and correctly pointed to in the PATH
+variable. The \code{merlin()} function is a general wrapper which runs MERLIN with
+the indicated options, after creating the appropriate input files. For
+convenience, MERLIN's "--likelihood" functionality is wrapped in a separate
+function.
+
 The \code{merlin()} function creates input files "_merlin.ped", "_merlin.dat",
 "_merlin.map" and "_merlin.freq" in the \code{dir} directory, and then runs the
 following command through a call to \code{\link[=system]{system()}}:
@@ -154,7 +158,8 @@ L2 = likelihood2(z, marker1 = 1, marker2 = 2, rho = 0.25)
 
 }
 \references{
-\url{https://csg.sph.umich.edu/abecasis/merlin/}
+Abecasis et al. (2002) Nat Gen 30:97-101.
+\url{https://csg.sph.umich.edu/abecasis/merlin/}.
 }
 \author{
 Magnus Dehli Vigeland

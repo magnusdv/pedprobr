@@ -1,10 +1,14 @@
-#' Pedigree likelihood computed by MERLIN
+#' Pedigree likelihoods computed by MERLIN
 #'
-#' For these functions to work, the program MERLIN (see References below) must
-#' be installed and correctly pointed to in the PATH variable. The `merlin()`
-#' function is a general wrapper which runs MERLIN with the indicated options,
-#' after creating the appropriate input files. For convenience, MERLIN's
-#' "--likelihood" functionality is wrapped in a separate function.
+#' These functions enable users to call MERLIN (Abecasis et al., 2002) from
+#' within R.
+#'
+#' For these functions to work, the program MERLIN must be installed (see link
+#' in the Reference section below) and correctly pointed to in the PATH
+#' variable. The `merlin()` function is a general wrapper which runs MERLIN with
+#' the indicated options, after creating the appropriate input files. For
+#' convenience, MERLIN's "--likelihood" functionality is wrapped in a separate
+#' function.
 #'
 #' The `merlin()` function creates input files "_merlin.ped", "_merlin.dat",
 #' "_merlin.map" and "_merlin.freq" in the `dir` directory, and then runs the
@@ -65,7 +69,8 @@
 #'   an error is raised.
 #'
 #' @author Magnus Dehli Vigeland
-#' @references <https://csg.sph.umich.edu/abecasis/merlin/>
+#' @references Abecasis et al. (2002) Nat Gen 30:97-101.
+#'   <https://csg.sph.umich.edu/abecasis/merlin/>.
 #'
 #' @examples
 #'
