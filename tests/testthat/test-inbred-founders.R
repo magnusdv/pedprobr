@@ -60,14 +60,12 @@ test_that("founder inb raises error in likelihood of linked markers", {
 })
 
 test_that("complete inbreeding + heterozygosity = 0", {
-  s = singleton(1)
+  s = singleton(1) |> addMarker(geno = "1/2")
   founderInbreeding(s, 1) = 1
-  s = setMarkers(s, marker(s, '1' = 1:2))
   expect_equal(likelihood(s), 0)
 
-  x = nuclearPed(1)
+  x = nuclearPed(1) |> addMarker("1" = "1/2")
   founderInbreeding(x, 1) = 1
-  x = setMarkers(x, marker(x, '1' = 1:2))
   expect_equal(likelihood(x), 0)
 
   y = list(x,s)
