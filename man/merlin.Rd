@@ -25,6 +25,7 @@ likelihoodMerlin(
   linkageMap = NULL,
   rho = NULL,
   logbase = NULL,
+  perChrom = FALSE,
   options = "--likelihood --bits:100 --megabytes:4000 --quiet",
   ...
 )
@@ -67,6 +68,8 @@ the recombination rate between each consecutive pair.}
 
 \item{logbase}{Either NULL (default) or a positive number indicating the
 basis for logarithmic output. Typical values are \code{exp(1)} and 10.}
+
+\item{perChrom}{A logical; if TRUE, likelihoods are reported per chromosome.}
 
 \item{...}{Further arguments passed on to \code{merlin()}.}
 

@@ -187,11 +187,12 @@ merlin = function(x, options, markers = NULL, linkageMap = NULL, verbose = TRUE,
   invisible(mout)
 }
 
+#' @param perChrom A logical; if TRUE, likelihoods are reported per chromosome.
 #' @param ... Further arguments passed on to `merlin()`.
 #'
 #' @rdname merlin
 #' @export
-likelihoodMerlin = function(x, markers = NULL, linkageMap = NULL, rho = NULL, logbase = NULL,
+likelihoodMerlin = function(x, markers = NULL, linkageMap = NULL, rho = NULL, logbase = NULL, perChrom = FALSE,
                             options = "--likelihood --bits:100 --megabytes:4000 --quiet",
                             ...) {
 
@@ -258,10 +259,14 @@ likelihoodMerlin = function(x, markers = NULL, linkageMap = NULL, rho = NULL, lo
   # Extract log-likelihoods
   lnliks = as.numeric(unlist(lapply(strsplit(mout[likLines]," = "), '[', 2)))
 
-  # Return total
-  totalLnLik = sum(lnliks)
+  if(perChrom) {
+    res = lnliks
+    names(res) = trimws(sub("Analysing Chromosome", "", mout[chromLines]))
+  }
+  else
+    res = sum(lnliks)
 
-  fixMerlinLog(totalLnLik, logbase = logbase)
+  fixMerlinLog(res, logbase = logbase)
 }
 
 
