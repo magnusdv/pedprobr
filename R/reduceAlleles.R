@@ -6,6 +6,8 @@
 #' @param x A `ped` object or a list of such.
 #' @param markers A vector of names or indices referring to markers attached to
 #'   `x`. (Default: All markers.)
+#' @param always A logical. If TRUE, lumping is always attempted. By default
+#'   (FALSE) lumping is skipped for markers where all individuals are genotyped.
 #' @param verbose A logical.
 #'
 #' @return An object similar to `x`, but whose attached markers have reduced
@@ -22,7 +24,7 @@
 #' afreq(y, 1)
 #'
 #' @export
-lumpAlleles = function(x, markers = NULL, verbose = FALSE) {
+lumpAlleles = function(x, markers = NULL, always = FALSE, verbose = FALSE) {
   markers = markers %||% seq_len(nMarkers(x))
 
   if(is.pedList(x))
@@ -37,21 +39,21 @@ lumpAlleles = function(x, markers = NULL, verbose = FALSE) {
     label = name(m)
     if(is.na(label)) label = i
     if(verbose) message("Marker ",label, ". ", appendLF = FALSE)
-    reduceAlleles(m, verbose = verbose)
+    reduceAlleles(m, always = always, verbose = verbose)
   })
 
   setMarkers(x, mlistLumped)
 }
 
 #' @importFrom pedmut isLumpable lumpedMatrix mutationModel
-reduceAlleles = function(marker, verbose = FALSE) {
+reduceAlleles = function(marker, always = FALSE, verbose = FALSE) {
 
   if (is.null(marker)) {
     if(verbose) message("Lumping not needed - NULL marker")
     return(NULL)
   }
 
-  if (all(marker != 0)) {
+  if (!always && all(marker != 0)) {
     if(verbose) message("Lumping not needed - all members genotyped")
     return(marker)
   }
@@ -63,7 +65,7 @@ reduceAlleles = function(marker, verbose = FALSE) {
   presentIdx = unique.default(marker[marker > 0])
 
   # No lumping if all, or all but one, are observed
-  if (length(presentIdx) >= length(origAlleles) - 1) {
+  if(length(presentIdx) >= length(origAlleles) - 1) {
     if(verbose) message(sprintf("Lumping not needed: %d of %d alleles observed",
                                 length(presentIdx), length(origAlleles)))
     return(marker)

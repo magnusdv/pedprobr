@@ -4,13 +4,16 @@
 \alias{lumpAlleles}
 \title{Allele lumping}
 \usage{
-lumpAlleles(x, markers = NULL, verbose = FALSE)
+lumpAlleles(x, markers = NULL, always = FALSE, verbose = FALSE)
 }
 \arguments{
 \item{x}{A \code{ped} object or a list of such.}
 
 \item{markers}{A vector of names or indices referring to markers attached to
 \code{x}. (Default: All markers.)}
+
+\item{always}{A logical. If TRUE, lumping is always attempted. By default
+(FALSE) lumping is skipped for markers where all individuals are genotyped.}
 
 \item{verbose}{A logical.}
 }
