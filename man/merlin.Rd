@@ -16,7 +16,8 @@ merlin(
   cleanup = TRUE,
   dir = tempdir(),
   logfile = NULL,
-  merlinpath = NULL
+  merlinpath = NULL,
+  checkpath = TRUE
 )
 
 likelihoodMerlin(
@@ -33,35 +34,38 @@ likelihoodMerlin(
 checkMerlin(program = NULL, version = TRUE, error = FALSE)
 }
 \arguments{
-\item{x}{a \code{\link{ped}} object.}
+\item{x}{A \code{\link{ped}} object.}
 
-\item{options}{a single string containing all arguments to merlin except for
+\item{options}{A single string containing all arguments to merlin except for
 the input file indications.}
 
-\item{markers}{a vector of names or indices of markers attached to \code{x}.
+\item{markers}{A vector of names or indices of markers attached to \code{x}.
 (Default: all markers).}
 
-\item{linkageMap}{a data frame with three columns (chromosome; marker name;
+\item{linkageMap}{A data frame with three columns (chromosome; marker name;
 centiMorgan position) to be used as the marker map by MERLIN.}
 
-\item{verbose}{a logical.}
+\item{verbose}{A logical.}
 
-\item{generateFiles}{a logical. If TRUE (default), input files to MERLIN
+\item{generateFiles}{A logical. If TRUE (default), input files to MERLIN
 named '_merlin.ped', '_merlin.dat', '_merlin.map', and '_merlin.freq' are
 created in the directory indicated by \code{dir}. If FALSE, no files are
 created.}
 
-\item{cleanup}{a logical. If TRUE (default), the MERLIN input files are
+\item{cleanup}{A logical. If TRUE (default), the MERLIN input files are
 deleted after the call to MERLIN.}
 
-\item{dir}{the name of the directory where input files should be written.}
+\item{dir}{The name of the directory where input files should be written.}
 
-\item{logfile}{a character. If this is given, the MERLIN screen output will
+\item{logfile}{A character. If this is given, the MERLIN screen output will
 be dumped to a file with this name.}
 
-\item{merlinpath}{the path to the folder containing the merlin executables.
+\item{merlinpath}{The path to the folder containing the merlin executables.
 If the executables are on the system's search path, this can be left as
 NULL (default).}
+
+\item{checkpath}{A logical indicating whether to check that the merlin
+executable is found.}
 
 \item{rho}{A vector of length one less than the number of markers, specifying
 the recombination rate between each consecutive pair.}
