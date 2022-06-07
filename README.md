@@ -1,3 +1,4 @@
+
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
 # pedprobr <img src="man/figures/logo.png" align="right" height=140 />
@@ -68,44 +69,44 @@ brothers are heterozygous.
 # Pedigree
 x = nuclearPed(nch = 2)
 
-# Marker
-m = marker(x, geno = c(NA, NA, "a/b", "a/b"), afreq = c(a = 0.2, b = 0.8))
+# Add a single marker
+x = addMarker(x, geno = c(NA, NA, "a/b", "a/b"), afreq = c(a = 0.2, b = 0.8))
 
-# Plot
-plot(x, marker = m)
+# Plot with genotypes
+plot(x, marker = 1)
 ```
 
-![](man/figures/README-pedplot-1.png)
+![](man/figures/README-pedplot-1.png)<!-- -->
 
-The pedigree likelihood, i.e., the probability of observing these
-genotypes in the given pedigree, is obtained as follows:
+The pedigree likelihood, i.e., the probability of the genotypes given
+the pedigree, is obtained as follows:
 
 ``` r
-likelihood(x, marker = m)
+likelihood(x, marker = 1)
 #> [1] 0.1856
 ```
 
 ## Genotype probability distributions
 
-Besides `likelihood()` the most important functions in **pedprobr** are:
+Besides `likelihood()`, other important functions in **pedprobr** are:
 
--   `oneMarkerDistribution()` : for a subset of family members, compute
-    their joint genotype distribution at a single marker
--   `twoMarkerDistribution()` : for a single family member, compute the
-    joint genotype distribution at two linked markers
+-   `oneMarkerDistribution()` : the joint genotype distribution at a
+    single marker, for any subset of pedigree members
+-   `twoMarkerDistribution()` : the joint genotype distribution at two
+    linked markers, for a single person
 
 In both cases, the distributions are computed conditionally on any known
 genotypes at the markers in question.
 
 To illustrate `oneMarkerDistribution()` we continue our example from
-above, and consider the following question: *What is the joint genotype
+above, and consider the following question: **What is the joint genotype
 distribution of the parents, conditional on the genotypes of the
-children?*
+children?**
 
 The answer is found as follows:
 
 ``` r
-oneMarkerDistribution(x, ids = 1:2, partialmarker = m, verbose = F)
+oneMarkerDistribution(x, ids = 1:2, partialmarker = 1, verbose = F)
 #>            a/a        a/b       b/b
 #> a/a 0.00000000 0.01724138 0.1379310
 #> a/b 0.01724138 0.13793103 0.2758621
