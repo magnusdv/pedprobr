@@ -1,3 +1,16 @@
+# pedprobr 0.7.0
+
+## New features
+
+* `merlin()` gains argument `checkpath`. Set this to FALSE to avoid redundant checks of MERLIN availability.
+
+* `likelihoodMerlin()` gains argument `perChrom`, used to parse the chromosome-wise likelihoods from the MERLIN output.
+
+* `lumpAlleles()` gains argument `always`. By default lumping is skipped for markers where all individuals are genotyped, but this can cause problems e.g. with MERLIN which operates with an upper limit of allleles.
+
+* Some efforts are done to check for (and warn about) underflow/overflow in MERLIN results.
+
+
 # pedprobr 0.6.1
 
 ## Bug fixes

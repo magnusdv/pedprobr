@@ -1,7 +1,7 @@
 Type: Package
 Package: pedprobr
 Title: Probability Computations on Pedigrees
-Version: 0.6.1.9000
+Version: 0.7.0
 Authors@R: 
     person("Magnus Dehli", "Vigeland", , "m.d.vigeland@medisin.uio.no", role = c("aut", "cre"),
            comment = c(ORCID = "0000-0002-9134-4962"))
@@ -18,8 +18,8 @@ License: GPL-3
 URL: https://github.com/magnusdv/pedprobr
 BugReports: https://github.com/magnusdv/pedprobr/issues
 Depends: 
-    pedtools (>= 1.1.0),
-    R (>= 4.1.0)
+    R (>= 4.1.0),
+    pedtools (>= 1.1.0)
 Imports: 
     pedmut
 Suggests: 
@@ -27,7 +27,6 @@ Suggests:
 Encoding: UTF-8
 Language: en-GB
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.1.2
-SystemRequirements: MERLIN
-    (https://csg.sph.umich.edu/abecasis/merlin/) for calculations
-    involving multiple linked markers.
+RoxygenNote: 7.2.0
+SystemRequirements: MERLIN (https://csg.sph.umich.edu/abecasis/merlin/)
+    for calculations involving multiple linked markers.
