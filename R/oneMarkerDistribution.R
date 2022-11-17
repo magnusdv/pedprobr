@@ -137,6 +137,8 @@ oneMarkerDistribution = function(x, ids, partialmarker, loopBreakers = NULL,
     probs.subset[, sx == 1] = match(probs.subset[, sx == 1], homoz)
   }
 
+  nr = nrow(grid.subset)
+
   # Compute marginal
   marginal = likelihood(x, markers = m, eliminate = eliminate)
   if (marginal == 0)
@@ -144,11 +146,11 @@ oneMarkerDistribution = function(x, ids, partialmarker, loopBreakers = NULL,
 
   if(verbose) {
     cat("Marginal likelihood:", marginal, "\n")
-    cat("Calculations needed:", nrow(grid.subset), "\n")
+    cat("Calculations needed:", nr, "\n")
   }
 
   # Create list of all markers
-  mlist = lapply(1:nrow(grid.subset), function(i) {
+  mlist = lapply(seq_len(nr), function(i) {
     r = grid.subset[i,]
     m[int.ids, ] = allgenos[r, ]; m})
 
