@@ -9,11 +9,12 @@ informativeSubnucs = function(x, mlist, peelOrder = peelingOrder(x)) {
     untyped = mlist[,1] + mlist[,2] == 0
   }
   else {
-    stationary = all(unlist(lapply(mlist, hasStationaryModel)))
+    stationary = all(unlist(lapply(mlist, hasStationaryModel),
+                            recursive = FALSE, use.names = FALSE))
 
     # Find untyped individuals
     nInd = pedsize(x)
-    markermat = unlist(mlist)
+    markermat = unlist(mlist, recursive = FALSE, use.names = FALSE)
     dim(markermat) = c(nInd, length(markermat)/nInd)
     untyped = rowSums(markermat) == 0
   }

@@ -84,7 +84,8 @@
   offs = lapply(1:N, function(i) children(x, i, internal = TRUE))
 
   # Current number of genotypes of each
-  Ngt = unlist(lapply(genolist, function(g) length(g$pat)))
+  Ngt = unlist(lapply(genolist, function(g) length(g$pat)),
+               recursive = FALSE, use.names = FALSE)
 
   informative = logical(N)
 
@@ -133,7 +134,8 @@
       genolist[[i]] = g
     }
 
-    Ngt = unlist(lapply(genolist, function(g) length(g$pat)))
+    Ngt = unlist(lapply(genolist, function(g) length(g$pat)),
+                 recursive = FALSE, use.names = FALSE)
     if (any(Ngt == 0)) {
       attr(genolist, "impossible") = TRUE
       break
@@ -216,7 +218,8 @@
 
   informative = logical(xsize)
 
-  Ngt = unlist(lapply(genolist, function(g) length(g$mat)))
+  Ngt = unlist(lapply(genolist, function(g) length(g$mat)),
+               recursive = FALSE, use.names = FALSE)
 
   for (k in seq_len(repeats)) {
     ng = Ngt
@@ -282,7 +285,8 @@
       genolist[[i]] = g
     }
 
-    Ngt = unlist(lapply(genolist, function(g) length(g$mat)))
+    Ngt = unlist(lapply(genolist, function(g) length(g$mat)),
+                 recursive = FALSE, use.names = FALSE)
 
     if (any(Ngt == 0)) {
       attr(genolist, "impossible") = TRUE

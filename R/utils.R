@@ -110,7 +110,7 @@ allGenotypes = function(n) {
   nseq = seq_len(n)
   cbind(
     rep.int(nseq, times = n:1),
-    unlist(lapply(nseq, function(i) i:n))
+    unlist(lapply(nseq, function(i) i:n), recursive = FALSE, use.names = FALSE)
   )
 }
 
@@ -122,16 +122,15 @@ pasteGenoProb = function(g) {
 }
 
 
-#' @importFrom pedmut isStationary
+#' @importFrom pedmut isStationary sexEqual
 hasStationaryModel = function(m) {
   mut = attr(m, 'mutmod')
   if(is.null(mut)) return(TRUE)
 
-  sexEq = attr(mut, 'sexEqual')
   afr = afreq(m)
 
   isStationary(mut$male, afr) &&
-    (isTRUE(sexEq) || isStationary(mut$female, afr))
+    (sexEqual(mut) || isStationary(mut$female, afr))
 }
 
 haldane = function(cM = NULL, rho = NULL) {

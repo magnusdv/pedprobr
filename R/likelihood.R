@@ -211,7 +211,7 @@ likelihood.ped = function(x, markers = NULL, peelOrder = NULL, lump = TRUE,
       peelingProcess(x, m, starter(x,m), peeler(x,m), peelOrder)
   })
 
-  res = unlist(resList)
+  res = unlist(resList, recursive = FALSE)
 
   if(is.numeric(logbase)) log(res, logbase) else res
 }

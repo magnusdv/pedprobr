@@ -114,9 +114,9 @@ choosePeeler = function(twolocus, rho, Xchrom, SEX, mutmat) {
     else {
       transPat =
         if (is.null(mutmat))
-          unlist(lapply(faDat$mat, function(fal) as.numeric(fal == chDat$pat)))
+          unlist(lapply(faDat$mat, function(fal) as.numeric(fal == chDat$pat)), recursive = FALSE, use.names = FALSE)
         else
-          unlist(lapply(faDat$mat, function(fal) mutmat$male[fal, chDat$pat]))
+          unlist(lapply(faDat$mat, function(fal) mutmat$male[fal, chDat$pat]), recursive = FALSE, use.names = FALSE)
 
       transMat = .transProbM(moDat, chDat$mat, mutmat = mutmat$female)
       dim(transMat) = c(chLen, moLen)

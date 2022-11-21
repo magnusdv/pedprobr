@@ -260,7 +260,8 @@ likelihoodMerlin = function(x, markers = NULL, linkageMap = NULL, rho = NULL, lo
     stop2(mout)
 
   # Extract log-likelihoods
-  lnliks = as.numeric(unlist(lapply(strsplit(mout[likLines]," = "), '[', 2)))
+  lnliks = as.numeric(unlist(lapply(strsplit(mout[likLines]," = "), '[', 2),
+                             recursive = FALSE, use.names = FALSE))
 
   if(perChrom) {
     res = lnliks
