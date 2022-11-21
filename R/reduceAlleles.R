@@ -45,7 +45,7 @@ lumpAlleles = function(x, markers = NULL, always = FALSE, verbose = FALSE) {
   setMarkers(x, mlistLumped)
 }
 
-#' @importFrom pedmut isLumpable lumpedMatrix mutationModel
+#' @importFrom pedmut isLumpable lumpedModel
 reduceAlleles = function(marker, always = FALSE, verbose = FALSE) {
 
   if (is.null(marker)) {
@@ -87,11 +87,8 @@ reduceAlleles = function(marker, always = FALSE, verbose = FALSE) {
   presentFreq = attrs$afreq[presentIdx]
   attr(marker, "afreq") = c(presentFreq, 1 - sum(presentFreq))
 
-  if (!is.null(mut)) {
-    lumpedMale = lumpedMatrix(mut$male, lump)
-    lumpedFemale = lumpedMatrix(mut$female, lump)
-    mutmod(marker) = mutationModel(list(female = lumpedFemale, male = lumpedMale))
-  }
+  if (!is.null(mut))
+    mutmod(marker) = lumpedModel(mut, lump = lump, check = FALSE)
 
   if(verbose) message(sprintf("Lumping: %d -> %d alleles",
               length(origAlleles), length(presentIdx) + 1))
