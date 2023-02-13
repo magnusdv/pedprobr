@@ -21,7 +21,7 @@ Depends:
     R (>= 4.1.0),
     pedtools (>= 1.1.0)
 Imports: 
-    pedmut (>= 0.4.1)
+    pedmut (>= 0.5.0)
 Suggests: 
     testthat
 Encoding: UTF-8
