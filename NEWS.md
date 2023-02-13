@@ -1,3 +1,10 @@
+# pedprobr 0.7.1
+
+* `reduceAlleles()` is faster in some cases, due to the new `pedmut::lumpedModel()`
+
+* A few minor speedups and code improvements
+
+
 # pedprobr 0.7.0
 
 ## New features
