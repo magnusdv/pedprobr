@@ -106,3 +106,54 @@ test_that("lumped mutation model is robust to allele ordering", {
   genotype(m2, '4') = 3
   expect_identical(likelihood(x, m1), likelihood(x, m2))
 })
+
+
+test_that("absorbing mutation model works in likelihood2()", {
+  M1 = pedmut::mutationMatrix("custom", matrix = matrix(c(1,1,0,0), ncol = 2), alleles = 1:2)
+  M2 = pedmut::mutationMatrix("custom", matrix = matrix(c(0,0,1,1), ncol = 2), alleles = 1:2)
+  x = linearPed(2) |>
+    addMarker("5" = "1/1", alleles = 1:2, mutmod = M1) |>
+    addMarker("5" = "2/2", alleles = 1:2, mutmod = M2)
+  # plot(x, marker = 1:2)
+
+  ### X chrom
+  y = setChrom(x, marker = 1:2, chrom = 23) |> swapSex(3)
+  expect_equal(likelihood2(y, 1, 2, rho = 0.25), 1)
+})
+
+
+test_that("nontrivial mutation models work in likelihood2()", {
+  p = 0.8; q = 1-p
+  M = pedmut::mutationMatrix("random", alleles = 1:2, seed = 123)
+  x = nuclearPed(1) |>
+    addMarker(geno = c("1/1", "1/1", "1/1"), alleles = 1:2, afreq = c(p, q)) |>
+    addMarker(geno = c("1/1", "1/1", "2/2"), alleles = 1:2, afreq = c(p, q), mutmod = M)
+  # plot(x, marker = 1:2)
+
+  expect_equal(likelihood2(x, 1, 2, rho = 0.25), p^8 * M[1,2]^2)
+
+  y = setMutationModel(x, model = M, marker = 1)
+  expect_equal(likelihood2(y, 1, 2, rho = 0.25), p^8 * M[1,2]^2 * M[1,1]^2)
+})
+
+test_that("nontrivial mutation models work on X in likelihood2()", {
+  p = 0.8; q = 1-p
+  M = pedmut::mutationMatrix("random", alleles = 1:2, seed = 1234)
+  x = nuclearPed(1) |>
+    addMarker(geno = c(NA, "1/2", "1"), alleles = 1:2, afreq = c(p, q), chrom = 23) |>
+    addMarker(geno = c(NA, "1/2", "1"), alleles = 1:2, afreq = c(p, q), chrom = 23, mutmod = M)
+  # plot(x, marker = 1:2, labs = NULL)
+
+  rho = 0.2 # irrelevant
+  expect_equal(likelihood2(x, 1, 2, rho = rho), (2*p*q)^2 * .25 * (M[1,1] + M[2,1]))
+  expect_equal(likelihood2(x, 2, 1, rho = rho), (2*p*q)^2 * .25 * (M[1,1] + M[2,1]))
+
+  # Two sons
+  y = x |> addSon(1:2) |> setGenotype(marker = 1, id = 4, geno = "1") |> setGenotype(marker = 2, id = 4, geno = "2")
+  # plot(y, marker = 1:2, labs = NULL)
+
+  rho = 0.2; rhob = 1-rho
+  ans = (2*p*q)^2 * 1/8 * ((rhob*M[1,1] + rho*M[2,1])*(rhob*M[1,2] + rho*M[2,2]) + (rhob*M[2,1] + rho*M[1,1])*(rhob*M[2,2] + rho*M[1,2]))
+  expect_equal(likelihood2(y, 1, 2, rho = rho), ans)
+  expect_equal(likelihood2(y, 2, 1, rho = rho), ans)
+})

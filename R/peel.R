@@ -1,14 +1,15 @@
 #### PEELING FUNCTIONS
 
-choosePeeler = function(twolocus, rho, Xchrom, SEX, mutmat) {
+# Not currently used (?)
+choosePeeler = function(twolocus, rho, Xchrom, SEX, mutmat, mutmat2 = NULL) {
   if(!twolocus && !Xchrom)
     .f = function(dat, sub) .peel_M_AUT(dat, sub, mutmat)
   else if(!twolocus && Xchrom)
     .f = function(dat, sub) .peel_M_X(dat, sub, SEX, mutmat)
   else if(twolocus && !Xchrom)
-    .f = function(dat, sub) .peel_MM_AUT(dat, sub, rho)
+    .f = function(dat, sub) .peel_MM_AUT(dat, sub, rho, mutmat, mutmat2)
   else if(twolocus && Xchrom)
-    .f = function(dat, sub) .peel_MM_X(dat, sub, rho, SEX)
+    .f = function(dat, sub) .peel_MM_X(dat, sub, rho, SEX, mutmat, mutmat2)
   .f
 }
 
@@ -214,9 +215,7 @@ choosePeeler = function(twolocus, rho, Xchrom, SEX, mutmat) {
 ## TWO LINKED MARKERS
 #####################
 
-#TODO: add mutations!
-
-.peel_MM_AUT = function(dat, sub, rho) {
+.peel_MM_AUT = function(dat, sub, rho, mut1 = NULL, mut2 = NULL) {
   fa = sub$father
   mo = sub$mother
   link = sub$link
@@ -233,8 +232,8 @@ choosePeeler = function(twolocus, rho, Xchrom, SEX, mutmat) {
     chprob = chDat$prob
     chLen = length(chprob)
 
-    transPat = .transProbMM(faDat, chDat[c('pat1', 'pat2')], rho = rho)
-    transMat = .transProbMM(moDat, chDat[c('mat1', 'mat2')], rho = rho)
+    transPat = .transProbMM(faDat, chDat[c('pat1', 'pat2')], rho = rho, mutmat1 = mut1$male, mutmat2 = mut2$male)
+    transMat = .transProbMM(moDat, chDat[c('mat1', 'mat2')], rho = rho, mutmat1 = mut1$female, mutmat2 = mut2$female)
     dim(transMat) = c(chLen, moLen)
     transMat_rep = transMat[rep(seq_len(chLen), faLen), ] # as.numeric(do.call(rbind, rep(list(transMat), faLen)))
     mm = .colSums((transPat * chprob) * transMat_rep, chLen, faLen * moLen)
@@ -256,8 +255,8 @@ choosePeeler = function(twolocus, rho, Xchrom, SEX, mutmat) {
     pivLen = length(pivp)
 
     TRarray = array(0, dim = c(faLen, moLen, pivLen))
-    transPat = .transProbMM(faDat, pivDat[c('pat1', 'pat2')], rho = rho)
-    transMat = .transProbMM(moDat, pivDat[c('mat1', 'mat2')], rho = rho)
+    transPat = .transProbMM(faDat, pivDat[c('pat1', 'pat2')], rho = rho, mutmat1 = mut1$male, mutmat2 = mut2$male)
+    transMat = .transProbMM(moDat, pivDat[c('mat1', 'mat2')], rho = rho, mutmat1 = mut1$female, mutmat2 = mut2$female)
     dim(transPat) = c(pivLen, faLen)
     dim(transMat) = c(pivLen, moLen)
 
@@ -293,7 +292,7 @@ choosePeeler = function(twolocus, rho, Xchrom, SEX, mutmat) {
   dat
 }
 
-.peel_MM_X = function(dat, sub, rho, SEX) {
+.peel_MM_X = function(dat, sub, rho, SEX, mut1 = NULL, mut2 = NULL) {
   fa = sub$father
   mo = sub$mother
   link = sub$link
@@ -311,7 +310,7 @@ choosePeeler = function(twolocus, rho, Xchrom, SEX, mutmat) {
     chLen = length(chprob)
 
     if (SEX[ch] == 1) {
-      transMat = .transProbMM(moDat, chDat[c('mat1', 'mat2')], rho = rho)
+      transMat = .transProbMM(moDat, chDat[c('mat1', 'mat2')], rho = rho, mutmat1 = mut1$female, mutmat2 = mut2$female)
       mm = rep(.colSums(transMat * chprob, chLen, moLen), each = faLen)
     }
     else {
@@ -325,9 +324,11 @@ choosePeeler = function(twolocus, rho, Xchrom, SEX, mutmat) {
       chp1rep = rep(chp1, length(fa1))
       chp2rep = rep(chp2, length(fa1))
 
-      transPat = as.numeric((fa1rep == chp1rep) & (fa2rep == chp2rep))
+      loc1 = if(is.null(mut1)) as.numeric(fa1rep == chp1rep) else mut1$male[cbind(fa1rep, chp1rep, deparse.level = 0)]
+      loc2 = if(is.null(mut2)) as.numeric(fa2rep == chp2rep) else mut2$male[cbind(fa2rep, chp2rep, deparse.level = 0)]
+      transPat = loc1 * loc2
 
-      transMat = .transProbMM(moDat, chDat[c('mat1', 'mat2')], rho = rho)
+      transMat = .transProbMM(moDat, chDat[c('mat1', 'mat2')], rho = rho, mutmat1 = mut1$female, mutmat2 = mut2$female)
       dim(transMat) = c(chLen, moLen)
       transMat_rep = transMat[rep(seq_len(chLen), faLen), ] # as.numeric(do.call(rbind, rep(list(transMat), faLen)))
       mm = .colSums((transPat * chprob) * transMat_rep, chLen, faLen * moLen)
@@ -351,16 +352,18 @@ choosePeeler = function(twolocus, rho, Xchrom, SEX, mutmat) {
     pivLen = length(pivp)
 
     if (SEX[link] == 1) {
-      transMat = .transProbMM(moDat, pivDat[c('mat1', 'mat2')], rho = rho)
+      transMat = .transProbMM(moDat, pivDat[c('mat1', 'mat2')], rho = rho, mutmat1 = mut1$female, mutmat2 = mut2$female)
       dim(transMat) = c(pivLen, moLen)
       TRarray = rep(t.default(transMat), each = faLen)
     }
     else {
       TRarray = array(0, dim = c(faLen, moLen, pivLen))
-      transMat = .transProbMM(moDat, pivDat[c('mat1', 'mat2')], rho = rho)
+      transMat = .transProbMM(moDat, pivDat[c('mat1', 'mat2')], rho = rho, mutmat1 = mut1$female, mutmat2 = mut2$female)
       dim(transMat) = c(pivLen, moLen)
       for (i in seq_len(faLen)) {
-        transPat = as.numeric(faDat$mat1[i] == pivDat$pat1 & faDat$mat2[i] == pivDat$pat2)
+        loc1 = if(is.null(mut1)) as.numeric(faDat$mat1[i] == pivDat$pat1) else mut1$male[faDat$mat1[i], pivDat$pat1]
+        loc2 = if(is.null(mut2)) as.numeric(faDat$mat2[i] == pivDat$pat2) else mut2$male[faDat$mat2[i], pivDat$pat2]
+        transPat = loc1 * loc2
         TRarray[i, , ] = t.default(transPat * transMat)  #TODO:make faster!
       }
     }
@@ -393,12 +396,13 @@ choosePeeler = function(twolocus, rho, Xchrom, SEX, mutmat) {
 }
 
 
-.transProbMM = function(par, gamete, rho) {
+.transProbMM = function(par, gamete, rho, mutmat1 = NULL, mutmat2 = NULL, debug = FALSE) {
   # parent = list(pat1, mat1, pat2, mat2); vectors of same length
   # gamete = list(pat1, pat2) (or mat); vecs of same length
   lenPar = length(par[[1]])
   lenGam = length(gamete[[1]])
 
+  # Suffixes below refer to locus (1 or 2)
   p1 = rep(par$pat1, each = lenGam)
   m1 = rep(par$mat1, each = lenGam)
   p2 = rep(par$pat2, each = lenGam)
@@ -407,11 +411,20 @@ choosePeeler = function(twolocus, rho, Xchrom, SEX, mutmat) {
   gam1 = rep(gamete[[1]], lenPar)
   gam2 = rep(gamete[[2]], lenPar)
 
-  res =
-    (p1 == gam1 & p2 == gam2) * (1 - rho) +
-    (m1 == gam1 & m2 == gam2) * (1 - rho) +
-    (p1 == gam1 & m2 == gam2) * rho +
-    (m1 == gam1 & p2 == gam2) * rho
+  loc1pat = if(is.null(mutmat1)) as.integer(p1 == gam1) else mutmat1[cbind(p1, gam1, deparse.level = 0)]
+  loc1mat = if(is.null(mutmat1)) as.integer(m1 == gam1) else mutmat1[cbind(m1, gam1, deparse.level = 0)]
+  loc2pat = if(is.null(mutmat2)) as.integer(p2 == gam2) else mutmat2[cbind(p2, gam2, deparse.level = 0)]
+  loc2mat = if(is.null(mutmat2)) as.integer(m2 == gam2) else mutmat2[cbind(m2, gam2, deparse.level = 0)]
 
-  res/2
+  res = (loc1pat * loc2pat * (1 - rho) + loc1mat * loc2mat * (1 - rho) + loc1pat * loc2mat * rho + loc1mat * loc2pat * rho)/2
+
+  # DEBUG:
+  if(debug) {
+    parHap = paste(pasteHap(par[c(1,3)], ""), pasteHap(par[c(2,4)], ""), sep = "|")
+    print(matrix(res, ncol = lenPar, dimnames = list(pasteHap(gamete, ""), parHap)))
+  }
+
+  res
 }
+
+pasteHap = function(lst, sep = "/") paste(lst[[1]], lst[[2]], sep = sep)

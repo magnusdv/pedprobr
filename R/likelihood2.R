@@ -90,9 +90,9 @@ likelihood2.ped = function(x, marker1, marker2, rho, peelOrder = NULL,
 
   # Peeler function
   if(!Xchrom)
-    peeler = function(dat, sub) .peel_MM_AUT(dat, sub, rho)
+    peeler = function(dat, sub) .peel_MM_AUT(dat, sub, rho, mut1 = attr(marker1, "mutmod"), mut2 = attr(marker2, "mutmod"))
   else
-    peeler = function(dat, sub) .peel_MM_X(dat, sub, rho, x$SEX)
+    peeler = function(dat, sub) .peel_MM_X(dat, sub, rho, x$SEX, mut1 = attr(marker1, "mutmod"), mut2 = attr(marker2, "mutmod"))
 
   # Startdata
   if(Xchrom)
