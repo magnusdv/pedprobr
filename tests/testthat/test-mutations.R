@@ -116,6 +116,8 @@ test_that("absorbing mutation model works in likelihood2()", {
     addMarker("5" = "2/2", alleles = 1:2, mutmod = M2)
   # plot(x, marker = 1:2)
 
+  expect_equal(likelihood2(x, 1, 2, rho = 0.25), 1)
+
   ### X chrom
   y = setChrom(x, marker = 1:2, chrom = 23) |> swapSex(3)
   expect_equal(likelihood2(y, 1, 2, rho = 0.25), 1)
