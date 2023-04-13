@@ -1,8 +1,25 @@
+# pedprobr 0.8.0
+
+## New features
+
+* Mutation models are now supported in `likelihood2()`, providing likelihood calculations for pairwise linked markers.
+
+* New functions `haldane()` and `kosambi()`.
+
+## Other
+
+* Update README.
+
+* Update package doc.
+
+* Include license (GPL >= 2).
+
+
 # pedprobr 0.7.1
 
-* `reduceAlleles()` is faster in some cases, due to the new `pedmut::lumpedModel()`
+* `reduceAlleles()` is faster in some cases, due to the new `pedmut::lumpedModel()`.
 
-* A few minor speedups and code improvements
+* A few minor speedups and code improvements.
 
 
 # pedprobr 0.7.0
