@@ -8,7 +8,8 @@ output: github_document
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
-  fig.path = "man/figures/README-"
+  fig.path = "man/figures/README-",
+  fig.align = "center"
 )
 ```
 
@@ -52,20 +53,14 @@ devtools::install_github("magnusdv/pedprobr")
 library(pedprobr)
 ```
 
-To set up a simple example, we first use **pedtools** utilities to create a pedigree with a single attached marker object. The marker has alleles `a` and `b`, with frequencies 0.2 and 0.8 respectively, and both brothers are heterozygous.
-```{r, fig.keep = "none"}
-# Pedigree
-x = nuclearPed(nch = 2)
-
-# Add a single marker
-x = addMarker(x, geno = c(NA, NA, "a/b", "a/b"), afreq = c(a = 0.2, b = 0.8))
+To set up a simple example, we first use **pedtools** utilities to create a pedigree where two brothers are genotyped with a single SNP marker. The marker has alleles `a` and `b`, with frequencies 0.2 and 0.8 respectively, and both brothers are heterozygous `a/b`.
+```{r pedplot, fig.height=2.7, fig.width=2.5}
+# Pedigree with SNP marker
+x = nuclearPed(nch = 2) |> 
+  addMarker(geno = c(NA, NA, "a/b", "a/b"), afreq = c(a = 0.2, b = 0.8))
 
 # Plot with genotypes
 plot(x, marker = 1)
-```
-
-```{r pedplot, echo = FALSE, fig.height=2.7, fig.width=2.5}
-plot(x, 1, margins = c(0,1,1,1))
 ```
 
 The pedigree likelihood, i.e., the probability of the genotypes given the pedigree, is obtained as follows:

@@ -29,12 +29,12 @@ for relatedness analysis and forensic pedigree analysis.
 The workhorse of the **pedprobr** package is the `likelihood()`
 function, which works in a variety of situations:
 
--   complex inbred pedigrees
--   pedigrees with inbred founders
--   autosomal and X-linked markers
--   a single marker or two linked markers
--   markers with mutation models (supported by
-    [pedmut](https://github.com/magnusdv/pedmut))
+- complex inbred pedigrees
+- pedigrees with inbred founders
+- autosomal and X-linked markers
+- a single marker or two linked markers
+- markers with mutation models (supported by
+  [pedmut](https://github.com/magnusdv/pedmut))
 
 ## Installation
 
@@ -61,22 +61,20 @@ library(pedprobr)
 ```
 
 To set up a simple example, we first use **pedtools** utilities to
-create a pedigree with a single attached marker object. The marker has
-alleles `a` and `b`, with frequencies 0.2 and 0.8 respectively, and both
-brothers are heterozygous.
+create a pedigree where two brothers are genotyped with a single SNP
+marker. The marker has alleles `a` and `b`, with frequencies 0.2 and 0.8
+respectively, and both brothers are heterozygous `a/b`.
 
 ``` r
-# Pedigree
-x = nuclearPed(nch = 2)
-
-# Add a single marker
-x = addMarker(x, geno = c(NA, NA, "a/b", "a/b"), afreq = c(a = 0.2, b = 0.8))
+# Pedigree with SNP marker
+x = nuclearPed(nch = 2) |> 
+  addMarker(geno = c(NA, NA, "a/b", "a/b"), afreq = c(a = 0.2, b = 0.8))
 
 # Plot with genotypes
 plot(x, marker = 1)
 ```
 
-![](man/figures/README-pedplot-1.png)<!-- -->
+<img src="man/figures/README-pedplot-1.png" style="display: block; margin: auto;" />
 
 The pedigree likelihood, i.e., the probability of the genotypes given
 the pedigree, is obtained as follows:
@@ -90,10 +88,10 @@ likelihood(x, marker = 1)
 
 Besides `likelihood()`, other important functions in **pedprobr** are:
 
--   `oneMarkerDistribution()` : the joint genotype distribution at a
-    single marker, for any subset of pedigree members
--   `twoMarkerDistribution()` : the joint genotype distribution at two
-    linked markers, for a single person
+- `oneMarkerDistribution()` : the joint genotype distribution at a
+  single marker, for any subset of pedigree members
+- `twoMarkerDistribution()` : the joint genotype distribution at two
+  linked markers, for a single person
 
 In both cases, the distributions are computed conditionally on any known
 genotypes at the markers in question.
