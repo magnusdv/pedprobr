@@ -1,10 +1,11 @@
 #### .buildGenolist and .eliminate
 
-.genotypeHaploList = function(gt, n, unordered, complete = NULL) {
+.genotypeHaploList = function(gt, n, unordered, complete = NULL, dropoutTF = FALSE) {
   nseq = seq_len(n)
 
   # The complete matrix can (should!) be supplied to avoid making it each time
-  complete = complete %||% list(pat = rep(nseq, each = n), mat = rep.int(nseq, times = n))
+  if(is.null(complete))
+    complete = list(pat = rep(nseq, each = n), mat = rep.int(nseq, times = n))
 
   a = gt[1]
   b = gt[2]
@@ -14,6 +15,8 @@
   else if (a == 0 && b > 0)
     g = list(pat = c(nseq, rep(b, n - 1)), mat = c(rep(b, n), nseq[-b]))
   else if (a > 0 && b == 0)
+    g = list(pat = c(nseq, rep(a, n - 1)), mat = c(rep(a, n), nseq[-a]))
+  else if (a == b && dropoutTF)
     g = list(pat = c(nseq, rep(a, n - 1)), mat = c(rep(a, n), nseq[-a]))
   else if (a == b)
     g = list(pat = a, mat = b)
@@ -29,29 +32,32 @@
   g
 }
 
-.buildGenolist = function(x, marker, eliminate = 0, treatAsFounder = NULL, foundersUnordered = TRUE) {
-  n = nAlleles(marker)
-
+.buildGenolist = function(x, marker, eliminate = 0, treatAsFounder = NULL,
+                          foundersUnordered = TRUE, dropoutTF = NULL) {
+  nInd = length(x$ID)
+  nall = nAlleles(marker)
 
   # Founders (except loop breaker copies) need only *unordered* genotypes
-  founderNotLB = logical(pedsize(x))
-  founderNotLB[founders(x, internal = TRUE)] = TRUE
-  founderNotLB[treatAsFounder] = TRUE
-  founderNotLB[x$LOOP_BREAKERS[, 2]] = FALSE
+  unordered = logical(nInd)
+  if(foundersUnordered) {
+    unordered[founders(x, internal = TRUE)] = TRUE
+    unordered[treatAsFounder] = TRUE
+    unordered[x$LOOP_BREAKERS[, 2]] = FALSE
+  }
 
   # A matrix containing a complete set of ordered genotypes
-  nseq = seq_len(n)
-  COMPLETE = list(pat = rep(nseq, each = n), mat = rep.int(nseq, times = n))
+  nseq = seq_len(nall)
+  COMPLETE = list(pat = rep(nseq, each = nall),
+                  mat = rep.int(nseq, times = nall))
+
+  if(is.null(dropoutTF))
+    dropoutTF = logical(nInd)
 
   # Building a list of genotypes for each indiv.
-  genolist = lapply(1:pedsize(x), function(i) {
-    gt = marker[i, ]
-    unordered = founderNotLB[i] && foundersUnordered
-    .genotypeHaploList(gt, n, unordered, COMPLETE)
-  })
+  genolist = lapply(1:nInd, function(i)
+    .genotypeHaploList(marker[i, ], nall, unordered[i], COMPLETE, dropoutTF = dropoutTF[i]))
 
-  #als = alleles(marker)
-  #genolist = lapply(genolist, function(g) {colnames(g) = paste(als[g[1,]], als[g[2,]], sep = "/"); g})
+  #.printG(genolist)
 
   attr(genolist, "impossible") = FALSE
 
@@ -59,7 +65,7 @@
   if (allowsMutations(marker))
     return(genolist)
 
-  .eliminate(x, genolist, n, repeats = eliminate, treatAsFounder = treatAsFounder)
+  .eliminate(x, genolist, nall, repeats = eliminate, treatAsFounder = treatAsFounder)
 }
 
 

@@ -49,6 +49,9 @@
 #'   (default), automatic selection of loop breakers will be performed. See
 #'   [breakLoops()].
 #' @param peelOrder For internal use.
+#' @param dropout A single number (applied to all individuals) or a named
+#'   vector. The probability of allelic dropout, implemented as in Method 3 of
+#'   Dørum et al (2014).
 #' @param verbose A logical.
 #' @param theta Theta correction.
 #' @param \dots Further arguments.
@@ -57,11 +60,23 @@
 #'   `markers`. If `logbase` is a positive number, the output is
 #'   `log(likelihood, logbase)`.
 #'
-#' @seealso [likelihoodMerlin()], for likelihoods involving more than 2 linked markers.
+#' @seealso [likelihoodMerlin()], for likelihoods involving more than 2 linked
+#'   markers.
 #'
 #' @author Magnus Dehli Vigeland
-#' @references Elston and Stewart (1971). _A General Model for the Genetic
-#'   Analysis of Pedigree Data_. \doi{https://doi.org/10.1159/000152448}
+#'
+#' @references
+#'
+#' * For a general overview of the implementation:
+#' Vigeland (2021). _Pedigree analysis in R_. ISBN: 9780128244302.
+#'
+#' * Elston-Stewart algorithm:
+#' Elston and Stewart (1971). _A General Model for the Genetic Analysis of
+#' Pedigree Data_. \doi{https://doi.org/10.1159/000152448}
+#'
+#' * Dropout model:
+#' Dørum et al (2014). _Models and implementation for relationship problems with
+#' dropout_. \doi{https://doi.org/10.1007/s00414-014-1046-5}
 #'
 #' @examples
 #'
@@ -122,7 +137,7 @@ likelihood = function(x, ...) UseMethod("likelihood", x)
 #' @rdname likelihood
 likelihood.ped = function(x, markers = NULL, peelOrder = NULL, lump = TRUE,
                           eliminate = 0, logbase = NULL, loopBreakers = NULL,
-                          verbose = FALSE, theta = 0, ...) {
+                          verbose = FALSE, theta = 0, dropout = NULL, ...) {
 
   if(theta > 0 && hasInbredFounders(x))
     stop2("Theta correction cannot be used in pedigrees with inbred founders")
@@ -134,7 +149,6 @@ likelihood.ped = function(x, markers = NULL, peelOrder = NULL, lump = TRUE,
   # Catch erroneous input
   if(is.ped(peelOrder))
     stop2("Invalid input for argument `peelOrder`. Received object type: ", class(peelOrder))
-
 
   if(is.null(markers))
     markers = x$MARKERS
@@ -155,7 +169,9 @@ likelihood.ped = function(x, markers = NULL, peelOrder = NULL, lump = TRUE,
   if(is.singleton(x)) {
     if(verbose)
       message("Passing to singleton method")
-    liks = vapply(markers, function(m) likelihoodSingleton(x, m, theta = theta), FUN.VALUE = 1)
+    dropout = if(x$ID %in% names(dropout)) dropout[x$ID] else dropout %||% 0
+    liks = vapply(markers, function(m)
+      likelihoodSingleton(x, m, theta = theta, dropout = dropout), FUN.VALUE = 1)
     return(if(is.numeric(logbase)) log(liks, logbase) else liks)
   }
 
@@ -169,7 +185,16 @@ likelihood.ped = function(x, markers = NULL, peelOrder = NULL, lump = TRUE,
       message("Tip: To optimize speed, consider breaking loops before calling 'likelihood'. See ?breakLoops.")
     x = breakLoops(setMarkers(x, markers), loopBreakers = loopBreakers, verbose = verbose)
     markers = x$MARKERS
+
   }
+
+  # Dropout
+  if(is.null(dropout)) {
+    dropout = rep_len(0, length(x$ID))
+  } else if(!is.null(dnms <- names(dropout))) {
+    dropout = ifelse(x$ID %in% dnms, dropout[x$ID], 0)
+  } else
+    dropout = rep_len(as.numeric(dropout), length(x$ID))
 
   # Peeling order: Same for all markers
   if(is.null(peelOrder))
@@ -197,7 +222,7 @@ likelihood.ped = function(x, markers = NULL, peelOrder = NULL, lump = TRUE,
     peeler = function(x, m) function(dat, sub) .peel_M_X(dat, sub, SEX = x$SEX, mutmat = mutmod(m))
   }
   else {
-    starter = function(x, m) startdata_M_AUT(x, m, eliminate = eliminate, treatAsFounder = treatAsFou)
+    starter = function(x, m) startdata_M_AUT(x, m, eliminate = eliminate, treatAsFounder = treatAsFou, dropout = dropout)
     peeler = function(x, m) function(dat, sub) .peel_M_AUT(dat, sub, mutmat = mutmod(m))
   }
 
@@ -344,12 +369,12 @@ matchDat = function(dat1, dat2) {
   }
 }
 
-likelihoodSingleton = function(x, m, theta = 0) {
+likelihoodSingleton = function(x, m, theta = 0, dropout = 0) {
   m1 = m[1]
   m2 = m[2]
 
   # Quick return if empty
-  if(m1 == 0 || m2 == 0)
+  if(m1 == 0 && m2 == 0)
     return(1)
 
   afr = afreq(m)
@@ -375,6 +400,6 @@ likelihoodSingleton = function(x, m, theta = 0) {
     return(res)
   }
 
-  # Otherwise: The usual HW formula, possibly with inbreeding correction
-  HWprob(m1, m2, afr, f = f)
+  # Otherwise: The usual HW formula, possibly corrected for inbreeding and/or dropout
+  HWprob(m1, m2, afr, f = f, dropout = dropout)
 }
