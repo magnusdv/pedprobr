@@ -13,16 +13,16 @@ test_that("likelihood2() catches input errors", {
   m1 = marker(x)
   m2 = marker(y)
   expect_error(likelihood2(x, y, m1, m2), "Argument `marker1` must be a single marker. Received: ped")
-  expect_error(likelihood2(x, y, marker1 = m1, marker2 = m2), "Wrong input syntax. Argument `rho` should be a single number")
+  expect_error(likelihood2(x, y, marker1 = m1, marker2 = m2), "Argument `rho` should be a number")
 
   expect_error(likelihood2(x), 'argument "marker1" is missing, with no default')
   expect_error(likelihood2(x, m1), 'argument "marker2" is missing, with no default')
   expect_error(likelihood2(x, marker2 = m1), 'argument "marker1" is missing, with no default')
 
   expect_error(likelihood2(y, m1, m2), "Argument `rho` is missing")
-  expect_error(likelihood2(y, m1, m2, c(0, .1)), "Argument `rho` must be a single number")
-  expect_error(likelihood2(y, m1, m2, NA), "Argument `rho` must be a single number")
-  expect_error(likelihood2(y, m1, m2, list(0)), "Argument `rho` must be a single number")
+  expect_error(likelihood2(y, m1, m2, c(0, .1)), "Argument `rho` must have length 1")
+  expect_error(likelihood2(y, m1, m2, NA), "Argument `rho` should be a number")
+  expect_error(likelihood2(y, m1, m2, list(0)), "Argument `rho` should be a number")
 })
 
 

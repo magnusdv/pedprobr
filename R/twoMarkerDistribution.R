@@ -47,8 +47,12 @@
 #' twoMarkerDistribution(x, id = "bro2", SNP1, SNP2, rho = 0.5)
 #'
 #' @export
-twoMarkerDistribution <- function(x, id, partialmarker1, partialmarker2, rho, loopBreakers = NULL,
-                                  eliminate = 99, verbose = TRUE) {
+twoMarkerDistribution <- function(x, id, partialmarker1, partialmarker2, rho = NULL,
+                                  loopBreakers = NULL, eliminate = 99,
+                                  verbose = TRUE) {
+
+  if(length(id) != 1)
+    stop2("Argument `id` must have length 1: ", id)
 
   if(is.pedList(x)) {
     if(is.marker(partialmarker1) || is.marker(partialmarker2))
@@ -62,26 +66,28 @@ twoMarkerDistribution <- function(x, id, partialmarker1, partialmarker2, rho, lo
     stop2("Input is not a pedigree")
 
   if(!isCount(eliminate, minimum = 0))
-    stop2("`eliminate` must be a nonnegative integer")
+    stop2("Argument `eliminate` must be a nonnegative integer: ", eliminate)
 
   m1 = partialmarker1
   if (!is.marker(m1)) {
     if(length(m1) != 1)
-      stop2("`partialmarker1` must have length 1")
+      stop2("Argument `partialmarker1` must have length 1: ", partialmarker1)
     m1 = getMarkers(x, markers = m1)[[1]]
   }
 
   m2 = partialmarker2
   if (!is.marker(m2)) {
     if(length(m2) != 1)
-      stop2("`partialmarker2` must have length 1")
+      stop2("Argument `partialmarker2` must have length 1: ", partialmarker2)
     m2 = getMarkers(x, markers = m2)[[1]]
   }
   if (!is.null(x$LOOP_BREAKERS))
-    stop2("`ped` objects with pre-broken loops are not allowed as input to `twoMarkerDistribution`")
+    stop2("Pedigrees with pre-broken loops are not allowed in this function")
 
   if (!identical(chrom(m1), chrom(m2)))
     stop2("Partial markers are on different chromosomes: ", toString(c(chrom(m1), chrom(m2))))
+
+  checkRho(rho)
 
   onX = isXmarker(m1)
   XandMale = onX && getSex(x, id) == 1
