@@ -171,6 +171,7 @@ fixMerlinLog = function(a, logbase = NULL) {
   res
 }
 
+
 checkRho = function(rho, max = 0.5) {
   if(is.null(rho))
     stop2("Argument `rho` is missing")
