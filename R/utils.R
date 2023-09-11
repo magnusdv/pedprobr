@@ -159,3 +159,16 @@ fixMerlinLog = function(a, logbase = NULL) {
 }
 
 
+checkRho = function(rho, max = 0.5) {
+  if(is.null(rho))
+    stop2("Argument `rho` is missing")
+  if(!is.numeric(rho))
+    stop2("Argument `rho` should be a number, not: ", class(rho))
+  if(length(rho) != 1)
+    stop2("Argument `rho` must have length 1: ", rho)
+  if(rho < 0)
+    stop2("Argument `rho` cannot be negative: ", rho)
+  if(rho > max)
+    stop2(sprintf("Argument `rho` cannot exceed %f: %f", max, rho))
+}
+

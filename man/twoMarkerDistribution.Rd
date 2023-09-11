@@ -9,7 +9,7 @@ twoMarkerDistribution(
   id,
   partialmarker1,
   partialmarker2,
-  rho,
+  rho = NULL,
   loopBreakers = NULL,
   eliminate = 99,
   verbose = TRUE

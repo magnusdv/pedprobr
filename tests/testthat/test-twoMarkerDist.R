@@ -9,6 +9,23 @@ hw = c(p^2, 2*p*q, q^2)
 PQ_ARRAY = array(c(p,q), dimnames = list(1:2))
 HW_ARRAY = array(hw, dimnames = list(g))
 
+test_that("twoMarkerDist catches errors", {
+  x = nuclearPed() |> addMarker() |> addMarker()
+  expect_error(TMD(x, 1, 2, id = 1:2, rho = 0.25),
+               "Argument `id` must have length 1: 1, 2")
+  expect_error(TMD(x, 1, 3, id = 1, rho = 0.25),
+               "Marker index out of range: 3")
+  expect_error(TMD(x, 1:2, id = 1, rho = 0.25),
+               "Argument `partialmarker1` must have length 1: 1, 2")
+  expect_error(TMD("foo", 1:2, id = 1, rho = 0.25),
+               "Input is not a pedigree")
+  expect_error(TMD(x, 1, 2, id = 1, rho = -0.25),
+               "Argument `rho` cannot be negative")
+  expect_error(TMD(x, 1, 2, id = 1, rho = 0.75),
+               "Argument `rho` cannot exceed 0.5")
+  expect_error(TMD(x, 1, 2, id = 1), "Argument `rho` is missing")
+})
+
 test_that("twoMarkerDist works in empty autosomal examples", {
 
   ### Nuclear
