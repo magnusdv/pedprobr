@@ -7,6 +7,12 @@ test_that("singleton with dropout", {
   d = 0.1
   expect_equal(likelihood(s, dropout = 0), p^2)
   expect_equal(likelihood(s, dropout = d), (1-d^2)*p^2 + d*(1-d)*2*p*(1-p))
+
+  f = 0.2
+  Lf = (1-d^2)*(f*p + (1-f)*p^2) + d*(1-d)*(1-f)*2*p*(1-p)
+
+  s = setFounderInbreeding(s, 1, f)
+  expect_equal(likelihood(s, dropout = d), Lf)
 })
 
 test_that("trio with dropout", {
@@ -54,3 +60,4 @@ test_that("inbreeding with dropout", {
   expect_equal(likelihood(x2, dropout = d), Lf)
 
 })
+
