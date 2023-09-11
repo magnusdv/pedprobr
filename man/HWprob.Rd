@@ -4,15 +4,17 @@
 \alias{HWprob}
 \title{Hardy-Weinberg probabilities}
 \usage{
-HWprob(allele1, allele2, afreq, f = 0)
+HWprob(allele1, allele2, afreq, f = 0, dropout = 0)
 }
 \arguments{
-\item{allele1, allele2}{Vectors of equal length, containing alleles in the
-form of indices of \code{afreq}}
+\item{allele1, allele2}{Vectors of equal length, either character (if \code{afreq}
+is named) or numeric (indices of \code{afreq}).}
 
-\item{afreq}{A numeric vector with allele frequencies}
+\item{afreq}{A numeric vector with allele frequencies.}
 
-\item{f}{A single number in \verb{[0, 1]}; the inbreeding coefficient}
+\item{f}{A single number in \verb{[0, 1]}; the inbreeding coefficient.}
+
+\item{dropout}{A single number in \verb{[0, 1]}; the dropout probability.}
 }
 \value{
 A numeric vector of the same length as \code{allele1} and  \code{allele2}

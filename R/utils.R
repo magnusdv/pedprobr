@@ -66,10 +66,11 @@ log_or_not = function(x, logbase) {
 
 #' Hardy-Weinberg probabilities
 #'
-#' @param allele1,allele2 Vectors of equal length, containing alleles in the
-#'   form of indices of `afreq`
-#' @param afreq A numeric vector with allele frequencies
-#' @param f A single number in `[0, 1]`; the inbreeding coefficient
+#' @param allele1,allele2 Vectors of equal length, either character (if `afreq`
+#'   is named) or numeric (indices of `afreq`).
+#' @param afreq A numeric vector with allele frequencies.
+#' @param f A single number in `[0, 1]`; the inbreeding coefficient.
+#' @param dropout A single number in `[0, 1]`; the dropout probability.
 #'
 #' @return A numeric vector of the same length as `allele1` and  `allele2`
 #'
@@ -79,12 +80,24 @@ log_or_not = function(x, logbase) {
 #' stopifnot(all.equal(hw, c(p^2, 2*p*q, q^2)))
 #'
 #' @export
-HWprob = function(allele1, allele2, afreq, f = 0) {
+HWprob = function(allele1, allele2, afreq, f = 0, dropout = 0) {
+  a = afreq[allele1]
+  b = afreq[allele2]
   homoz = allele1 == allele2
-  hw = afreq[allele1] * afreq[allele2] * (2 - homoz)
+  hw = a * b * (2 - homoz)
 
-  if(!is.na(f) && f > 0)
-    hw = afreq[allele1] * homoz * f + hw * (1 - f)
+  if(is.na(f)) # Drop??
+    f = 0
+
+  if(f > 0)
+    hw = a * f * homoz + hw * (1 - f)
+
+  if(dropout > 0) {
+    # First term: P(obs a/a | true a/a) = 1 - d^2
+    # Second term: P(obs a/a | true a/-a) = d(1-d)
+    d = dropout
+    hw[homoz] = (1-d^2) * hw[homoz] + d*(1-d) *(1-f)* 2*a*(1-a)
+  }
 
   as.numeric(hw) # remove names; slightly faster than unname
 }
@@ -158,4 +171,15 @@ fixMerlinLog = function(a, logbase = NULL) {
   res
 }
 
-
+checkRho = function(rho, max = 0.5) {
+  if(is.null(rho))
+    stop2("Argument `rho` is missing")
+  if(!is.numeric(rho))
+    stop2("Argument `rho` should be a number, not: ", class(rho))
+  if(length(rho) != 1)
+    stop2("Argument `rho` must have length 1: ", rho)
+  if(rho < 0)
+    stop2("Argument `rho` cannot be negative: ", rho)
+  if(rho > max)
+    stop2(sprintf("Argument `rho` cannot exceed %f: %f", max, rho))
+}

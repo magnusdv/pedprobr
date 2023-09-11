@@ -21,6 +21,7 @@ likelihood(x, ...)
   loopBreakers = NULL,
   verbose = FALSE,
   theta = 0,
+  dropout = NULL,
   ...
 )
 
@@ -32,7 +33,7 @@ likelihood2(x, ...)
   x,
   marker1,
   marker2,
-  rho,
+  rho = NULL,
   peelOrder = NULL,
   eliminate = 0,
   logbase = NULL,
@@ -79,6 +80,10 @@ basis for logarithmic output. Typical values are \code{exp(1)} and 10.}
 \item{verbose}{A logical.}
 
 \item{theta}{Theta correction.}
+
+\item{dropout}{A single number (applied to all individuals) or a named
+vector. The probability of allelic dropout, implemented as in Method 3 of
+Dørum et al (2014).}
 
 \item{marker1, marker2}{Single markers compatible with \code{x}.}
 
@@ -164,11 +169,20 @@ stopifnot(all.equal(lik1, lik2))
 
 }
 \references{
-Elston and Stewart (1971). \emph{A General Model for the Genetic
-Analysis of Pedigree Data}. \doi{https://doi.org/10.1159/000152448}
+\itemize{
+\item For a general overview of the implementation:
+Vigeland (2021). \emph{Pedigree analysis in R}. ISBN: 9780128244302.
+\item Elston-Stewart algorithm:
+Elston and Stewart (1971). \emph{A General Model for the Genetic Analysis of
+Pedigree Data}. \doi{https://doi.org/10.1159/000152448}
+\item Dropout model:
+Dørum et al (2014). \emph{Models and implementation for relationship problems with
+dropout}. \doi{https://doi.org/10.1007/s00414-014-1046-5}
+}
 }
 \seealso{
-\code{\link[=likelihoodMerlin]{likelihoodMerlin()}}, for likelihoods involving more than 2 linked markers.
+\code{\link[=likelihoodMerlin]{likelihoodMerlin()}}, for likelihoods involving more than 2 linked
+markers.
 }
 \author{
 Magnus Dehli Vigeland

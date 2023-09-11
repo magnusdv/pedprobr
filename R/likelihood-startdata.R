@@ -7,45 +7,69 @@ startdata_M = function(x, marker, eliminate = 0, treatAsFounder = NULL) {
     startdata_M_AUT(x, marker, eliminate, treatAsFounder)
 }
 
-startdata_M_AUT = function(x, marker, eliminate = 0, treatAsFounder = NULL) {
+### FOR DEBUGGING
+.printG = function(x, ...) {
+  als = attr(x, "als") %||% 1:max(unlist(x, use.names = FALSE))
+  hasprob = length(x) && !is.null(x[[1]]$prob)
+  pretty = lapply(x, function(y) {
+    g = paste(als[y$pat], als[y$mat], sep = "/")
+    if(hasprob) `names<-`(y$prob, g) else g
+  })
+  print(pretty)
+}
 
-  glist = .buildGenolist(x, marker, eliminate, treatAsFounder)
+startdata_M_AUT = function(x, marker, eliminate = 0, treatAsFounder = NULL,
+                           dropout = 0) {
+  nInd = length(x$ID)
 
-  if (attr(glist, "impossible"))
+  # Dropout loopup: TRUE if homozygous and nonzero factor
+  if(length(dropout) == 1)
+    dropout = rep_len(dropout, nInd)
+  dropoutTF = marker[,1] > 0 & marker[,1] == marker[,2] & dropout > 0
+
+  glist = .buildGenolist(x, marker, eliminate, treatAsFounder, dropoutTF = dropoutTF)
+
+  if(attr(glist, "impossible"))
     return(structure(list(), impossible = TRUE))
 
-  FOU = founders(x, internal = TRUE)
+  # Founder lookup
+  isFOU = x$FID == 0
 
-  # Founder inbreeding: A vector of length pedsize(x), with NA's at nonfounders
-  # Enables quick look-up e.g. FOU_INB[i].
-  FOU_INB = rep(NA_real_, pedsize(x))
-  FOU_INB[FOU] = founderInbreeding(x)
+  # Founder inbreeding lookup, with 0 at nonfounders
+  FOU_INB = rep_len(0, nInd)
+  FOU_INB[isFOU] = x$FOUNDER_INBREEDING$autosomal %||% 0
 
-  # Add any members which should be treated as founders
-  FOU = c(FOU, treatAsFounder)
+  # Add 'extra' founders (NB: after FOU_INB)
+  isFOU[treatAsFounder] = TRUE
 
-  afr = afreq(marker)
+  afr = attr(marker, "afreq")
   impossible = FALSE
 
   # Add probabilities to each genotype
   for(i in seq_along(glist)) {
-
     g = glist[[i]]
-    if (i %in% FOU) {
-      prob = HWprob(g$pat, g$mat, afr, f = FOU_INB[i])
-
-      if (sum(prob) == 0){
-        impossible = TRUE
-        break
-      }
-    }
+    if(isFOU[i])
+      prob = HWprob(g$pat, g$mat, afr, f = FOU_INB[i]) # NB: No dropout here!
     else
-      prob = rep.int(1, length(g$mat))
+      prob = rep_len(1, length(g$mat))
 
-    glist[[i]]$prob = as.numeric(prob)
+    # Dropout
+    if(dropoutTF[i]) {
+      di = dropout[i]
+      prob[g$pat == g$mat] = prob[g$pat == g$mat] * (1 - di^2)
+      prob[g$pat != g$mat] = prob[g$pat != g$mat] * di*(1-di)
+    }
+
+    if (sum(prob) == 0){
+      impossible = TRUE
+      break
+    }
+
+    glist[[i]]$prob = prob
   }
 
-  attr(glist, "impossible") = impossible
+  attributes(glist) = list(names = x$ID, impossible = impossible,
+                           als = attr(marker, "alleles"))
   glist
 }
 
