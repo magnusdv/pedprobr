@@ -20,7 +20,7 @@ test_that("likelihood() catches input errors", {
   expect_error(likelihood(peds, 1), "Marker index out of range: 1")
 
   peds2 = list(setMarkers(x,marker(x)), y)
-  expect_error(likelihood(peds2), "Pedigree components have different number of markers")
+  expect_error(likelihood(peds2), "components have different number of markers")
   expect_error(likelihood(peds2,1), "Marker index out of range: 1")
 })
 
