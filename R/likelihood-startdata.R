@@ -10,112 +10,151 @@ startdata_M = function(x, marker, eliminate = 0, treatAsFounder = NULL) {
 
 startdata_M_AUT_new = function(x, marker, eliminate = 0, treatAsFounder = NULL) {#print("new startdata")
 
-  # Sort each genotype
-  swtch = marker[,1] > marker[,2]
-  if(any(swtch))
-    marker[swtch, 1:2] = marker[swtch, 2:1]
-
   nInd = length(x$ID)
   fouInt = founders(x, internal = TRUE)
 
-  # Founders (except LB-copies): Genotypes need not be sorted
-  unsortedFounder = logical(nInd)
-  unsortedFounder[fouInt] = TRUE
-  unsortedFounder[treatAsFounder] = TRUE
-  unsortedFounder[x$LOOP_BREAKERS[, 2]] = FALSE
+  # Founders (except LB-copies): Genotypes need not be phased
+  unphasedFou = logical(nInd)
+  unphasedFou[fouInt] = TRUE
+  unphasedFou[treatAsFounder] = TRUE
+  unphasedFou[x$LOOP_BREAKERS[, 2]] = FALSE
 
   # Founders with 1 child: Skip genotypes, draw alleles directly (assuming HWE)
-  simpleFou = unsortedFounder & tabulate(c(x$FIDX, x$MIDX), nInd) == 1
+  simpleFou = unphasedFou & tabulate(c(x$FIDX, x$MIDX), nInd) == 1
 
   # Founder inbreeding lookup vector; 0's for nonfounders
   fi = numeric(nInd)
   if(!is.null(x$FOUNDER_INBREEDING$autosomal))
     fi[fouInt] = x$FOUNDER_INBREEDING$autosomal
 
+  marker = .sortGeno(marker)
   afr = attr(marker, "afreq")
   n = length(afr)
+
+  # Complete set of genotypes - phased and unphased (for founders) - used below
   nseq = seq_len(n)
-
-  # Complete set of ordered genotypes (used below)
-  COMPLETE = list(pat = rep(nseq, each = n), mat = rep.int(nseq, times = n))
-
-  impossible = FALSE
+  allPhased   = list(pat = rep(nseq, each = n), mat = rep.int(nseq, times = n))
+  allUnphased = list(pat = rep(nseq, n:1), mat = sequence.default(n:1, from = nseq))
 
   # Loop through all individuals
-  glist = lapply(seq_len(nInd), function(i) {
+  glist = vector(nInd, mode = "list")
+  names(glist) = x$ID
+  attr(glist, "impossible") = FALSE
 
+  for(i in seq_along(glist)) {
     a = marker[i, 1]
     b = marker[i, 2]
 
-    ### Founder with 1 child: Draw alleles directly (without genotype)
-    if(simpleFou[i]) {
-      if(a == 0 && b == 0) { # untyped founder
-        allele = nseq
-        prob = afr
-      }
-      else if (a == 0) { # partial founder genotype: -/b
-        allele = nseq
-        prob = afr/2
-        prob[b] = prob[b] + 0.5
-        if(fi[i] > 0) {
-          prob = prob * (1-fi[i])
-          prob[b] = prob[b] + fi[i]
-        }
-      }
-      else if (a == b) { # homozygous founder
-        allele = a
-        prob = afr[a]^2
-        if(fi[i] > 0)
-          prob = prob * (1-fi[i]) + afr[a] * fi[i]
-      }
-      else { # heterozygous founder
-        allele = c(a,b)
-        prob = rep(afr[a]*afr[b]*(1-fi[i]), 2)   # 2*a*b * 0.5
-      }
-
-      return(list(allele = allele, prob = prob))
-    }
-
-    ### Otherwise
-
-    if(a == 0 && b == 0)
-      g = COMPLETE
-    else if (a == 0)
-      g = list(pat = c(nseq, rep(b, n - 1)), mat = c(rep(b, n), nseq[-b]))
-    else if (a == b)
-      g = list(pat = a, mat = b)
+    if(simpleFou[i])
+      # Founder with 1 child: Draw alleles directly (without genotype)
+      g = .alleleDistrib(a, b, afr, f = fi[i])
+    else if(unphasedFou[i])
+      # Unphased genotypes with HW probs
+      g = .genoDistribFounder(a, b, afr, f = fi[i], COMPLETE = allUnphased)
     else
-      g = list(pat = c(a, b), mat = c(b, a))
+      # Phased genos with 1's as prob
+      g = .genoDistribNonfounder(a, b, COMPLETE = allPhased)
 
-    # No phasing for founders (except loop breakers)
-    if(unsortedFounder[i]) {
-      keep = g$pat <= g$mat
-      g$pat = g$pat[keep]
-      g$mat = g$mat[keep]
-      g$prob = HWprob(g$pat, g$mat, afr, fi[i])
+    glist[[i]] = g
+
+    if(!length(g$prob)){
+      attr(glist, "impossible") = TRUE
+      break
     }
-    else
-      g$prob = rep.int(1, length(g$mat))
+  }
 
-    g
-  })
-
-  names(glist) = x$ID
-  attr(glist, "impossible") = FALSE # TODO?
-
-  # If mutations, don't eliminate any genotypes
-  if (allowsMutations(marker))
-    eliminate = 0
-
-  if(eliminate)
-    genolist = eliminate()
+  ### Eliminate # TODO!! Previous implement was applied before probs
+  # if (eliminate > 0 && !allowsMutations(marker))
+    # glist = eliminate(glist, ...)
 
   if (attr(glist, "impossible"))
-    return(structure(list(), impossible = TRUE))
+    glist = structure(list(), impossible = TRUE)
 
   glist
 }
 
+
+.alleleDistrib = function(a, b, afr, f = 0) {
+  nseq = seq_along(afr)
+
+  if(a == 0 && b == 0) { # untyped founder
+    allele = nseq
+    prob = afr
+  }
+  else if (a == 0) { # partial founder genotype: -/b
+    allele = nseq
+    prob = afr/2
+    prob[b] = prob[b] + 0.5
+    if(f > 0) {
+      prob = prob * (1-f)
+      prob[b] = prob[b] + f
+    }
+  }
+  else if (a == b) { # homozygous founder
+    allele = a
+    prob = afr[a]^2
+    if(f > 0)
+      prob = prob * (1-f) + afr[a] * f
+  }
+  else { # heterozygous founder
+    allele = c(a,b)
+    prob = rep(afr[a] * afr[b] * (1-f), 2)   # 2*a*b * 0.5
+  }
+
+  # Remove impossible
+  if(any(prob == 0)) {
+    allele = allele[prob > 0]
+    prob = prob[prob > 0]
+  }
+
+  list(allele = allele, prob = prob)
+}
+
+.genoDistribFounder = function(a, b, afr, f = 0, COMPLETE) {
+  # Produce list of vectors pat, mat and prob
+  # Unphased genotypes; use HW for probs
+  # Assumes a <= b (single integers)
+
+  if(a == 0 && b == 0)
+    g = COMPLETE
+  else if (a == 0) {
+    n = max(COMPLETE$pat)
+    g = list(pat = seq_len(n), mat = rep(b, n))
+  }
+  else
+    g = list(pat = a, mat = b)
+
+  g$prob = HWprob(g$pat, g$mat, afr, f)
+
+  # Remove impossible
+  if(!all(nonz <- g$prob > 0)) {
+    g$pat = g$pat[nonz]
+    g$mat = g$mat[nonz]
+    g$prob = g$prob[nonz]
+  }
+
+  g
+}
+
+.genoDistribNonfounder = function(a, b, COMPLETE) {
+  # Produce list of vectors pat, mat and prob (all 1's)
+  # Includes both phases of heterozygous genotypes
+  # Assumes a <= b (single integers)
+
+  if(a == 0 && b == 0)
+    g = COMPLETE
+  else if (a == 0) {
+    n = max(COMPLETE$pat)
+    g = list(pat = c(seq_len(n), rep(b, n - 1)), mat = c(rep(b, n), seq_len(n)[-b]))
+  }
+  else if (a == b)
+    g = list(pat = a, mat = b)
+  else
+    g = list(pat = c(a, b), mat = c(b, a))
+
+  g$prob = rep(1, length(g$pat))
+  g
+}
 
 startdata_M_AUT = function(x, marker, eliminate = 0, treatAsFounder = NULL) {
 
@@ -211,6 +250,77 @@ startdata_MM = function(x, marker1, marker2, eliminate = 0, treatAsFounder = NUL
   else
     startdata_MM_AUT(x, marker1, marker2, eliminate = eliminate, treatAsFounder = treatAsFounder)
 }
+
+
+
+
+startdata_MM_AUT_new = function(x, marker1, marker2, eliminate = 0, treatAsFounder = NULL) {
+
+  glist1 = startdata_M_AUT_new(x, marker1, eliminate = eliminate, treatAsFounder = treatAsFounder)
+  glist2 = startdata_M_AUT_new(x, marker2, eliminate = eliminate, treatAsFounder = treatAsFounder)
+
+  if (attr(glist1, "impossible") || attr(glist2, "impossible"))
+    return(structure(list(), impossible = TRUE))
+
+  nInd = length(x$ID)
+
+  # Founders (except LB-copies)
+  fouInt = founders(x, internal = TRUE)
+  unphasedFou = logical(nInd)
+  unphasedFou[fouInt] = TRUE
+  unphasedFou[treatAsFounder] = TRUE
+  unphasedFou[x$LOOP_BREAKERS[, 2]] = FALSE
+
+  # Loop through all individuals
+  glist = structure(vector(nInd, mode = "list"), names = x$ID, impossible = FALSE)
+
+  for(i in seq_along(glist)) {
+    g1 = glist1[[i]]
+    g2 = glist2[[i]]
+    len1 = length(g1$prob)
+    len2 = length(g2$prob)
+    idx1 = rep(seq_len(len1), each = len2)
+    idx2 = rep(seq_len(len2), times = len1)
+
+    # Same for all
+    prob = g1$prob[idx1] * g2$prob[idx2]
+
+    # If simple founder: alleles only
+    if(!is.null(g1$allele)) {
+      g = list(allele1 = g1$allele[idx1], allele2 = g2$allele[idx2], prob = prob)
+      glist[[i]] = g
+      next
+    }
+
+    pat1 = g1$pat[idx1]
+    mat1 = g1$mat[idx1]
+    pat2 = g2$pat[idx2]
+    mat2 = g2$mat[idx2]
+
+    # Doubly heterozygous founders: Include the other phase as well
+    if (unphasedFou[i]) {
+      doublyhet = pat1 != mat1 & pat2 != mat2
+      if (any(doublyhet)) {
+        pat1 = c(pat1, pat1[doublyhet])
+        mat1 = c(mat1, mat1[doublyhet])
+        p2 = pat2; m2 = mat2
+        pat2 = c(p2, m2[doublyhet])  # note switch
+        mat2 = c(m2, p2[doublyhet])
+
+        # Split probabilities also
+        prob[doublyhet] = prob[doublyhet]/2
+        prob = c(prob, prob[doublyhet])
+      }
+    }
+
+    g = list(pat1 = pat1, mat1 = mat1, pat2 = pat2, mat2 = mat2, prob = prob)
+
+    glist[[i]] = g
+  }
+
+  glist
+}
+
 
 
 startdata_MM_AUT = function(x, marker1, marker2, eliminate = 0, treatAsFounder = NULL) {
