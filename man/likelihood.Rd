@@ -21,6 +21,7 @@ likelihood(x, ...)
   loopBreakers = NULL,
   verbose = FALSE,
   theta = 0,
+  newalg = F,
   ...
 )
 
@@ -32,12 +33,13 @@ likelihood2(x, ...)
   x,
   marker1,
   marker2,
-  rho,
+  rho = NULL,
   peelOrder = NULL,
   eliminate = 0,
   logbase = NULL,
   loopBreakers = NULL,
   verbose = FALSE,
+  newalg = T,
   ...
 )
 
@@ -79,6 +81,8 @@ basis for logarithmic output. Typical values are \code{exp(1)} and 10.}
 \item{verbose}{A logical.}
 
 \item{theta}{Theta correction.}
+
+\item{newalg}{A logical, for debugging, by default FALSE.}
 
 \item{marker1, marker2}{Single markers compatible with \code{x}.}
 
