@@ -7,6 +7,116 @@ startdata_M = function(x, marker, eliminate = 0, treatAsFounder = NULL) {
     startdata_M_AUT(x, marker, eliminate, treatAsFounder)
 }
 
+
+startdata_M_AUT_new = function(x, marker, eliminate = 0, treatAsFounder = NULL) {#print("new startdata")
+
+  # Sort each genotype
+  swtch = marker[,1] > marker[,2]
+  if(any(swtch))
+    marker[swtch, 1:2] = marker[swtch, 2:1]
+
+  nInd = length(x$ID)
+  fouInt = founders(x, internal = TRUE)
+
+  # Founders (except LB-copies): Genotypes need not be sorted
+  unsortedFounder = logical(nInd)
+  unsortedFounder[fouInt] = TRUE
+  unsortedFounder[treatAsFounder] = TRUE
+  unsortedFounder[x$LOOP_BREAKERS[, 2]] = FALSE
+
+  # Founders with 1 child: Skip genotypes, draw alleles directly (assuming HWE)
+  simpleFou = unsortedFounder & tabulate(c(x$FIDX, x$MIDX), nInd) == 1
+
+  # Founder inbreeding lookup vector; 0's for nonfounders
+  fi = numeric(nInd)
+  if(!is.null(x$FOUNDER_INBREEDING$autosomal))
+    fi[fouInt] = x$FOUNDER_INBREEDING$autosomal
+
+  afr = attr(marker, "afreq")
+  n = length(afr)
+  nseq = seq_len(n)
+
+  # Complete set of ordered genotypes (used below)
+  COMPLETE = list(pat = rep(nseq, each = n), mat = rep.int(nseq, times = n))
+
+  impossible = FALSE
+
+  # Loop through all individuals
+  glist = lapply(seq_len(nInd), function(i) {
+
+    a = marker[i, 1]
+    b = marker[i, 2]
+
+    ### Founder with 1 child: Draw alleles directly (without genotype)
+    if(simpleFou[i]) {
+      if(a == 0 && b == 0) { # untyped founder
+        allele = nseq
+        prob = afr
+      }
+      else if (a == 0) { # partial founder genotype: -/b
+        allele = nseq
+        prob = afr/2
+        prob[b] = prob[b] + 0.5
+        if(fi[i] > 0) {
+          prob = prob * (1-fi[i])
+          prob[b] = prob[b] + fi[i]
+        }
+      }
+      else if (a == b) { # homozygous founder
+        allele = a
+        prob = afr[a]^2
+        if(fi[i] > 0)
+          prob = prob * (1-fi[i]) + afr[a] * fi[i]
+      }
+      else { # heterozygous founder
+        allele = c(a,b)
+        prob = rep(afr[a]*afr[b]*(1-fi[i]), 2)   # 2*a*b * 0.5
+      }
+
+      return(list(allele = allele, prob = prob))
+    }
+
+    ### Otherwise
+
+    if(a == 0 && b == 0)
+      g = COMPLETE
+    else if (a == 0)
+      g = list(pat = c(nseq, rep(b, n - 1)), mat = c(rep(b, n), nseq[-b]))
+    else if (a == b)
+      g = list(pat = a, mat = b)
+    else
+      g = list(pat = c(a, b), mat = c(b, a))
+
+    # No phasing for founders (except loop breakers)
+    if(unsortedFounder[i]) {
+      keep = g$pat <= g$mat
+      g$pat = g$pat[keep]
+      g$mat = g$mat[keep]
+      g$prob = HWprob(g$pat, g$mat, afr, fi[i])
+    }
+    else
+      g$prob = rep.int(1, length(g$mat))
+
+    g
+  })
+
+  names(glist) = x$ID
+  attr(glist, "impossible") = FALSE # TODO?
+
+  # If mutations, don't eliminate any genotypes
+  if (allowsMutations(marker))
+    eliminate = 0
+
+  if(eliminate)
+    genolist = eliminate()
+
+  if (attr(glist, "impossible"))
+    return(structure(list(), impossible = TRUE))
+
+  glist
+}
+
+
 startdata_M_AUT = function(x, marker, eliminate = 0, treatAsFounder = NULL) {
 
   glist = .buildGenolist(x, marker, eliminate, treatAsFounder)
