@@ -72,3 +72,4 @@ test_that("complete inbreeding + heterozygosity = 0", {
   expect_equal(likelihood(y), 0)
 
 })
+

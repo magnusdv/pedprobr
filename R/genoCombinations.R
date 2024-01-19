@@ -20,7 +20,6 @@
 #' @export
 genoCombinations = function(x, partialmarker, ids, make.grid = TRUE) {
     int.ids = internalID(x, ids)
-    mutations = allowsMutations(partialmarker)
 
     allg = allGenotypes(nAlleles(partialmarker))
     homoz = which(allg[,1] == allg[,2])
@@ -36,7 +35,7 @@ genoCombinations = function(x, partialmarker, ids, make.grid = TRUE) {
 
     if (isXmarker(partialmarker)) {
       SEX = x$SEX
-      glist = .buildGenolistX(x, partialmarker, eliminate = ifelse(mutations, 0, 100))
+      glist = .buildGenolistX(x, partialmarker, eliminate = 10)
       if (attr(glist, "impossible"))
         stop2("Impossible partial marker")
       rows = lapply(int.ids, function(i)
@@ -45,7 +44,7 @@ genoCombinations = function(x, partialmarker, ids, make.grid = TRUE) {
           matchRefRows(glist[[i]])))
     }
     else {
-      glist = .buildGenolist(x, partialmarker, eliminate = ifelse(mutations, 0, 100))
+      glist = .buildGenolist(x, partialmarker, eliminate = 10)
       if (attr(glist, "impossible"))
         stop2("Impossible partial marker")
       rows = lapply(glist[int.ids], matchRefRows)

@@ -27,8 +27,9 @@ informativeSubnucs = function(x, mlist, peelOrder = peelingOrder(x)) {
 
   # Quick return if x is nuclear
   if(length(peelOrder) == 1) {
-    if (!stationary)
-      return(peelOrder)
+    # TODO! Remove this?
+    #if (!stationary)
+    #  return(peelOrder)
 
     ch = peelOrder[[1]]$children
     peelOrder[[1]]$children = ch[typed[ch]]
