@@ -156,6 +156,7 @@ startdata_M_AUT_new = function(x, marker, eliminate = 0, treatAsFounder = NULL) 
   g
 }
 
+# TODO: Old version, to be deleted
 startdata_M_AUT = function(x, marker, eliminate = 0, treatAsFounder = NULL) {
 
   glist = .buildGenolist(x, marker, eliminate, treatAsFounder)
@@ -322,7 +323,7 @@ startdata_MM_AUT_new = function(x, marker1, marker2, eliminate = 0, treatAsFound
 }
 
 
-
+# TODO: Old version, to be deleted
 startdata_MM_AUT = function(x, marker1, marker2, eliminate = 0, treatAsFounder = NULL) {
   glist1 = .buildGenolist(x, marker1, eliminate, treatAsFounder)
   glist2 = .buildGenolist(x, marker2, eliminate, treatAsFounder)
@@ -466,7 +467,7 @@ startdata_MM_X = function(x, marker1, marker2, eliminate = 0, treatAsFounder = N
   dat
 }
 
-
+# TODO: No longer needed?
 startprob_MM_AUT = function(g, afreq1, afreq2, founder) {
   if (founder) {
     p1 = g$pat1
