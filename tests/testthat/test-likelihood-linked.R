@@ -89,3 +89,8 @@ test_that("two X-linked HW-like markers are indep of rho", {
   expect_equal(liktest(y, m5, m6), rep(answ,3))
 })
 
+test_that("linked X-markers in looped ped", {
+  x = cousinPed(0, child = T) |> addMarker("5" = "1", alleles = 1:2, chrom="X")
+  # plot(x, mark=1)
+  expect_equal(likelihood2(x, 1, 1, rho=0.25), 0.25)
+})

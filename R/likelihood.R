@@ -124,7 +124,7 @@ likelihood = function(x, ...) UseMethod("likelihood", x)
 #' @rdname likelihood
 likelihood.ped = function(x, markers = NULL, peelOrder = NULL, lump = TRUE,
                           eliminate = 0, logbase = NULL, loopBreakers = NULL,
-                          verbose = FALSE, theta = 0, newalg = F, ...) {
+                          verbose = FALSE, theta = 0, newalg = T, ...) {
 
   if(theta > 0 && hasInbredFounders(x))
     stop2("Theta correction cannot be used in pedigrees with inbred founders")
@@ -196,7 +196,7 @@ likelihood.ped = function(x, markers = NULL, peelOrder = NULL, lump = TRUE,
   # TODO: Organise better, e.g., skip startdata if theta > 0
   if(Xchrom) {
     starter = function(x, m) startdata_M_X(x, m, eliminate = eliminate, treatAsFounder = treatAsFou)
-    peeler = function(x, m) function(dat, sub) .peel_M_X(dat, sub, SEX = x$SEX, mutmat = mutmod(m))
+    peeler = function(x, m) function(dat, sub) .peel_M_X(dat, sub, SEX = x$SEX, mutmat = mutmod(m), newalg = newalg)
   }
   else if(newalg) {
     starter = function(x, m) startdata_M_AUT_new(x, m, eliminate = eliminate, treatAsFounder = treatAsFou)
@@ -339,7 +339,7 @@ likelihood.list = function(x, markers = NULL, logbase = NULL, ...) {
 
 # Utility for finding which genotypes in dat1 are also in dat2
 matchDat = function(dat1, dat2) {
-  twolocus = length(dat1) > 4
+  twolocus = !is.null(dat1$allele2) || !is.null(dat1$mat2)
   if(!twolocus) {
     nseq = seq_along(dat1$mat)
     Xchrom = is.null(dat1$pat)
