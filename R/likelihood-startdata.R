@@ -1,31 +1,26 @@
 #### FUNCTIONS FOR CREATING THE INTITIAL HAPLOTYPE COMBINATIONS W/PROBABILITIES.
 
-startdata_M = function(x, marker, eliminate = 0, treatAsFounder = NULL) {
-  if(isXmarker(marker))
-    startdata_M_X(x, marker, eliminate, treatAsFounder)
-  else
-    startdata_M_AUT(x, marker, eliminate, treatAsFounder)
-}
-
-
-startdata_M_AUT_new = function(x, marker, eliminate = 0, treatAsFounder = NULL) {#print("new startdata")
+startdata_M = function(x, marker, eliminate = 0, treatAsFounder = NULL) {#print("new startdata")
 
   nInd = length(x$ID)
-  fouInt = founders(x, internal = TRUE)
+  Xchrom = isXmarker(marker)
+  SEX = x$SEX
 
   # Founders (except LB-copies): Genotypes need not be phased
-  unphasedFou = logical(nInd)
-  unphasedFou[fouInt] = TRUE
-  unphasedFou[treatAsFounder] = TRUE
-  unphasedFou[x$LOOP_BREAKERS[, 2]] = FALSE
+  fouInt = founders(x, internal = TRUE)
+  isFounder = logical(nInd)
+  isFounder[fouInt] = TRUE
+  isFounder[treatAsFounder] = TRUE
+  isFounder[x$LOOP_BREAKERS[, 2]] = FALSE
 
   # Founders with 1 child: Skip genotypes, draw alleles directly (assuming HWE)
-  simpleFou = unphasedFou & tabulate(c(x$FIDX, x$MIDX), nInd) == 1
+  simpleFou = isFounder & tabulate(c(x$FIDX, x$MIDX), nInd) == 1
 
   # Founder inbreeding lookup vector; 0's for nonfounders
   fi = numeric(nInd)
-  if(!is.null(x$FOUNDER_INBREEDING$autosomal))
-    fi[fouInt] = x$FOUNDER_INBREEDING$autosomal
+  fval = x$FOUNDER_INBREEDING[[if(Xchrom) "x" else "autosomal"]]
+  if(!is.null(fval))
+    fi[fouInt] = fval
 
   marker = .sortGeno(marker)
   afr = attr(marker, "afreq")
@@ -38,30 +33,34 @@ startdata_M_AUT_new = function(x, marker, eliminate = 0, treatAsFounder = NULL) 
 
   # Loop through all individuals
   glist = vector(nInd, mode = "list")
-  names(glist) = x$ID
-  attr(glist, "impossible") = FALSE
+  imp = FALSE
 
   for(i in seq_along(glist)) {
     a = marker[i, 1]
     b = marker[i, 2]
 
-    if(simpleFou[i])
-      # Founder with 1 child: Draw alleles directly (without genotype)
+    if(Xchrom && SEX[i] == 1) { # Hemizygous male
+      mat = if(b == 0) nseq else b
+      prob = if(isFounder[i]) afr[mat] else rep(1, length(mat))
+      g = list(mat = mat, prob = prob)
+    }
+    else if(simpleFou[i]) # Simple founder: alleles directly (skip genotypes)
       g = .alleleDistrib(a, b, afr, f = fi[i])
-    else if(unphasedFou[i])
-      # Unphased genotypes with HW probs
+    else if(isFounder[i]) # General founder: unphased genotypes with HW probs
       g = .genoDistribFounder(a, b, afr, f = fi[i], COMPLETE = allUnphased)
-    else
-      # Phased genos with 1's as prob
+    else # Nonfounder: Phased genos with 1's as prob
       g = .genoDistribNonfounder(a, b, COMPLETE = allPhased)
 
+    # Remove entries with prob = 0
+    g = .reduce(g)
     glist[[i]] = g
 
-    if(!length(g$prob)){
-      attr(glist, "impossible") = TRUE
-      break
-    }
+    # If all zero: impossible!
+    if(!length(g$prob)) {imp = TRUE; break}
   }
+
+  names(glist) = x$ID
+  attr(glist, "impossible") = imp
 
   ### Eliminate # TODO!! Previous implement was applied before probs
   # if (eliminate > 0 && !allowsMutations(marker))
@@ -101,12 +100,6 @@ startdata_M_AUT_new = function(x, marker, eliminate = 0, treatAsFounder = NULL) 
     prob = rep(afr[a] * afr[b] * (1-f), 2)   # 2*a*b * 0.5
   }
 
-  # Remove impossible
-  if(any(prob == 0)) {
-    allele = allele[prob > 0]
-    prob = prob[prob > 0]
-  }
-
   list(allele = allele, prob = prob)
 }
 
@@ -125,14 +118,6 @@ startdata_M_AUT_new = function(x, marker, eliminate = 0, treatAsFounder = NULL) 
     g = list(pat = a, mat = b)
 
   g$prob = HWprob(g$pat, g$mat, afr, f)
-
-  # Remove impossible
-  if(!all(nonz <- g$prob > 0)) {
-    g$pat = g$pat[nonz]
-    g$mat = g$mat[nonz]
-    g$prob = g$prob[nonz]
-  }
-
   g
 }
 
@@ -199,6 +184,7 @@ startdata_M_AUT = function(x, marker, eliminate = 0, treatAsFounder = NULL) {
   glist
 }
 
+# TODO: Delete
 startdata_M_X = function(x, marker, eliminate = 0, treatAsFounder = NULL) {
 
   glist = .buildGenolistX(x, marker, eliminate, treatAsFounder = treatAsFounder)
@@ -245,35 +231,29 @@ startdata_M_X = function(x, marker, eliminate = 0, treatAsFounder = NULL) {
 # STARTDATA FOR TWO LINKED MARKERS
 ##################################
 
+
 startdata_MM = function(x, marker1, marker2, eliminate = 0, treatAsFounder = NULL) {
-  if(isXmarker(marker1))
-    startdata_MM_X(x, marker1, marker2, eliminate = eliminate, treatAsFounder = treatAsFounder)
-  else
-    startdata_MM_AUT(x, marker1, marker2, eliminate = eliminate, treatAsFounder = treatAsFounder)
-}
 
-
-
-
-startdata_MM_AUT_new = function(x, marker1, marker2, eliminate = 0, treatAsFounder = NULL) {
-
-  glist1 = startdata_M_AUT_new(x, marker1, eliminate = eliminate, treatAsFounder = treatAsFounder)
-  glist2 = startdata_M_AUT_new(x, marker2, eliminate = eliminate, treatAsFounder = treatAsFounder)
+  glist1 = startdata_M(x, marker1, eliminate = eliminate, treatAsFounder = treatAsFounder)
+  glist2 = startdata_M(x, marker2, eliminate = eliminate, treatAsFounder = treatAsFounder)
 
   if (attr(glist1, "impossible") || attr(glist2, "impossible"))
     return(structure(list(), impossible = TRUE))
 
   nInd = length(x$ID)
+  Xchrom = isXmarker(marker1)
+  SEX = x$SEX
 
   # Founders (except LB-copies)
   fouInt = founders(x, internal = TRUE)
-  unphasedFou = logical(nInd)
-  unphasedFou[fouInt] = TRUE
-  unphasedFou[treatAsFounder] = TRUE
-  unphasedFou[x$LOOP_BREAKERS[, 2]] = FALSE
+  isFounder = logical(nInd)
+  isFounder[fouInt] = TRUE
+  isFounder[treatAsFounder] = TRUE
+  isFounder[x$LOOP_BREAKERS[, 2]] = FALSE
 
   # Loop through all individuals
-  glist = structure(vector(nInd, mode = "list"), names = x$ID, impossible = FALSE)
+  glist = vector(nInd, mode = "list")
+  imp = FALSE
 
   for(i in seq_along(glist)) {
     g1 = glist1[[i]]
@@ -283,23 +263,36 @@ startdata_MM_AUT_new = function(x, marker1, marker2, eliminate = 0, treatAsFound
     idx1 = rep(seq_len(len1), each = len2)
     idx2 = rep(seq_len(len2), times = len1)
 
-    # Same for all
-    prob = g1$prob[idx1] * g2$prob[idx2]
+    # Same in all cases
+    prob = as.numeric(g1$prob[idx1] * g2$prob[idx2])
 
-    # If simple founder: alleles only
-    if(!is.null(g1$allele)) {
-      g = list(allele1 = g1$allele[idx1], allele2 = g2$allele[idx2], prob = prob)
-      glist[[i]] = g
+    if(sum(prob == 0)) {
+      imp = TRUE
+      break
+    }
+
+    # Case 1: Hemizygous
+    if(Xchrom && SEX[i] == 1) {
+      g = list(mat1 = g1$mat[idx1], mat2 = g2$mat[idx2], prob = prob)
+      glist[[i]] = .reduce(g)
       next
     }
 
+    # Case 2: Simple founder
+    if(!is.null(g1$allele)) {
+      g = list(allele1 = g1$allele[idx1], allele2 = g2$allele[idx2], prob = prob)
+      glist[[i]] = .reduce(g)
+      next
+    }
+
+    # Main case
     pat1 = g1$pat[idx1]
     mat1 = g1$mat[idx1]
     pat2 = g2$pat[idx2]
     mat2 = g2$mat[idx2]
 
     # Doubly heterozygous founders: Include the other phase as well
-    if (unphasedFou[i]) {
+    if (isFounder[i]) {
       doublyhet = pat1 != mat1 & pat2 != mat2
       if (any(doublyhet)) {
         pat1 = c(pat1, pat1[doublyhet])
@@ -315,10 +308,11 @@ startdata_MM_AUT_new = function(x, marker1, marker2, eliminate = 0, treatAsFound
     }
 
     g = list(pat1 = pat1, mat1 = mat1, pat2 = pat2, mat2 = mat2, prob = prob)
-
-    glist[[i]] = g
+    glist[[i]] = .reduce(g)
   }
 
+  names(glist) = x$ID
+  attr(glist, "impossible") = imp
   glist
 }
 
@@ -392,6 +386,7 @@ startdata_MM_AUT = function(x, marker1, marker2, eliminate = 0, treatAsFounder =
   dat
 }
 
+# TODO: Delete
 startdata_MM_X = function(x, marker1, marker2, eliminate = 0, treatAsFounder = NULL) {
   glist1 = .buildGenolistX(x, marker1, eliminate, treatAsFounder)
   glist2 = .buildGenolistX(x, marker2, eliminate, treatAsFounder)
@@ -490,4 +485,11 @@ startprob_MM_X = function(g, afreq1, afreq2, sex, founder) {
     afreq1[g$mat1] * afreq2[g$mat2]
   else
     startprob_MM_AUT(g, afreq1, afreq2, founder)
+}
+
+.reduce = function(g) {
+  keep = g$prob > 0
+  if(all(keep))
+    return(g)
+  lapply(g, function(vec) vec[keep])
 }

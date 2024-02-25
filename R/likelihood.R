@@ -137,7 +137,6 @@ likelihood.ped = function(x, markers = NULL, peelOrder = NULL, lump = TRUE,
   if(is.ped(peelOrder))
     stop2("Invalid input for argument `peelOrder`. Received object type: ", class(peelOrder))
 
-
   if(is.null(markers))
     markers = x$MARKERS
   else if(is.vector(markers) && !is.list(markers))
@@ -194,17 +193,20 @@ likelihood.ped = function(x, markers = NULL, peelOrder = NULL, lump = TRUE,
 
   # Select tools for peeling
   # TODO: Organise better, e.g., skip startdata if theta > 0
-  if(Xchrom) {
-    starter = function(x, m) startdata_M_X(x, m, eliminate = eliminate, treatAsFounder = treatAsFou)
-    peeler = function(x, m) function(dat, sub) .peel_M_X(dat, sub, SEX = x$SEX, mutmat = mutmod(m), newalg = newalg)
+  if(newalg) {
+    starter = function(x, m) startdata_M(x, m, eliminate = eliminate, treatAsFounder = treatAsFou)
+    if(Xchrom)
+      peeler = function(x, m) function(dat, sub) .peel_M_X(dat, sub, SEX = x$SEX, mutmat = mutmod(m), newalg = T)
+    else
+      peeler = function(x, m) function(dat, sub) .peel_M_AUT(dat, sub, mutmat = mutmod(m), newalg = T)
   }
-  else if(newalg) {
-    starter = function(x, m) startdata_M_AUT_new(x, m, eliminate = eliminate, treatAsFounder = treatAsFou)
-    peeler = function(x, m) function(dat, sub) .peel_M_AUT(dat, sub, mutmat = mutmod(m), newalg = newalg)
+  else if(Xchrom) {
+    starter = function(x, m) startdata_M_X(x, m, eliminate = eliminate, treatAsFounder = treatAsFou)
+    peeler = function(x, m) function(dat, sub) .peel_M_X(dat, sub, SEX = x$SEX, mutmat = mutmod(m), newalg = F)
   }
   else {
     starter = function(x, m) startdata_M_AUT(x, m, eliminate = eliminate, treatAsFounder = treatAsFou)
-    peeler = function(x, m) function(dat, sub) .peel_M_AUT(dat, sub, mutmat = mutmod(m))
+    peeler = function(x, m) function(dat, sub) .peel_M_AUT(dat, sub, mutmat = mutmod(m), newalg = F)
   }
 
   # Loop over markers
@@ -297,7 +299,7 @@ peelingProcess = function(x, m = x$MARKERS[[1]], startdata = NULL, peeler = NULL
       # If impossible data - break out of ES-algorithm and go to next r in loopgrid.
       if (nuc$link > 0 && attr(dat1, "impossible")) break
 
-      # If pedigree traversed, add to total and go to next r
+      # If pedigree traversed, dat1 is a number. Add to total and goto next
       if (nuc$link == 0) likelihood = likelihood + dat1
     }
   }

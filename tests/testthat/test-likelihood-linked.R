@@ -93,4 +93,5 @@ test_that("linked X-markers in looped ped", {
   x = cousinPed(0, child = T) |> addMarker("5" = "1", alleles = 1:2, chrom="X")
   # plot(x, mark=1)
   expect_equal(likelihood2(x, 1, 1, rho=0.25), 0.25)
+  expect_equal(likelihood2(x, 1, 1, rho=0), 0.25)
 })
