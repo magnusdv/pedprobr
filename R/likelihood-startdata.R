@@ -1,26 +1,19 @@
 #### FUNCTIONS FOR CREATING THE INTITIAL HAPLOTYPE COMBINATIONS W/PROBABILITIES.
 
-startdata_M = function(x, marker, eliminate = 0, treatAsFounder = NULL) {#print("new startdata")
+startdata_M = function(x, marker, pedInfo = NULL, eliminate = NULL, treatAsFounder = NULL) {#print("new startdata")
+
+  if(is.null(pedInfo))
+    pedInfo = .pedInfo(x, Xchrom = isXmarker(marker))
 
   nInd = length(x$ID)
-  Xchrom = isXmarker(marker)
   SEX = x$SEX
-
-  # Founders (except LB-copies): Genotypes need not be phased
-  fouInt = founders(x, internal = TRUE)
-  isFounder = logical(nInd)
-  isFounder[fouInt] = TRUE
-  isFounder[treatAsFounder] = TRUE
-  isFounder[x$LOOP_BREAKERS[, 2]] = FALSE
-
-  # Founders with 1 child: Skip genotypes, draw alleles directly (assuming HWE)
-  simpleFou = isFounder & tabulate(c(x$FIDX, x$MIDX), nInd) == 1
-
-  # Founder inbreeding lookup vector; 0's for nonfounders
-  fi = numeric(nInd)
-  fval = x$FOUNDER_INBREEDING[[if(Xchrom) "x" else "autosomal"]]
-  if(!is.null(fval))
-    fi[fouInt] = fval
+  FIDX = x$FIDX
+  MIDX = x$MIDX
+  Xchrom = pedInfo$Xchrom
+  isFounder = pedInfo$isFounder
+  simpleFou = pedInfo$simpleFou
+  fi = pedInfo$fouInb
+  offs = pedInfo$offs
 
   marker = .sortGeno(marker)
   afr = attr(marker, "afreq")
@@ -31,18 +24,31 @@ startdata_M = function(x, marker, eliminate = 0, treatAsFounder = NULL) {#print(
   allPhased   = list(pat = rep(nseq, each = n), mat = rep.int(nseq, times = n))
   allUnphased = list(pat = rep(nseq, n:1), mat = sequence.default(n:1, from = nseq))
 
-  # Loop through all individuals
+  # Initialise output
   glist = vector(nInd, mode = "list")
+  indOrder = seq_along(glist)
   imp = FALSE
 
-  for(i in seq_along(glist)) {
+  # Elimination: not for SNPs, and only if no mutation model
+  eliminate = n > 2 && is.null(attr(marker, "mutmod"))
+
+  if(eliminate) {
+    informative = marker[,2] > 0
+    indOrder = order(!informative) # start with the typed indivs!
+  }
+
+  # Loop through all individuals
+  for(i in indOrder) {
     a = marker[i, 1]
     b = marker[i, 2]
 
-    if(Xchrom && SEX[i] == 1) { # Hemizygous male
+    Xmale = Xchrom && SEX[i] == 1 # Hemizygous male
+    if(Xmale) {
       mat = if(b == 0) nseq else b
-      prob = if(isFounder[i]) afr[mat] else rep(1, length(mat))
-      g = list(mat = mat, prob = prob)
+      if(isFounder[i])
+        g = list(mat = mat, prob = afr[mat]) |> .reduce()
+      else
+        g = list(mat = mat, prob = rep(1, length(mat)))
     }
     else if(simpleFou[i]) # Simple founder: alleles directly (skip genotypes)
       g = .alleleDistrib(a, b, afr, f = fi[i])
@@ -51,8 +57,12 @@ startdata_M = function(x, marker, eliminate = 0, treatAsFounder = NULL) {#print(
     else # Nonfounder: Phased genos with 1's as prob
       g = .genoDistribNonfounder(a, b, COMPLETE = allPhased)
 
-    # Remove entries with prob = 0
-    g = .reduce(g)
+    # Eliminate genotypes based on parents/children
+    if(eliminate && !informative[i]) {    # .bef = length(g$prob)
+      g = .elim(g, glist, FIDX[i], MIDX[i], offs[[i]], nall = n, sex = SEX[i], Xmale = Xmale)
+      #cat(sprintf("Elim of '%s': %d -> %d\n", x$ID[i], .bef, length(g$prob)))
+    }
+
     glist[[i]] = g
 
     # If all zero: impossible!
@@ -61,17 +71,78 @@ startdata_M = function(x, marker, eliminate = 0, treatAsFounder = NULL) {#print(
 
   names(glist) = x$ID
   attr(glist, "impossible") = imp
-
-  ### Eliminate # TODO!! Previous implement was applied before probs
-  # if (eliminate > 0 && !allowsMutations(marker))
-    # glist = eliminate(glist, ...)
-
-  if (attr(glist, "impossible"))
-    glist = structure(list(), impossible = TRUE)
-
   glist
 }
 
+# Various info used repeatedly
+.pedInfo = function(x, treatAsFounder = NULL, Xchrom = FALSE) {
+  nInd = length(x$ID)
+
+  # Founders (except LB-copies): Genotypes need not be phased
+  fouInt = founders(x, internal = TRUE)
+  isFounder = logical(nInd)
+  isFounder[fouInt] = TRUE
+  isFounder[treatAsFounder] = TRUE
+  isFounder[x$LOOP_BREAKERS[, 2]] = FALSE
+
+  # Founders with 1 child
+  simpleFou = isFounder & tabulate(c(x$FIDX, x$MIDX), nInd) == 1
+
+  # Founder inbreeding lookup vector; 0's for nonfounders
+  fi = numeric(nInd)
+  fval = x$FOUNDER_INBREEDING[[if(Xchrom) "x" else "autosomal"]]
+  if(!is.null(fval))
+    fi[fouInt] = fval
+
+  # List of offspring
+  offs = lapply(1:nInd, function(i) children(x, i, internal = TRUE))
+
+  list(nInd = nInd, isFounder = isFounder, simpleFou = simpleFou, fouInb = fi,
+       offs = offs, Xchrom = Xchrom)
+}
+
+
+.elim = function(g, glist, fa, mo, ch, nall, sex, Xmale = FALSE) {
+
+  # Case 1: Simple founder
+  if(!is.null(g$allele)) {
+    for(b in ch) {
+      bhap = glist[[b]][[if(sex == 1) "pat" else "mat"]]
+      if(!is.null(bhap) && length(bhap) <= nall) {
+        kp = g$allele %in% bhap
+        g$allele = g$allele[kp]
+        g$prob = g$prob[kp]
+      }
+    }
+    return(g)
+  }
+
+  # Case 2: ordinary, i.e., with pat & mat
+  fag = if(!Xmale && fa > 0) glist[[fa]] else NULL
+  if(!is.null(fag) && length(fag$prob) <= nall) {
+    kp = g$pat %in% c(fag$allele, fag$pat, fag$mat)
+    g$pat = g$pat[kp]
+    g$mat = g$mat[kp]
+    g$prob = g$prob[kp]
+  }
+  mag = if(mo > 0) glist[[mo]] else NULL
+  if(!is.null(mag) && length(mag$prob) <= nall) {
+    kp = g$mat %in% c(mag$allele, mag$pat, mag$mat)
+    g$pat = g$pat[kp]
+    g$mat = g$mat[kp]
+    g$prob = g$prob[kp]
+  }
+  for(b in ch) {
+    bhap = glist[[b]][[if(sex == 1) "pat" else "mat"]]
+    if(!is.null(bhap) && length(bhap) <= nall) {
+      kp = if(Xmale) g$mat %in% bhap else g$pat %in% bhap | g$mat %in% bhap
+      g$pat = g$pat[kp]
+      g$mat = g$mat[kp]
+      g$prob = g$prob[kp]
+    }
+  }
+  g
+}
 
 .alleleDistrib = function(a, b, afr, f = 0) {
   nseq = seq_along(afr)
@@ -100,7 +171,8 @@ startdata_M = function(x, marker, eliminate = 0, treatAsFounder = NULL) {#print(
     prob = rep(afr[a] * afr[b] * (1-f), 2)   # 2*a*b * 0.5
   }
 
-  list(allele = allele, prob = prob)
+  g = list(allele = allele, prob = prob)
+  .reduce(g)
 }
 
 .genoDistribFounder = function(a, b, afr, f = 0, COMPLETE) {
@@ -118,7 +190,7 @@ startdata_M = function(x, marker, eliminate = 0, treatAsFounder = NULL) {#print(
     g = list(pat = a, mat = b)
 
   g$prob = HWprob(g$pat, g$mat, afr, f)
-  g
+  .reduce(g)
 }
 
 .genoDistribNonfounder = function(a, b, COMPLETE) {
@@ -232,7 +304,7 @@ startdata_M_X = function(x, marker, eliminate = 0, treatAsFounder = NULL) {
 ##################################
 
 
-startdata_MM = function(x, marker1, marker2, eliminate = 0, treatAsFounder = NULL) {
+startdata_MM = function(x, marker1, marker2, eliminate = NA, treatAsFounder = NULL) {
 
   glist1 = startdata_M(x, marker1, eliminate = eliminate, treatAsFounder = treatAsFounder)
   glist2 = startdata_M(x, marker2, eliminate = eliminate, treatAsFounder = treatAsFounder)
@@ -492,4 +564,17 @@ startprob_MM_X = function(g, afreq1, afreq2, sex, founder) {
   if(all(keep))
     return(g)
   lapply(g, function(vec) vec[keep])
+}
+
+.allchildren = function(x, method = 0) {
+  ff = x$FIDX
+  mm = x$MIDX
+  nonf = which(ff > 0)
+  result = vector(length(ff), mode = "list")
+  if(method == 2) {
+    sf = split.default(nonf, factor(ff[nonf], levels = 1:max(ff)))
+  }
+
+
+
 }

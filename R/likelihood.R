@@ -194,7 +194,8 @@ likelihood.ped = function(x, markers = NULL, peelOrder = NULL, lump = TRUE,
   # Select tools for peeling
   # TODO: Organise better, e.g., skip startdata if theta > 0
   if(newalg) {
-    starter = function(x, m) startdata_M(x, m, eliminate = eliminate, treatAsFounder = treatAsFou)
+    pedInfo = .pedInfo(x, treatAsFounder = treatAsFou, Xchrom = Xchrom)
+    starter = function(x, m) startdata_M(x, m, pedInfo = pedInfo)
     if(Xchrom)
       peeler = function(x, m) function(dat, sub) .peel_M_X(dat, sub, SEX = x$SEX, mutmat = mutmod(m), newalg = T)
     else
