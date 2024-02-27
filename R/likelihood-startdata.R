@@ -30,12 +30,9 @@ startdata_M = function(x, marker, pedInfo = NULL, eliminate = NULL, treatAsFound
   imp = FALSE
 
   # Elimination: not for SNPs, and only if no mutation model
-  eliminate = n > 2 && is.null(attr(marker, "mutmod"))
+  eliminate = n > 2 && any(informative <- marker[,2] > 0) && is.null(attr(marker, "mutmod"))
 
-  if(eliminate) {
-    informative = marker[,2] > 0
-    indOrder = order(!informative) # start with the typed indivs!
-  }
+  indOrder = if(eliminate) order(!informative) else seq_len(nInd)
 
   # Loop through all individuals
   for(i in indOrder) {
@@ -58,7 +55,7 @@ startdata_M = function(x, marker, pedInfo = NULL, eliminate = NULL, treatAsFound
       g = .genoDistribNonfounder(a, b, COMPLETE = allPhased)
 
     # Eliminate genotypes based on parents/children
-    if(eliminate && !informative[i]) {    # .bef = length(g$prob)
+    if(eliminate && length(g$prob) > 1) {   #.bef = length(g$prob)
       g = .elim(g, glist, FIDX[i], MIDX[i], offs[[i]], nall = n, sex = SEX[i], Xmale = Xmale)
       #cat(sprintf("Elim of '%s': %d -> %d\n", x$ID[i], .bef, length(g$prob)))
     }
@@ -71,7 +68,17 @@ startdata_M = function(x, marker, pedInfo = NULL, eliminate = NULL, treatAsFound
 
   names(glist) = x$ID
   attr(glist, "impossible") = imp
+  class(glist) = c("glist", class(glist))
   glist
+}
+
+#' @export
+print.glist = function(x, sep = "/") {
+  y = lapply(x, function(g) {
+    nms = g$allele %||% if(is.null(g$pat)) g$mat else paste(g$pat, g$mat, sep = sep)
+    `names<-`(g$prob, nms)
+  })
+  print(y)
 }
 
 # Various info used repeatedly
@@ -304,24 +311,21 @@ startdata_M_X = function(x, marker, eliminate = 0, treatAsFounder = NULL) {
 ##################################
 
 
-startdata_MM = function(x, marker1, marker2, eliminate = NA, treatAsFounder = NULL) {
+startdata_MM = function(x, marker1, marker2, pedInfo = NULL) {
 
-  glist1 = startdata_M(x, marker1, eliminate = eliminate, treatAsFounder = treatAsFounder)
-  glist2 = startdata_M(x, marker2, eliminate = eliminate, treatAsFounder = treatAsFounder)
+  if(is.null(pedInfo))
+    pedInfo = .pedInfo(x, Xchrom = isXmarker(marker1))
+
+  glist1 = startdata_M(x, marker1, pedInfo = pedInfo)
+  glist2 = startdata_M(x, marker2, pedInfo = pedInfo)
 
   if (attr(glist1, "impossible") || attr(glist2, "impossible"))
     return(structure(list(), impossible = TRUE))
 
   nInd = length(x$ID)
-  Xchrom = isXmarker(marker1)
   SEX = x$SEX
-
-  # Founders (except LB-copies)
-  fouInt = founders(x, internal = TRUE)
-  isFounder = logical(nInd)
-  isFounder[fouInt] = TRUE
-  isFounder[treatAsFounder] = TRUE
-  isFounder[x$LOOP_BREAKERS[, 2]] = FALSE
+  Xchrom = pedInfo$Xchrom
+  isFounder = pedInfo$isFounder
 
   # Loop through all individuals
   glist = vector(nInd, mode = "list")

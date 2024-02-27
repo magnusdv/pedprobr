@@ -87,8 +87,10 @@ likelihood2.ped = function(x, marker1, marker2, rho = NULL, peelOrder = NULL,
     peeler = function(dat, sub) .peel_MM_X(dat, sub, rho, x$SEX, mut1 = mutmod(marker1), mut2 = mutmod(marker2), newalg = newalg)
 
   # Startdata
-  if(newalg)
-    startdata = startdata_MM(x, marker1, marker2, eliminate, treatAsFou)
+  if(newalg) {
+    pedInfo = .pedInfo(x, treatAsFounder = treatAsFou, Xchrom = Xchrom)
+    startdata = startdata_MM(x, marker1, marker2, pedInfo = pedInfo)
+  }
   else if(Xchrom)
     startdata = startdata_MM_X(x, marker1, marker2, eliminate, treatAsFou)
   else

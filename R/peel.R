@@ -326,21 +326,10 @@ choosePeeler = function(twolocus, rho, Xchrom, SEX, mutmat, mutmat2 = NULL) {
 
   # Update the probabilities
   pivDat$prob = res
+  if(sum(res) == 0)
+    attr(dat, "impossible") = TRUE
 
-  # Reduce if possible
-  if(any(res == 0)) {
-    pivDat$allele1 = pivDat$allele1[res > 0]
-    pivDat$allele2 = pivDat$allele2[res > 0]
-    pivDat$pat1 = pivDat$pat1[res > 0]
-    pivDat$mat1 = pivDat$mat1[res > 0]
-    pivDat$pat2 = pivDat$pat2[res > 0]
-    pivDat$mat2 = pivDat$mat2[res > 0]
-    pivDat$prob = pivDat$prob[res > 0]
-    if(sum(res) == 0)
-      attr(dat, "impossible") = TRUE
-  }
-
-  dat[[link]] = pivDat
+  dat[[link]] = .reduce(pivDat)
   dat
 }
 
@@ -444,23 +433,12 @@ choosePeeler = function(twolocus, rho, Xchrom, SEX, mutmat, mutmat2 = NULL) {
     }
   }
 
-  # Update the probabilites
+  # Update the probabilities
   pivDat$prob = res
+  if(sum(res) == 0)
+    attr(dat, "impossible") = TRUE
 
-  # Reduce if possible
-  if(any(res == 0)) {
-    pivDat$allele1 = pivDat$allele1[res > 0]
-    pivDat$allele2 = pivDat$allele2[res > 0]
-    pivDat$pat1 = pivDat$pat1[res > 0]
-    pivDat$mat1 = pivDat$mat1[res > 0]
-    pivDat$pat2 = pivDat$pat2[res > 0]
-    pivDat$mat2 = pivDat$mat2[res > 0]
-    pivDat$prob = pivDat$prob[res > 0]
-    if(sum(res) == 0)
-      attr(dat, "impossible") = TRUE
-  }
-
-  dat[[link]] = pivDat
+  dat[[link]] = .reduce(pivDat)
   dat
 }
 
