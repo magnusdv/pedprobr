@@ -40,9 +40,7 @@
 #'   parameter exists mainly for debugging purposes.) The lumping algorithm will
 #'   detect (and complain) if any markers use a non-lumpable mutation model.
 #'   Default: TRUE.
-#' @param eliminate Mostly for internal use: a non-negative integer indicating
-#'   the number of iterations in the internal genotype-compatibility algorithm.
-#'   Positive values can save time if the number of alleles is large.
+#' @param eliminate Deprecated, not used.
 #' @param logbase Either NULL (default) or a positive number indicating the
 #'   basis for logarithmic output. Typical values are `exp(1)` and 10.
 #' @param loopBreakers A vector of ID labels indicating loop breakers. If NULL

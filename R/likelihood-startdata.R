@@ -1,6 +1,6 @@
 #### FUNCTIONS FOR CREATING THE INTITIAL HAPLOTYPE COMBINATIONS W/PROBABILITIES.
 
-startdata_M = function(x, marker, pedInfo = NULL, eliminate = NULL, treatAsFounder = NULL) {#print("new startdata")
+startdata_M = function(x, marker, pedInfo = NULL) {#print("new startdata")
 
   if(is.null(pedInfo))
     pedInfo = .pedInfo(x, Xchrom = isXmarker(marker))

@@ -11,7 +11,7 @@ twoMarkerDistribution(
   partialmarker2,
   rho = NULL,
   loopBreakers = NULL,
-  eliminate = 99,
+  eliminate = 0,
   verbose = TRUE
 )
 }
@@ -30,10 +30,7 @@ fraction between the two markers.}
 ID labels of individuals to be used as loop breakers. If NULL (default)
 loop breakers are selected automatically. See \code{\link[=breakLoops]{breakLoops()}}.}
 
-\item{eliminate}{A non-negative integer, indicating the number of iterations
-in the internal algorithm for reducing the genotype space. Positive values
-can save time if \code{partialmarker1} and/or \code{partialmarker2} have many
-alleles.}
+\item{eliminate}{Deprecated, not used.}
 
 \item{verbose}{A logical.}
 }

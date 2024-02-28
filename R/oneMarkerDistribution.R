@@ -11,9 +11,7 @@
 #' @param loopBreakers (Only relevant if the pedigree has loops). A vector with
 #'   ID labels of individuals to be used as loop breakers. If NULL (default)
 #'   loop breakers are selected automatically. See [breakLoops()].
-#' @param eliminate A non-negative integer, indicating the number of iterations
-#'   in the internal genotype-compatibility algorithm. Positive values can save
-#'   time if `partialmarker` has many alleles.
+#' @param eliminate Deprecated, not used.
 #' @param grid.subset (Optional; not relevant for most users.) A numeric matrix
 #'   describing a subset of all marker genotype combinations for the `ids`
 #'   individuals. The matrix should have one column for each of the `ids`
@@ -74,9 +72,6 @@ oneMarkerDistribution = function(x, ids, partialmarker, loopBreakers = NULL,
 
   if(!is.ped(x))
     stop2("Input is not a pedigree")
-
-  if(!isCount(eliminate, minimum = 0))
-    stop2("`eliminate` must be a nonnegative integer")
 
   m = partialmarker
 
@@ -140,7 +135,7 @@ oneMarkerDistribution = function(x, ids, partialmarker, loopBreakers = NULL,
   nr = nrow(grid.subset)
 
   # Compute marginal
-  marginal = likelihood(x, markers = m, eliminate = eliminate)
+  marginal = likelihood(x, markers = m)
   if (marginal == 0)
       stop2("Partial marker is impossible")
 
@@ -155,7 +150,7 @@ oneMarkerDistribution = function(x, ids, partialmarker, loopBreakers = NULL,
     m[int.ids, ] = allgenos[r, ]; m})
 
   # Calculate likelihoods and insert in result array
-  probs[probs.subset] = likelihood(x, mlist, eliminate = eliminate)
+  probs[probs.subset] = likelihood(x, mlist)
 
   # Timing
   totalTime = format(Sys.time() - starttime, digits = 3)

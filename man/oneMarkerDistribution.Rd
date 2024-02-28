@@ -27,9 +27,7 @@ allowed.}
 ID labels of individuals to be used as loop breakers. If NULL (default)
 loop breakers are selected automatically. See \code{\link[=breakLoops]{breakLoops()}}.}
 
-\item{eliminate}{A non-negative integer, indicating the number of iterations
-in the internal genotype-compatibility algorithm. Positive values can save
-time if \code{partialmarker} has many alleles.}
+\item{eliminate}{Deprecated, not used.}
 
 \item{grid.subset}{(Optional; not relevant for most users.) A numeric matrix
 describing a subset of all marker genotype combinations for the \code{ids}
