@@ -51,7 +51,6 @@
 #' @param peelOrder For internal use.
 #' @param verbose A logical.
 #' @param theta Theta correction.
-#' @param newalg A logical, for debugging, by default FALSE.
 #' @param \dots Further arguments.
 
 #' @return A numeric with the same length as the number of markers indicated by
@@ -124,7 +123,7 @@ likelihood = function(x, ...) UseMethod("likelihood", x)
 #' @rdname likelihood
 likelihood.ped = function(x, markers = NULL, peelOrder = NULL, lump = TRUE,
                           eliminate = 0, logbase = NULL, loopBreakers = NULL,
-                          verbose = FALSE, theta = 0, newalg = T, ...) {
+                          verbose = FALSE, theta = 0, ...) {
 
   if(theta > 0 && hasInbredFounders(x))
     stop2("Theta correction cannot be used in pedigrees with inbred founders")
@@ -193,22 +192,13 @@ likelihood.ped = function(x, markers = NULL, peelOrder = NULL, lump = TRUE,
 
   # Select tools for peeling
   # TODO: Organise better, e.g., skip startdata if theta > 0
-  if(newalg) {
-    pedInfo = .pedInfo(x, treatAsFounder = treatAsFou, Xchrom = Xchrom)
-    starter = function(x, m) startdata_M(x, m, pedInfo = pedInfo)
-    if(Xchrom)
-      peeler = function(x, m) function(dat, sub) .peel_M_X(dat, sub, SEX = x$SEX, mutmat = mutmod(m), newalg = T)
-    else
-      peeler = function(x, m) function(dat, sub) .peel_M_AUT(dat, sub, mutmat = mutmod(m), newalg = T)
-  }
-  else if(Xchrom) {
-    starter = function(x, m) startdata_M_X(x, m, eliminate = eliminate, treatAsFounder = treatAsFou)
-    peeler = function(x, m) function(dat, sub) .peel_M_X(dat, sub, SEX = x$SEX, mutmat = mutmod(m), newalg = F)
-  }
-  else {
-    starter = function(x, m) startdata_M_AUT(x, m, eliminate = eliminate, treatAsFounder = treatAsFou)
-    peeler = function(x, m) function(dat, sub) .peel_M_AUT(dat, sub, mutmat = mutmod(m), newalg = F)
-  }
+
+  pedInfo = .pedInfo(x, treatAsFounder = treatAsFou, Xchrom = Xchrom)
+  starter = function(x, m) startdata_M(x, m, pedInfo = pedInfo)
+  if(Xchrom)
+    peeler = function(x, m) function(dat, sub) .peel_M_X(dat, sub, SEX = x$SEX, mutmat = mutmod(m))
+  else
+    peeler = function(x, m) function(dat, sub) .peel_M_AUT(dat, sub, mutmat = mutmod(m))
 
   # Loop over markers
   resList = lapply(markers, function(m) {
@@ -235,12 +225,12 @@ peelingProcess = function(x, m = x$MARKERS[[1]], startdata = NULL, peeler = NULL
 
     # Default start
   if(is.null(startdata))
-    startdata = if(isXmarker(m)) function(x, m) startdata_M_X(x, m) else function(x, m) startdata_M_AUT(x, m)
+    startdata = function(x, m) startdata_M(x, m)
 
   # Default peeler
   if(is.null(peeler))
     if(isXmarker(m))
-      peeler = function(dat, sub) .peel_M_X(dat, sub, mutmat = mutmod(m))
+      peeler = function(dat, sub) .peel_M_X(dat, sub, SEX = x$SEX, mutmat = mutmod(m))
     else
       peeler = function(dat, sub) .peel_M_AUT(dat, sub, mutmat = mutmod(m))
 

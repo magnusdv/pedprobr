@@ -6,7 +6,7 @@ likelihood2 = function(x, ...) UseMethod("likelihood2", x)
 #' @rdname likelihood
 likelihood2.ped = function(x, marker1, marker2, rho = NULL, peelOrder = NULL,
                           eliminate = 0, logbase = NULL, loopBreakers = NULL,
-                          verbose = FALSE, newalg = T, ...) {
+                          verbose = FALSE, ...) {
 
   if(hasInbredFounders(x))
     stop2("Likelihood of linked markers is not implemented in pedigrees with founder inbreeding.\n",
@@ -82,19 +82,13 @@ likelihood2.ped = function(x, marker1, marker2, rho = NULL, peelOrder = NULL,
 
   # Peeler function
   if(!Xchrom)
-    peeler = function(dat, sub) .peel_MM_AUT(dat, sub, rho, mut1 = mutmod(marker1), mut2 = mutmod(marker2), newalg = newalg)
+    peeler = function(dat, sub) .peel_MM_AUT(dat, sub, rho, mut1 = mutmod(marker1), mut2 = mutmod(marker2))
   else
-    peeler = function(dat, sub) .peel_MM_X(dat, sub, rho, x$SEX, mut1 = mutmod(marker1), mut2 = mutmod(marker2), newalg = newalg)
+    peeler = function(dat, sub) .peel_MM_X(dat, sub, rho, x$SEX, mut1 = mutmod(marker1), mut2 = mutmod(marker2))
 
   # Startdata
-  if(newalg) {
-    pedInfo = .pedInfo(x, treatAsFounder = treatAsFou, Xchrom = Xchrom)
-    startdata = startdata_MM(x, marker1, marker2, pedInfo = pedInfo)
-  }
-  else if(Xchrom)
-    startdata = startdata_MM_X(x, marker1, marker2, eliminate, treatAsFou)
-  else
-    startdata = startdata_MM_AUT(x, marker1, marker2, eliminate, treatAsFou)
+  pedInfo = .pedInfo(x, treatAsFounder = treatAsFou, Xchrom = Xchrom)
+  startdata = startdata_MM(x, marker1, marker2, pedInfo = pedInfo)
 
   res = peelingProcess(x, m = NULL, startdata = startdata, peeler = peeler, peelOrder = peelOrder)
 

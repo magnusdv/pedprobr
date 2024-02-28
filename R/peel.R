@@ -13,7 +13,7 @@ choosePeeler = function(twolocus, rho, Xchrom, SEX, mutmat, mutmat2 = NULL) {
   .f
 }
 
-.peel_M_AUT = function(dat, sub, mutmat = NULL, newalg = F) {
+.peel_M_AUT = function(dat, sub, mutmat = NULL) {
   fa = sub$father
   mo = sub$mother
   link = sub$link
@@ -28,20 +28,11 @@ choosePeeler = function(twolocus, rho, Xchrom, SEX, mutmat, mutmat2 = NULL) {
     chDat = dat[[ch]]
     transPat = .transProbM(faDat, chDat$pat, mutmat = mutmat$male)
     transMat = .transProbM(moDat, chDat$mat, mutmat = mutmat$female)
-
-    if(newalg) {
-      mm = crossprod(chDat$prob * transPat, transMat)
-    }
-    else {
-      chprob = chDat$prob
-      chLen = length(chprob)
-      dim(transPat) = NULL
-      transMat_rep = transMat[rep(seq_len(chLen), faLen), ]
-      mm = .colSums((transPat * chprob) * transMat_rep, chLen, faLen * moLen)
-    }
+    mm = crossprod(chDat$prob * transPat, transMat)
     likel = likel * mm
   }
 
+  # If last individual: Return likelihood!
   if (link == 0)
     return(sum(likel))
 
@@ -56,50 +47,24 @@ choosePeeler = function(twolocus, rho, Xchrom, SEX, mutmat, mutmat2 = NULL) {
     pivLen = length(pivDat$prob)
     transPat = .transProbM(faDat, pivDat$pat, mutmat = mutmat$male)
     transMat = .transProbM(moDat, pivDat$mat, mutmat = mutmat$female)
-
-    if(newalg) {
-      faPr = .rowSums(likel, faLen, moLen)
-      moPr = .colSums(likel, faLen, moLen)
-      chProbPat = .colSums(faPr * t.default(transPat), faLen, pivLen)
-      chProbMat = .colSums(moPr * t.default(transMat), moLen, pivLen)
-      res = pivDat$prob * chProbPat * chProbMat / sum(likel)
-    }
-    else {
-      TRarray = array(0, dim = c(faLen, moLen, pivLen))
-      for (i in seq_len(faLen)) {
-        transpat = transPat[, i]
-        for (j in seq_len(moLen))
-          TRarray[i, j, ] = transpat * transMat[, j]
-      }
-      arr = as.vector(TRarray) * as.vector(likel)
-      dim(arr) = dim(TRarray)
-      res = .colSums(arr, faLen * moLen, pivLen)  # sum for each entry of haps[[link]]
-      res = res * pivDat$prob
-    }
-
+    faPr = .rowSums(likel, faLen, moLen)
+    moPr = .colSums(likel, faLen, moLen)
+    chProbPat = .colSums(faPr * t.default(transPat), faLen, pivLen)
+    chProbMat = .colSums(moPr * t.default(transMat), moLen, pivLen)
+    res = pivDat$prob * chProbPat * chProbMat / sum(likel)
   }
 
   # Update the probabilities
   pivDat$prob = res
-
-  # Reduce if possible
-  if(any(res == 0)) {
-    pivDat$allele = pivDat$allele[res > 0] # or NULL
-    pivDat$pat = pivDat$pat[res > 0]
-    pivDat$mat = pivDat$mat[res > 0]
-    pivDat$prob = pivDat$prob[res > 0]
-  }
-
-  dat[[link]] = pivDat
-
-  if (sum(res) == 0)
+  if(sum(res) == 0)
     attr(dat, "impossible") = TRUE
 
+  dat[[link]] = .reduce(pivDat)
   dat
 }
 
 
-.peel_M_X = function(dat, sub, SEX, mutmat = NULL, newalg = FALSE) {
+.peel_M_X = function(dat, sub, SEX, mutmat = NULL) {
   fa = sub$father
   mo = sub$mother
   link = sub$link
@@ -117,31 +82,15 @@ choosePeeler = function(twolocus, rho, Xchrom, SEX, mutmat, mutmat2 = NULL) {
     chLen = length(chDat$prob)
     transMat = .transProbM(moDat, chDat$mat, mutmat = mutmat$female)
 
-    if(newalg) {#cat("SEX-ch", SEX[ch], "\n")
-      if(SEX[ch] == 1)
-        transPat = matrix(1, nrow = chLen, ncol = faLen)
-      else
-        transPat = .transProbM(faDat, chDat$pat, mutmat = mutmat$male)
-      mm = crossprod(chDat$prob * transPat, transMat)
-    }
-    else {
-      if (SEX[ch] == 1) {
-        mm = rep(.colSums(transMat * chDat$prob, chLen, moLen), each = faLen)
-      }
-      else {
-        transPat =
-          if (is.null(mutmat))
-            unlist(lapply(faDat$mat, function(fal) as.numeric(fal == chDat$pat)), recursive = FALSE, use.names = FALSE)
-          else
-            unlist(lapply(faDat$mat, function(fal) mutmat$male[fal, chDat$pat]), recursive = FALSE, use.names = FALSE)
-
-        transMat_rep = transMat[rep(seq_len(chLen), faLen), ] # as.numeric(do.call(rbind, rep(list(transMat), faLen)))
-        mm = .colSums((transPat * chDat$prob) * transMat_rep, chLen, faLen * moLen)
-      }
-    }
+    if(SEX[ch] == 1)
+      transPat = matrix(1, nrow = chLen, ncol = faLen)
+    else
+      transPat = .transProbM(faDat, chDat$pat, mutmat = mutmat$male)
+    mm = crossprod(chDat$prob * transPat, transMat)
     likel = likel * mm
   }
 
+  # If last individual: Return likelihood
   if (link == 0)
     return(sum(likel))
 
@@ -155,58 +104,24 @@ choosePeeler = function(twolocus, rho, Xchrom, SEX, mutmat, mutmat2 = NULL) {
   else {
     pivp = pivDat$prob
     pivLen = length(pivp)
+    if(SEX[link] == 1)
+      transPat = matrix(1, nrow = pivLen, ncol = faLen)
+    else
+      transPat = .transProbM(faDat, pivDat$pat, mutmat = mutmat$male)
     transMat = .transProbM(moDat, pivDat$mat, mutmat = mutmat$female)
-
-    if(newalg) { #cat("SEX-link", SEX[link], "\n")
-      if(SEX[link] == 1)
-        transPat = matrix(1, nrow = pivLen, ncol = faLen)
-      else
-        transPat = .transProbM(faDat, pivDat$pat, mutmat = mutmat$male)
-
-      faPr = .rowSums(likel, faLen, moLen)
-      moPr = .colSums(likel, faLen, moLen)
-      chProbPat = .colSums(faPr * t.default(transPat), faLen, pivLen)
-      chProbMat = .colSums(moPr * t.default(transMat), moLen, pivLen)
-      res = pivDat$prob * chProbPat * chProbMat / sum(likel)
-    }
-    else {
-
-      if (SEX[link] == 1) {
-       TRarray = rep(t.default(transMat), each = faLen)
-      }
-      else {
-        TRarray = array(0, dim = c(faLen, moLen, pivLen))
-        for (i in seq_len(faLen)) {
-          transPat =
-            if (is.null(mutmat)) as.numeric(faDat$mat[i] == pivDat$pat)
-            else mutmat$male[faDat$mat[i], pivDat$pat]
-          TRarray[i, , ] = t.default(transPat * transMat)  #TODO:make faster?
-        }
-      }
-      # DEBUG
-      # print(array(TRarray, dim = c(faLen, moLen, pivLen), dimnames = lapply(list(faDat, moDat, pivh), pasteHap)))
-
-      arr = as.vector(TRarray) * as.vector(likel)
-      dim(arr) = dim(TRarray)
-      res = .colSums(arr, faLen * moLen, pivLen)  #sum for each entry of haps[[link]]
-      res = res * pivp
-    }
+    faPr = .rowSums(likel, faLen, moLen)
+    moPr = .colSums(likel, faLen, moLen)
+    chProbPat = .colSums(faPr * t.default(transPat), faLen, pivLen)
+    chProbMat = .colSums(moPr * t.default(transMat), moLen, pivLen)
+    res = pivDat$prob * chProbPat * chProbMat / sum(likel)
   }
 
-  # Update the probabilites
+  # Update the probabilities
   pivDat$prob = res
+  if(sum(res) == 0)
+    attr(dat, "impossible") = TRUE
 
-  # Reduce if possible
-  if(any(res == 0)) {
-    pivDat$allele = pivDat$allele[res > 0] # or NULL
-    pivDat$pat = pivDat$pat[res > 0] # or NULL
-    pivDat$mat = pivDat$mat[res > 0]
-    pivDat$prob = pivDat$prob[res > 0]
-    if(sum(res) == 0)
-      attr(dat, "impossible") = TRUE
-  }
-
-  dat[[link]] = pivDat
+  dat[[link]] = .reduce(pivDat)
   dat
 }
 
@@ -258,7 +173,7 @@ choosePeeler = function(twolocus, rho, Xchrom, SEX, mutmat, mutmat2 = NULL) {
 ## TWO LINKED MARKERS
 #####################
 
-.peel_MM_AUT = function(dat, sub, rho, mut1 = NULL, mut2 = NULL, newalg = F) {
+.peel_MM_AUT = function(dat, sub, rho, mut1 = NULL, mut2 = NULL) {
   fa = sub$father
   mo = sub$mother
   link = sub$link
@@ -274,16 +189,7 @@ choosePeeler = function(twolocus, rho, Xchrom, SEX, mutmat, mutmat2 = NULL) {
     chDat = dat[[ch]]
     transPat = .transProbMM(faDat, chDat[c('pat1', 'pat2')], rho = rho, mutmat1 = mut1$male, mutmat2 = mut2$male)
     transMat = .transProbMM(moDat, chDat[c('mat1', 'mat2')], rho = rho, mutmat1 = mut1$female, mutmat2 = mut2$female)
-    if(newalg) {
-      mm = crossprod(chDat$prob * transPat, transMat)
-    }
-    else {
-      dim(transPat) = NULL
-      chprob = chDat$prob
-      chLen = length(chprob)
-      transMat_rep = transMat[rep(seq_len(chLen), faLen), ]
-      mm = .colSums((transPat * chprob) * transMat_rep, chLen, faLen * moLen)
-    }
+    mm = crossprod(chDat$prob * transPat, transMat)
     likel = likel * mm
   }
 
@@ -302,26 +208,11 @@ choosePeeler = function(twolocus, rho, Xchrom, SEX, mutmat, mutmat2 = NULL) {
     transPat = .transProbMM(faDat, pivDat[c('pat1', 'pat2')], rho = rho, mutmat1 = mut1$male, mutmat2 = mut2$male)
     transMat = .transProbMM(moDat, pivDat[c('mat1', 'mat2')], rho = rho, mutmat1 = mut1$female, mutmat2 = mut2$female)
 
-    if(newalg) {
-      faPr = .rowSums(likel, faLen, moLen)
-      moPr = .colSums(likel, faLen, moLen)
-      chProbPat = .colSums(faPr * t.default(transPat), faLen, pivLen)
-      chProbMat = .colSums(moPr * t.default(transMat), moLen, pivLen)
-      res = pivDat$prob * chProbPat * chProbMat / sum(likel)
-    }
-    else {
-      TRarray = array(0, dim = c(faLen, moLen, pivLen))
-      for (i in seq_len(faLen)) {
-        transpat = transPat[, i]
-        for (j in seq_len(moLen))
-          TRarray[i, j, ] = transpat * transMat[, j]
-      }
-
-      arr = as.vector(TRarray) * as.vector(likel)
-      dim(arr) = dim(TRarray)
-      res = .colSums(arr, faLen * moLen, pivLen)  #sum for each entry of haps[[link]]
-      res = res * pivDat$prob
-    }
+    faPr = .rowSums(likel, faLen, moLen)
+    moPr = .colSums(likel, faLen, moLen)
+    chProbPat = .colSums(faPr * t.default(transPat), faLen, pivLen)
+    chProbMat = .colSums(moPr * t.default(transMat), moLen, pivLen)
+    res = pivDat$prob * chProbPat * chProbMat / sum(likel)
   }
 
   # Update the probabilities
@@ -333,7 +224,7 @@ choosePeeler = function(twolocus, rho, Xchrom, SEX, mutmat, mutmat2 = NULL) {
   dat
 }
 
-.peel_MM_X = function(dat, sub, rho, SEX, mut1 = NULL, mut2 = NULL, newalg = F) { #print("peelX")
+.peel_MM_X = function(dat, sub, rho, SEX, mut1 = NULL, mut2 = NULL) { #print("peelX")
   fa = sub$father
   mo = sub$mother
   link = sub$link
@@ -350,38 +241,12 @@ choosePeeler = function(twolocus, rho, Xchrom, SEX, mutmat, mutmat2 = NULL) {
     chLen = length(chDat$prob)
     transMat = .transProbMM(moDat, chDat[c('mat1', 'mat2')], rho = rho, mutmat1 = mut1$female, mutmat2 = mut2$female)
 
-    if(newalg) { #cat("SEX-ch", SEX[ch], "\n")
-      if(SEX[ch] == 1)
-        transPat = matrix(1, nrow = chLen, ncol = faLen)
-      else
-        transPat = .transProbMM(faDat, chDat[c('pat1', 'pat2')], rho = rho, mutmat1 = mut1$male, mutmat2 = mut2$male)
-      mm = crossprod(chDat$prob * transPat, transMat)
-    }
-    else {
-      chprob = chDat$prob
-      chLen = length(chprob)
-      if (SEX[ch] == 1) {
-        mm = rep(.colSums(transMat * chprob, chLen, moLen), each = faLen)
-      }
-      else {
-        # trans paternal (could make separate function for this)
-        fa1 = faDat$mat1
-        fa2 = faDat$mat2
-        chp1 = chDat$pat1
-        chp2 = chDat$pat2
-        fa1rep = rep(fa1, each = length(chp1))
-        fa2rep = rep(fa2, each = length(chp1))
-        chp1rep = rep(chp1, length(fa1))
-        chp2rep = rep(chp2, length(fa1))
+    if(SEX[ch] == 1)
+      transPat = matrix(1, nrow = chLen, ncol = faLen)
+    else
+      transPat = .transProbMM(faDat, chDat[c('pat1', 'pat2')], rho = rho, mutmat1 = mut1$male, mutmat2 = mut2$male)
+    mm = crossprod(chDat$prob * transPat, transMat)
 
-        loc1 = if(is.null(mut1)) as.numeric(fa1rep == chp1rep) else mut1$male[cbind(fa1rep, chp1rep, deparse.level = 0)]
-        loc2 = if(is.null(mut2)) as.numeric(fa2rep == chp2rep) else mut2$male[cbind(fa2rep, chp2rep, deparse.level = 0)]
-        transPat = loc1 * loc2
-
-        transMat_rep = transMat[rep(seq_len(chLen), faLen), ] # as.numeric(do.call(rbind, rep(list(transMat), faLen)))
-        mm = .colSums((transPat * chprob) * transMat_rep, chLen, faLen * moLen)
-      }
-    }
     likel = likel * mm
   }
 
@@ -399,38 +264,16 @@ choosePeeler = function(twolocus, rho, Xchrom, SEX, mutmat, mutmat2 = NULL) {
     pivLen = length(pivDat$prob)
     transMat = .transProbMM(moDat, pivDat[c('mat1', 'mat2')], rho = rho, mutmat1 = mut1$female, mutmat2 = mut2$female)
 
-    if(newalg) { #cat("SEX-link", SEX[link], "\n")
-      if(SEX[link] == 1)
-        transPat = matrix(1, nrow = pivLen, ncol = faLen)
-      else
-        transPat = .transProbMM(faDat, pivDat[c('pat1', 'pat2')], rho = rho, mutmat1 = mut1$male, mutmat2 = mut2$male)
+    if(SEX[link] == 1)
+      transPat = matrix(1, nrow = pivLen, ncol = faLen)
+    else
+      transPat = .transProbMM(faDat, pivDat[c('pat1', 'pat2')], rho = rho, mutmat1 = mut1$male, mutmat2 = mut2$male)
 
-      faPr = .rowSums(likel, faLen, moLen)
-      moPr = .colSums(likel, faLen, moLen)
-      chProbPat = .colSums(faPr * t.default(transPat), faLen, pivLen)
-      chProbMat = .colSums(moPr * t.default(transMat), moLen, pivLen)
-      res = pivDat$prob * chProbPat * chProbMat / sum(likel)
-    }
-    else {
-      pivp = pivDat$prob
-      pivLen = length(pivp)
-      if (SEX[link] == 1) {
-        TRarray = rep(t.default(transMat), each = faLen)
-      }
-      else {
-        TRarray = array(0, dim = c(faLen, moLen, pivLen))
-        for (i in seq_len(faLen)) {
-          loc1 = if(is.null(mut1)) as.numeric(faDat$mat1[i] == pivDat$pat1) else mut1$male[faDat$mat1[i], pivDat$pat1]
-          loc2 = if(is.null(mut2)) as.numeric(faDat$mat2[i] == pivDat$pat2) else mut2$male[faDat$mat2[i], pivDat$pat2]
-          transPat = loc1 * loc2
-          TRarray[i, , ] = t.default(transPat * transMat)  #TODO:make faster!
-        }
-      }
-      arr = as.vector(TRarray) * as.vector(likel)
-      dim(arr) = dim(TRarray)
-      res = .colSums(arr, faLen * moLen, pivLen)  #sum for each entry of haps[[link]]
-      res * pivp
-    }
+    faPr = .rowSums(likel, faLen, moLen)
+    moPr = .colSums(likel, faLen, moLen)
+    chProbPat = .colSums(faPr * t.default(transPat), faLen, pivLen)
+    chProbMat = .colSums(moPr * t.default(transMat), moLen, pivLen)
+    res = pivDat$prob * chProbPat * chProbMat / sum(likel)
   }
 
   # Update the probabilities

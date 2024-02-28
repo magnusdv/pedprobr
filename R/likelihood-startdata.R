@@ -68,18 +68,18 @@ startdata_M = function(x, marker, pedInfo = NULL, eliminate = NULL, treatAsFound
 
   names(glist) = x$ID
   attr(glist, "impossible") = imp
-  class(glist) = c("glist", class(glist))
+  #class(glist) = c("glist", class(glist))
   glist
 }
 
-#' @export
-print.glist = function(x, sep = "/") {
-  y = lapply(x, function(g) {
-    nms = g$allele %||% if(is.null(g$pat)) g$mat else paste(g$pat, g$mat, sep = sep)
-    `names<-`(g$prob, nms)
-  })
-  print(y)
-}
+
+# print.glist = function(x, sep = "/") {
+#   y = lapply(x, function(g) {
+#     nms = g$allele %||% if(is.null(g$pat)) g$mat else paste(g$pat, g$mat, sep = sep)
+#     `names<-`(g$prob, nms)
+#   })
+#   print(y)
+# }
 
 # Various info used repeatedly
 .pedInfo = function(x, treatAsFounder = NULL, Xchrom = FALSE) {
@@ -101,8 +101,8 @@ print.glist = function(x, sep = "/") {
   if(!is.null(fval))
     fi[fouInt] = fval
 
-  # List of offspring
-  offs = lapply(1:nInd, function(i) children(x, i, internal = TRUE))
+  # List of offspring (internal)
+  offs = .allchildren(x)
 
   list(nInd = nInd, isFounder = isFounder, simpleFou = simpleFou, fouInb = fi,
        offs = offs, Xchrom = Xchrom)
@@ -220,90 +220,6 @@ print.glist = function(x, sep = "/") {
   g
 }
 
-# TODO: Old version, to be deleted
-startdata_M_AUT = function(x, marker, eliminate = 0, treatAsFounder = NULL) {
-
-  glist = .buildGenolist(x, marker, eliminate, treatAsFounder)
-
-  if (attr(glist, "impossible"))
-    return(structure(list(), impossible = TRUE))
-
-  FOU = founders(x, internal = TRUE)
-
-  # Founder inbreeding: A vector of length pedsize(x), with NA's at nonfounders
-  # Enables quick look-up e.g. FOU_INB[i].
-  FOU_INB = rep(NA_real_, pedsize(x))
-  FOU_INB[FOU] = founderInbreeding(x)
-
-  # Add any members which should be treated as founders
-  FOU = c(FOU, treatAsFounder)
-
-  afr = afreq(marker)
-  impossible = FALSE
-
-  # Add probabilities to each genotype
-  for(i in seq_along(glist)) {
-
-    g = glist[[i]]
-    if (i %in% FOU) {
-      prob = HWprob(g$pat, g$mat, afr, f = FOU_INB[i])
-
-      if (sum(prob) == 0){
-        impossible = TRUE
-        break
-      }
-    }
-    else
-      prob = rep.int(1, length(g$mat))
-
-    glist[[i]]$prob = as.numeric(prob)
-  }
-
-  attr(glist, "impossible") = impossible
-  glist
-}
-
-# TODO: Delete
-startdata_M_X = function(x, marker, eliminate = 0, treatAsFounder = NULL) {
-
-  glist = .buildGenolistX(x, marker, eliminate, treatAsFounder = treatAsFounder)
-
-  if (attr(glist, "impossible"))
-    return(structure(list(), impossible = TRUE))
-
-  FOU = founders(x, internal = TRUE)
-
-  # Add any members which should be treated as founders
-  FOU = c(FOU, treatAsFounder)
-
-  sex = x$SEX
-  afr = afreq(marker)
-  impossible = FALSE
-
-  dat = lapply(1:pedsize(x), function(i) {
-
-    # If impossible, speed through
-    if(impossible)
-      return(NULL)
-
-    g = glist[[i]]
-    if (i %in% FOU) {
-      prob = switch(sex[i], afr[g$mat], HWprob(g$pat, g$mat, afr))
-      if (sum(prob) == 0) {
-        impossible = TRUE
-        return(NULL)
-      }
-    }
-    else
-      prob = rep.int(1, length(g$mat))
-
-    g$prob = as.numeric(prob)
-    g
-  })
-
-  attr(dat, "impossible") = impossible
-  dat
-}
 
 
 ##################################
@@ -393,176 +309,6 @@ startdata_MM = function(x, marker1, marker2, pedInfo = NULL) {
 }
 
 
-# TODO: Old version, to be deleted
-startdata_MM_AUT = function(x, marker1, marker2, eliminate = 0, treatAsFounder = NULL) {
-  glist1 = .buildGenolist(x, marker1, eliminate, treatAsFounder)
-  glist2 = .buildGenolist(x, marker2, eliminate, treatAsFounder)
-  if (attr(glist1, "impossible") || attr(glist2, "impossible")) {
-    dat = list()
-    attr(dat, "impossible") = TRUE
-    return(dat)
-  }
-
-  isFounder = logical(pedsize(x))
-  isFounder[founders(x, internal = TRUE)] = TRUE
-  isFounder[treatAsFounder] = TRUE
-  impossible = FALSE
-
-  dat = lapply(1:pedsize(x), function(i) {
-
-    # If impossible, speed through
-    if(impossible)
-      return(NULL)
-
-    g1 = glist1[[i]]
-    g2 = glist2[[i]]
-    len1 = length(g1$mat)
-    len2 = length(g2$mat)
-    idx1 = rep(seq_len(len1), each = len2)
-    idx2 = rep(seq_len(len2), times = len1)
-
-    pat1 = g1$pat[idx1]
-    mat1 = g1$mat[idx1]
-    pat2 = g2$pat[idx2]
-    mat2 = g2$mat[idx2]
-
-    if (isFounder[i]) {
-      # Doubly heterozygous founders: Include the other phase as well.
-      # (Since .buildGenolist() returns unordered genotypes for founders.)
-      doublyhet = pat1 != mat1 & pat2 != mat2
-      if (any(doublyhet)) {
-        pat1 = c(pat1, pat1[doublyhet])
-        mat1 = c(mat1, mat1[doublyhet])
-        p2 = pat2; m2 = mat2
-        pat2 = c(p2, m2[doublyhet])  # note switch
-        mat2 = c(m2, p2[doublyhet])
-      }
-    }
-
-    g = list(pat1 = pat1, mat1 = mat1, pat2 = pat2, mat2 = mat2)
-
-    # Add probabilities
-    prob = startprob_MM_AUT(g, afreq1 = afreq(marker1),
-                            afreq2 = afreq(marker2), founder = isFounder[i])
-    g$prob = prob
-
-    keep = prob > 0
-    if (!any(keep)){
-      impossible = TRUE
-      return(NULL)
-    }
-
-    if(!all(keep))
-      g[] = lapply(g, function(vec) vec[keep])
-
-    g
-  })
-
-  attr(dat, "impossible") = impossible
-  dat
-}
-
-# TODO: Delete
-startdata_MM_X = function(x, marker1, marker2, eliminate = 0, treatAsFounder = NULL) {
-  glist1 = .buildGenolistX(x, marker1, eliminate, treatAsFounder)
-  glist2 = .buildGenolistX(x, marker2, eliminate, treatAsFounder)
-  if (attr(glist1, "impossible") || attr(glist2, "impossible")) {
-    dat = list()
-    attr(dat, "impossible") = TRUE
-    return(dat)
-  }
-
-  isFounder = logical(pedsize(x))
-  isFounder[founders(x, internal = TRUE)] = TRUE
-  isFounder[treatAsFounder] = TRUE
-
-  sex = x$SEX
-  impossible = FALSE
-
-  dat = lapply(1:pedsize(x), function(i) {
-
-    # If impossible, speed through
-    if(impossible)
-      return(NULL)
-
-    sexi = sex[i]
-    g1 = glist1[[i]]
-    g2 = glist2[[i]]
-    len1 = length(g1$mat)
-    len2 = length(g2$mat)
-
-    idx1 = rep(seq_len(len1), each = len2)
-    idx2 = rep(seq_len(len2), times = len1)
-
-    if (sexi == 1)
-      g = list(mat1 = g1$mat[idx1], mat2 = g2$mat[idx2])
-    else {
-      pat1 = g1$pat[idx1]
-      mat1 = g1$mat[idx1]
-      pat2 = g2$pat[idx2]
-      mat2 = g2$mat[idx2]
-
-      if (isFounder[i]) {
-        # Doubly heterozygous founders: Include the other phase as well.
-        # (Since .buildGenolist() returns unordered genotypes for founders.)
-        doublyhet = pat1 != mat1 & pat2 != mat2
-        if (any(doublyhet)) {
-          pat1 = c(pat1, pat1[doublyhet])
-          mat1 = c(mat1, mat1[doublyhet])
-          p2 = pat2; m2 = mat2
-          pat2 = c(p2, m2[doublyhet])  # note switch
-          mat2 = c(m2, p2[doublyhet])
-        }
-      }
-
-      g = list(pat1 = pat1, mat1 = mat1, pat2 = pat2, mat2 = mat2)
-    }
-
-    prob = startprob_MM_X(g, afreq1 = afreq(marker1),
-                          afreq2 = afreq(marker2), sex = sexi, founder = isFounder[i])
-
-    g$prob = prob
-
-    keep = prob > 0
-    if (!any(keep)){
-      impossible = TRUE
-      return(NULL)
-    }
-
-    if(!all(keep))
-      g[] = lapply(g, function(vec) vec[keep])
-
-    g
-  })
-  attr(dat, "impossible") = impossible
-  dat
-}
-
-# TODO: No longer needed?
-startprob_MM_AUT = function(g, afreq1, afreq2, founder) {
-  if (founder) {
-    p1 = g$pat1
-    m1 = g$mat1
-    p2 = g$pat2
-    m2 = g$mat2
-
-    # Multiply with two if heteroz for at least 1 marker.
-    # If heteroz for both, then both phases are included in g, hence the factor 2 (not 4) in this case as well.
-    hetfact = ((p1 != m1) | (p2 != m2)) + 1
-    afreq1[p1] * afreq1[m1] * afreq2[p2] * afreq2[m2] * hetfact
-  }
-  else {
-    rep(1, length(g$mat1))
-  }
-}
-
-startprob_MM_X = function(g, afreq1, afreq2, sex, founder) {
-  if (founder && sex == 1)
-    afreq1[g$mat1] * afreq2[g$mat2]
-  else
-    startprob_MM_AUT(g, afreq1, afreq2, founder)
-}
-
 .reduce = function(g) {
   keep = g$prob > 0
   if(all(keep))
@@ -570,15 +316,20 @@ startprob_MM_X = function(g, afreq1, afreq2, sex, founder) {
   lapply(g, function(vec) vec[keep])
 }
 
-.allchildren = function(x, method = 0) {
-  ff = x$FIDX
-  mm = x$MIDX
-  nonf = which(ff > 0)
-  result = vector(length(ff), mode = "list")
-  if(method == 2) {
-    sf = split.default(nonf, factor(ff[nonf], levels = 1:max(ff)))
-  }
+.allchildren = function(x) {
+  FIDX = x$FIDX
+  MIDX = x$MIDX
+  SEX = x$SEX
+  nInd = length(FIDX)
 
+  nonf = which(FIDX > 0)
 
+  res = split.default(c(nonf, nonf), factor(c(FIDX[nonf], MIDX[nonf]), levels = seq_len(nInd)))
+  names(res) = NULL
 
+  ### Slower in almost all cases:
+  # res = lapply(seq_len(nInd), function(i)
+  #  if(SEX[i] == 1) which(FIDX == i) else which(MIDX == i))
+
+  res
 }
