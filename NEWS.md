@@ -1,3 +1,15 @@
+# pedprobr 0.9.2
+
+The version implements several improvements in the peeling algorithm, mostly invisible to end users (except that likelihoods calculations will be noticeably faster, and use much less memory, in many cases).
+
+* Less memory footprint for untyped founders with only 1 child: Sample alleles directly, avoid complete set of genotypes.
+
+* Avoid costly 3-dimensional arrays in peeling calculations.
+
+* More efficient genotype elimination in likelihood calculations involving markers without mutation modelling. As a result, this is now enforced (rather than optional) everywhere, and the `eliminate` argument is deprecated.
+
+* Added citation info.
+
 # pedprobr 0.8.0
 
 ## New features
@@ -30,7 +42,7 @@
 
 * `likelihoodMerlin()` gains argument `perChrom`, used to parse the chromosome-wise likelihoods from the MERLIN output.
 
-* `lumpAlleles()` gains argument `always`. By default lumping is skipped for markers where all individuals are genotyped, but this can cause problems e.g. with MERLIN which operates with an upper limit of allleles.
+* `lumpAlleles()` gains argument `always`. By default lumping is skipped for markers where all individuals are genotyped, but this can cause problems e.g. with MERLIN which operates with an upper limit of alleles.
 
 * Some efforts are done to check for (and warn about) underflow/overflow in MERLIN results.
 
