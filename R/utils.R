@@ -172,3 +172,10 @@ checkRho = function(rho, max = 0.5) {
     stop2(sprintf("Argument `rho` cannot exceed %f: %f", max, rho))
 }
 
+# Sort genotypes (single marker object)
+.sortGeno = function(marker) {
+  swp = marker[,1] > marker[,2]
+  if(any(swp))
+    marker[swp, 1:2] = marker[swp, 2:1]
+  marker
+}

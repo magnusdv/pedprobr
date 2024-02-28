@@ -21,14 +21,12 @@ Details), or NULL.}
 An object similar to \code{x}.
 }
 \description{
-This function offers a convenient way to attach mutation models to a pedigree
-with marker data. It wraps \code{\link[pedmut:mutationModel]{pedmut::mutationModel()}}, which does the main
-work of creating the models, but relieves the user from having to loop
-through the markers in order to supply the correct alleles and frequencies
-for each marker.
+\emph{\strong{NB: This function has been replaced by \code{\link[pedtools:setMutmod]{pedtools::setMutmod()}}.}}
+This function attaches mutation models to a pedigree with marker data,
+calling \code{\link[pedmut:mutationModel]{pedmut::mutationModel()}} for creating the models.
 }
 \details{
-Currently, the following models are implemented in the \code{pedmut} package:
+Currently, the following models are handled:
 \itemize{
 \item \code{equal} :  All mutations equally likely; probability \eqn{1-rate} of no
 mutation

@@ -32,7 +32,7 @@ likelihood2(x, ...)
   x,
   marker1,
   marker2,
-  rho,
+  rho = NULL,
   peelOrder = NULL,
   eliminate = 0,
   logbase = NULL,
@@ -115,17 +115,18 @@ For more than two linked markers, see \code{\link[=likelihoodMerlin]{likelihoodM
 ### Simple likelihood ###
 p = 0.1
 q = 1 - p
+afr = c("1" = p, "2" = q)
 
 # Singleton
-s = singleton() |> addMarker(geno = "1/2", afreq = c("1" = p, "2" = q))
+s = singleton() |> addMarker(geno = "1/2", afreq = afr)
 
 stopifnot(all.equal(likelihood(s), 2*p*q))
 
 # Trio
-t = nuclearPed() |>
-  addMarker(geno = c("1/1", "1/2", "1/1"), afreq = c("1" = p, "2" = q))
+trio = nuclearPed() |>
+  addMarker(geno = c("1/1", "1/2", "1/1"), afreq = afr)
 
-stopifnot(all.equal(likelihood(t), p^2 * 2*p*q * 0.5))
+stopifnot(all.equal(likelihood(trio), p^2 * 2*p*q * 0.5))
 
 
 ### Example of calculation with inbred founders ###

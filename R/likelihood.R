@@ -68,17 +68,18 @@
 #' ### Simple likelihood ###
 #' p = 0.1
 #' q = 1 - p
+#' afr = c("1" = p, "2" = q)
 #'
 #' # Singleton
-#' s = singleton() |> addMarker(geno = "1/2", afreq = c("1" = p, "2" = q))
+#' s = singleton() |> addMarker(geno = "1/2", afreq = afr)
 #'
 #' stopifnot(all.equal(likelihood(s), 2*p*q))
 #'
 #' # Trio
-#' t = nuclearPed() |>
-#'   addMarker(geno = c("1/1", "1/2", "1/1"), afreq = c("1" = p, "2" = q))
+#' trio = nuclearPed() |>
+#'   addMarker(geno = c("1/1", "1/2", "1/1"), afreq = afr)
 #'
-#' stopifnot(all.equal(likelihood(t), p^2 * 2*p*q * 0.5))
+#' stopifnot(all.equal(likelihood(trio), p^2 * 2*p*q * 0.5))
 #'
 #'
 #' ### Example of calculation with inbred founders ###
@@ -134,7 +135,6 @@ likelihood.ped = function(x, markers = NULL, peelOrder = NULL, lump = TRUE,
   # Catch erroneous input
   if(is.ped(peelOrder))
     stop2("Invalid input for argument `peelOrder`. Received object type: ", class(peelOrder))
-
 
   if(is.null(markers))
     markers = x$MARKERS
@@ -192,14 +192,13 @@ likelihood.ped = function(x, markers = NULL, peelOrder = NULL, lump = TRUE,
 
   # Select tools for peeling
   # TODO: Organise better, e.g., skip startdata if theta > 0
-  if(Xchrom) {
-    starter = function(x, m) startdata_M_X(x, m, eliminate = eliminate, treatAsFounder = treatAsFou)
+
+  pedInfo = .pedInfo(x, treatAsFounder = treatAsFou, Xchrom = Xchrom)
+  starter = function(x, m) startdata_M(x, m, pedInfo = pedInfo)
+  if(Xchrom)
     peeler = function(x, m) function(dat, sub) .peel_M_X(dat, sub, SEX = x$SEX, mutmat = mutmod(m))
-  }
-  else {
-    starter = function(x, m) startdata_M_AUT(x, m, eliminate = eliminate, treatAsFounder = treatAsFou)
+  else
     peeler = function(x, m) function(dat, sub) .peel_M_AUT(dat, sub, mutmat = mutmod(m))
-  }
 
   # Loop over markers
   resList = lapply(markers, function(m) {
@@ -219,10 +218,21 @@ likelihood.ped = function(x, markers = NULL, peelOrder = NULL, lump = TRUE,
 
 
 # Internal function: likelihood of a single marker
-peelingProcess = function(x, m, startdata, peeler, peelOrder = NULL) {
+peelingProcess = function(x, m = x$MARKERS[[1]], startdata = NULL, peeler = NULL, peelOrder = NULL) {
 
   if(hasUnbrokenLoops(x))
     stop2("Peeling process cannot handle unbroken pedigree loops")
+
+    # Default start
+  if(is.null(startdata))
+    startdata = function(x, m) startdata_M(x, m)
+
+  # Default peeler
+  if(is.null(peeler))
+    if(isXmarker(m))
+      peeler = function(dat, sub) .peel_M_X(dat, sub, SEX = x$SEX, mutmat = mutmod(m))
+    else
+      peeler = function(dat, sub) .peel_M_AUT(dat, sub, mutmat = mutmod(m))
 
   if(is.null(peelOrder))
     peelOrder = informativeSubnucs(x, m)
@@ -280,7 +290,7 @@ peelingProcess = function(x, m, startdata, peeler, peelOrder = NULL) {
       # If impossible data - break out of ES-algorithm and go to next r in loopgrid.
       if (nuc$link > 0 && attr(dat1, "impossible")) break
 
-      # If pedigree traversed, add to total and go to next r
+      # If pedigree traversed, dat1 is a number. Add to total and goto next
       if (nuc$link == 0) likelihood = likelihood + dat1
     }
   }
@@ -322,7 +332,7 @@ likelihood.list = function(x, markers = NULL, logbase = NULL, ...) {
 
 # Utility for finding which genotypes in dat1 are also in dat2
 matchDat = function(dat1, dat2) {
-  twolocus = length(dat1) > 4
+  twolocus = !is.null(dat1$allele2) || !is.null(dat1$mat2)
   if(!twolocus) {
     nseq = seq_along(dat1$mat)
     Xchrom = is.null(dat1$pat)

@@ -142,10 +142,8 @@ stopifnot(all.equal(
   round(c(lik1, lik2, likTot), c(3,3,4)), c(1/2, 1/8, 1/16)))
 
 # Example with ped lists
-y = list(singleton(1), singleton(2))
-y = setMarkers(y, locus = list(alleles = 1:2))
-genotype(y[[1]], marker = 1, id = "1") = "1/2"
-genotype(y[[2]], marker = 1, id = "2") = "1/1"
+y = singletons(1:2) |>
+  addMarker(`1` = "1/2", `2` = "1/1", alleles = 1:2)
 lik = likelihoodMerlin(y, verbose = FALSE)
 stopifnot(all.equal(round(lik, 3), 1/8))
 

@@ -1,7 +1,7 @@
 Type: Package
 Package: pedprobr
 Title: Probability Computations on Pedigrees
-Version: 0.8.0
+Version: 0.9.1
 Authors@R: 
     person("Magnus Dehli", "Vigeland", , "m.d.vigeland@medisin.uio.no", role = c("aut", "cre"),
            comment = c(ORCID = "0000-0002-9134-4962"))
@@ -27,6 +27,6 @@ Suggests:
 Encoding: UTF-8
 Language: en-GB
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.2.3
+RoxygenNote: 7.3.1
 SystemRequirements: MERLIN (https://csg.sph.umich.edu/abecasis/merlin/)
     for calculations involving multiple linked markers.

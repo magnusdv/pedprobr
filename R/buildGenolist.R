@@ -1,16 +1,14 @@
 #### .buildGenolist and .eliminate
 
-.genotypeHaploList = function(gt, n, unordered, complete = NULL) {
+.genotypeHaploList = function(gt, n, unordered, .complete = NULL) {
+  # The complete matrix should be supplied to avoid making it each time
+
   nseq = seq_len(n)
-
-  # The complete matrix can (should!) be supplied to avoid making it each time
-  complete = complete %||% list(pat = rep(nseq, each = n), mat = rep.int(nseq, times = n))
-
   a = gt[1]
   b = gt[2]
 
   if(a == 0 && b == 0)
-    g = complete
+    g = .complete %||% list(pat = rep(nseq, each = n), mat = rep.int(nseq, times = n))
   else if (a == 0 && b > 0)
     g = list(pat = c(nseq, rep(b, n - 1)), mat = c(rep(b, n), nseq[-b]))
   else if (a > 0 && b == 0)
@@ -32,7 +30,6 @@
 .buildGenolist = function(x, marker, eliminate = 0, treatAsFounder = NULL, foundersUnordered = TRUE) {
   n = nAlleles(marker)
 
-
   # Founders (except loop breaker copies) need only *unordered* genotypes
   founderNotLB = logical(pedsize(x))
   founderNotLB[founders(x, internal = TRUE)] = TRUE
@@ -47,7 +44,7 @@
   genolist = lapply(1:pedsize(x), function(i) {
     gt = marker[i, ]
     unordered = founderNotLB[i] && foundersUnordered
-    .genotypeHaploList(gt, n, unordered, COMPLETE)
+    .genotypeHaploList(gt, n, unordered = unordered, .complete = COMPLETE)
   })
 
   #als = alleles(marker)
@@ -67,8 +64,8 @@
 .eliminate = function(x, genolist, nall, repeats = 0, treatAsFounder = NULL) {
   if (repeats == 0 || attr(genolist, "impossible"))
     return(genolist)
-  N = pedsize(x)
 
+  N = pedsize(x)
   FOU = founders(x, internal = TRUE)
   NONFOU = nonfounders(x, internal = TRUE)
   FIDX = x$FIDX
@@ -177,7 +174,7 @@
   genolist[women] = lapply(women, function(i) {
     gt = marker[i, ]
     unordered = founderNotLB[i]
-    .genotypeHaploList(gt, n, unordered, COMPLETE)
+    .genotypeHaploList(gt, n, unordered = unordered, .complete = COMPLETE)
   })
 
   attr(genolist, "impossible") = FALSE

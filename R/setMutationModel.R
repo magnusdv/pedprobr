@@ -1,12 +1,10 @@
 #' Set a mutation model
 #'
-#' This function offers a convenient way to attach mutation models to a pedigree
-#' with marker data. It wraps [pedmut::mutationModel()], which does the main
-#' work of creating the models, but relieves the user from having to loop
-#' through the markers in order to supply the correct alleles and frequencies
-#' for each marker.
+#' ***NB: This function has been replaced by [pedtools::setMutmod()].***
+#' This function attaches mutation models to a pedigree with marker data,
+#' calling [pedmut::mutationModel()] for creating the models.
 #'
-#' Currently, the following models are implemented in the `pedmut` package:
+#' Currently, the following models are handled:
 #'
 #' * `equal` :  All mutations equally likely; probability \eqn{1-rate} of no
 #' mutation
@@ -69,6 +67,8 @@
 setMutationModel = function(x, model, markers = NULL, ...) {
   if (!requireNamespace("pedmut", quietly = TRUE))
     stop2("Package `pedmut` must be installed in order to include mutation models")
+
+  message("Note: `setMutationModel()` has been replaced with `pedtools::setMutmod()`. Please use this in new code.")
 
   opts = list(...)
 

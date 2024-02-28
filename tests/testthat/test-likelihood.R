@@ -82,8 +82,8 @@ test_that("nuclear likelihoods are correct, multiallelic markers", {
   m3 = marker(x, '1'=2, alleles=1:3, afreq=c(p,p,q-p))
   expect_equal(likelihood(x, m3), p^2)
 
-  #m4 = marker(x, '1'=2, alleles=1:3, afreq=c(p,p,q-p))
-  #expect_equal(likelihood(x, m4), p^2)
+  m4 = marker(x, '1'=2, alleles=1:3, afreq=c(p,p,q-p))
+  expect_equal(likelihood(x, m4), p^2)
 
   m5 = marker(x, '1'=1, '2'=10, alleles=1:10)
   expect_equal(likelihood(x, m5), .1^4)
