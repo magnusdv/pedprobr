@@ -36,13 +36,15 @@ choosePeeler = function(twolocus, rho, Xchrom, SEX, mutmat, mutmat2 = NULL) {
   if (link == 0)
     return(sum(likel))
 
-  # Update the probabilities of link (pivot) individual:
+  # Otherwise: Link (pivot) individual
   pivDat = dat[[link]]
 
   if (link == fa)
     res = .rowSums(likel, faLen, moLen)
   else if (link == mo)
     res = .colSums(likel, faLen, moLen)
+  else if(sum(likel) == 0)
+    res = numeric(length(pivDat$prob))
   else { # link is a child
     pivLen = length(pivDat$prob)
     transPat = .transProbM(faDat, pivDat$pat, mutmat = mutmat$male)
@@ -51,7 +53,7 @@ choosePeeler = function(twolocus, rho, Xchrom, SEX, mutmat, mutmat2 = NULL) {
     moPr = .colSums(likel, faLen, moLen)
     chProbPat = .colSums(faPr * t.default(transPat), faLen, pivLen)
     chProbMat = .colSums(moPr * t.default(transMat), moLen, pivLen)
-    res = pivDat$prob * chProbPat * chProbMat / sum(likel)
+    res = pivDat$prob * chProbPat * chProbMat /sum(likel)
   }
 
   # Update the probabilities
@@ -101,6 +103,8 @@ choosePeeler = function(twolocus, rho, Xchrom, SEX, mutmat, mutmat2 = NULL) {
     res = .rowSums(likel, faLen, moLen)
   else if (link == mo)
     res = .colSums(likel, faLen, moLen)
+  else if(sum(likel) == 0)
+    res = numeric(length(pivDat$prob))
   else {
     pivp = pivDat$prob
     pivLen = length(pivp)
@@ -203,6 +207,8 @@ choosePeeler = function(twolocus, rho, Xchrom, SEX, mutmat, mutmat2 = NULL) {
     res = .rowSums(likel, faLen, moLen)
   else if (link == mo)
     res = .colSums(likel, faLen, moLen)
+  else if(sum(likel) == 0)
+    res = numeric(length(pivDat$prob))
   else { # link is a child
     pivLen = length(pivDat$prob)
     transPat = .transProbMM(faDat, pivDat[c('pat1', 'pat2')], rho = rho, mutmat1 = mut1$male, mutmat2 = mut2$male)
@@ -246,7 +252,6 @@ choosePeeler = function(twolocus, rho, Xchrom, SEX, mutmat, mutmat2 = NULL) {
     else
       transPat = .transProbMM(faDat, chDat[c('pat1', 'pat2')], rho = rho, mutmat1 = mut1$male, mutmat2 = mut2$male)
     mm = crossprod(chDat$prob * transPat, transMat)
-
     likel = likel * mm
   }
 
@@ -260,6 +265,8 @@ choosePeeler = function(twolocus, rho, Xchrom, SEX, mutmat, mutmat2 = NULL) {
     res = .rowSums(likel, faLen, moLen)
   else if (link == mo)
     res = .colSums(likel, faLen, moLen)
+  else if(sum(likel) == 0)
+    res = numeric(length(pivDat$prob))
   else { # link is a child
     pivLen = length(pivDat$prob)
     transMat = .transProbMM(moDat, pivDat[c('mat1', 'mat2')], rho = rho, mutmat1 = mut1$female, mutmat2 = mut2$female)
