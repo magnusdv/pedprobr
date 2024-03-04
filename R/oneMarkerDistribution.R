@@ -85,16 +85,16 @@ oneMarkerDistribution = function(x, ids, partialmarker, loopBreakers = NULL,
     stop2("`ped` objects with pre-broken loops are not allowed as input to `oneMarkerDistribution()`")
 
   alleles = alleles(m)
-  onX = isXmarker(m)
+  Xchrom = isXmarker(m)
 
   if (verbose) {
     cat("Known genotypes:\n")
     print(m)
-    cat("\nChromosome type    :", ifelse(onX, "X-linked", "autosomal"))
+    cat("\nChromosome type    :", ifelse(Xchrom, "X-linked", "autosomal"))
     cat("\nTarget individuals :", toString(ids), "\n")
   }
 
-  starttime = Sys.time()
+  st = Sys.time()
 
   # Compute grid before loop breaking (works better with eliminate2)
   if (is.null(grid.subset))
@@ -112,7 +112,7 @@ oneMarkerDistribution = function(x, ids, partialmarker, loopBreakers = NULL,
 
   # Character with genotype labels
   gt.strings = paste(alleles[allgenos[, 1]], alleles[allgenos[, 2]], sep = "/")
-  if(onX) {
+  if(Xchrom) {
     sx = getSex(x, ids)
     geno.names =  list(alleles, gt.strings)[sx]
   }
@@ -127,7 +127,7 @@ oneMarkerDistribution = function(x, ids, partialmarker, loopBreakers = NULL,
   probs.subset = grid.subset
 
   # Needs adjustment for X (in male columns)
-  if(onX) {
+  if(Xchrom) {
     homoz = which(allgenos[,1] == allgenos[,2])
     probs.subset[, sx == 1] = match(probs.subset[, sx == 1], homoz)
   }
@@ -150,12 +150,11 @@ oneMarkerDistribution = function(x, ids, partialmarker, loopBreakers = NULL,
     m[int.ids, ] = allgenos[r, ]; m})
 
   # Calculate likelihoods and insert in result array
-  probs[probs.subset] = likelihood(x, mlist)
+  probs[probs.subset] = likelihood(x, mlist, allX = Xchrom)
 
   # Timing
-  totalTime = format(Sys.time() - starttime, digits = 3)
   if(verbose)
-    cat("\nAnalysis finished in", totalTime, "\n")
+    cat("\nAnalysis finished in", format(Sys.time() - st, digits = 3), "\n")
 
   probs/marginal
 }

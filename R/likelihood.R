@@ -47,6 +47,7 @@
 #'   (default), automatic selection of loop breakers will be performed. See
 #'   [breakLoops()].
 #' @param peelOrder For internal use.
+#' @param allX For internal use; set to TRUE if all markers are X-chromosomal.
 #' @param verbose A logical.
 #' @param theta Theta correction.
 #' @param \dots Further arguments.
@@ -121,7 +122,7 @@ likelihood = function(x, ...) UseMethod("likelihood", x)
 #' @rdname likelihood
 likelihood.ped = function(x, markers = NULL, peelOrder = NULL, lump = TRUE,
                           eliminate = 0, logbase = NULL, loopBreakers = NULL,
-                          verbose = FALSE, theta = 0, ...) {
+                          allX = NULL, verbose = FALSE, theta = 0, ...) {
 
   if(theta > 0 && hasInbredFounders(x))
     stop2("Theta correction cannot be used in pedigrees with inbred founders")
@@ -149,11 +150,24 @@ likelihood.ped = function(x, markers = NULL, peelOrder = NULL, lump = TRUE,
   if(length(markers) == 0)
     return(numeric(0))
 
+  # Autosomal or X?
+  if(length(allX) == 1)
+    Xchrom = allX
+  else {
+    isX = vapply(markers, isXmarker, logical(1))
+    if(!all(isX == isX[1]))
+      stop2("Cannot mix autosomal and X-linked markers in the same likelihood calculation")
+    Xchrom = isX[1]
+  }
+
+  if(verbose)
+    message("Chromosome type: ", if(Xchrom) "X" else "autosomal")
+
   ### Quick calculations if singleton
   if(is.singleton(x)) {
     if(verbose)
       message("Passing to singleton method")
-    liks = vapply(markers, function(m) likelihoodSingleton(x, m, theta = theta), FUN.VALUE = 1)
+    liks = vapply(markers, function(m) likelihoodSingleton(x, m, theta = theta, Xchrom = Xchrom), FUN.VALUE = 1)
     return(if(is.numeric(logbase)) log(liks, logbase) else liks)
   }
 
@@ -179,14 +193,6 @@ likelihood.ped = function(x, markers = NULL, peelOrder = NULL, lump = TRUE,
     message(sprintf("%d informative %s", length(peelOrder), if(length(peelOrder) == 1) "nucleus" else "nuclei"))
 
   treatAsFou = attr(peelOrder, "treatAsFounder")
-
-  # Autosomal or X?
-  isX = vapply(markers, isXmarker, logical(1))
-  Xchrom = all(isX)
-  if(!Xchrom && any(isX))
-    stop2("Cannot mix autosomal and X-linked markers in the same likelihood calculation")
-  if(verbose)
-    message("Chromosome type: ", if(Xchrom) "X" else "autosomal")
 
   # Select tools for peeling
   # TODO: Organise better, e.g., skip startdata if theta > 0
@@ -352,7 +358,7 @@ matchDat = function(dat1, dat2) {
   }
 }
 
-likelihoodSingleton = function(x, m, theta = 0) {
+likelihoodSingleton = function(x, m, theta = 0, Xchrom = isXmarker(m)) {
   m1 = m[1]
   m2 = m[2]
 
@@ -360,17 +366,16 @@ likelihoodSingleton = function(x, m, theta = 0) {
   if(m1 == 0 || m2 == 0)
     return(1)
 
-  afr = afreq(m)
-  chromX = isXmarker(m)
+  afr = attr(m, "afreq")
 
   # Theta correction or founder inbreeding
   if(theta > 0)
     f = theta
   else
-    f = founderInbreeding(x, chromType = if(chromX) "x" else "autosomal")
+    f = founderInbreeding(x, chromType = if(Xchrom) "x" else "autosomal")
 
   # Male on X
-  if (chromX && x$SEX == 1) {
+  if (Xchrom && x$SEX == 1) {
     if (all(m > 0) && m1 != m2)
       stop2("Heterozygous genotype at X-linked marker in male singleton")
     return(afr[m1])

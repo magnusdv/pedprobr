@@ -19,6 +19,7 @@ likelihood(x, ...)
   eliminate = 0,
   logbase = NULL,
   loopBreakers = NULL,
+  allX = NULL,
   verbose = FALSE,
   theta = 0,
   ...
@@ -73,6 +74,8 @@ basis for logarithmic output. Typical values are \code{exp(1)} and 10.}
 \item{loopBreakers}{A vector of ID labels indicating loop breakers. If NULL
 (default), automatic selection of loop breakers will be performed. See
 \code{\link[=breakLoops]{breakLoops()}}.}
+
+\item{allX}{For internal use; set to TRUE if all markers are X-chromosomal.}
 
 \item{verbose}{A logical.}
 
