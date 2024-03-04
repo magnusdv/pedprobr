@@ -53,26 +53,30 @@ reduceAlleles = function(marker, always = FALSE, verbose = FALSE) {
     return(NULL)
   }
 
-  if (!always && all(marker != 0)) {
+  # Internal allele indices as vector (speeds up things below)
+  mInt = as.integer(marker)
+
+  if (!always && all(mInt != 0)) {
     if(verbose) message("Lumping not needed - all members genotyped")
     return(marker)
   }
 
   attrs = attributes(marker)
   origAlleles = attrs$alleles
+  nall = length(origAlleles)
 
-  # Index of observed alleles
-  presentIdx = unique.default(marker[marker > 0])
+  # Observed alleles
+  isObs = seq_len(nall) %in% mInt
+  nObs = sum(isObs)
 
   # No lumping if all, or all but one, are observed
-  if(length(presentIdx) >= length(origAlleles) - 1) {
-    if(verbose) message(sprintf("Lumping not needed: %d of %d alleles observed",
-                                length(presentIdx), length(origAlleles)))
+  if(nObs >= nall - 1) {
+    if(verbose)
+      message(sprintf("Lumping not needed: %d of %d alleles observed", nObs, nall))
     return(marker)
   }
 
-  presentIdx = sort.int(presentIdx, method = "shell")
-  lump = if(!length(presentIdx)) origAlleles else origAlleles[-presentIdx]
+  lump = if(!nObs) origAlleles else origAlleles[!isObs]
 
   # No lumping if mutation model is present and not lumpable for this lump
   mut = attrs$mutmod
@@ -81,17 +85,18 @@ reduceAlleles = function(marker, always = FALSE, verbose = FALSE) {
     return(marker)
   }
 
-  marker[] = match(marker, presentIdx, nomatch = 0)
-  attr(marker, "alleles") = c(origAlleles[presentIdx], "lump")
+  marker[] = match(mInt, which(isObs), nomatch = 0L)
+  attr(marker, "alleles") = c(origAlleles[isObs], "lump")
 
-  presentFreq = attrs$afreq[presentIdx]
+  presentFreq = attrs$afreq[isObs]
   attr(marker, "afreq") = c(presentFreq, 1 - sum(presentFreq))
 
   if (!is.null(mut))
     mutmod(marker) = lumpedModel(mut, lump = lump, check = FALSE)
 
-  if(verbose) message(sprintf("Lumping: %d -> %d alleles",
-              length(origAlleles), length(presentIdx) + 1))
+  if(verbose)
+    message(sprintf("Lumping: %d -> %d alleles", nall, nObs + 1))
+
   marker
 }
 

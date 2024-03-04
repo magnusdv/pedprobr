@@ -32,7 +32,9 @@ startdata_M = function(x, marker, pedInfo = NULL) {#print("new startdata")
   # Elimination: not for SNPs, and only if no mutation model
   eliminate = n > 2 && any(informative <- marker[,2] > 0) && is.null(attr(marker, "mutmod"))
 
-  indOrder = if(eliminate) order(!informative) else seq_len(nInd)
+  indOrder = seq_len(nInd)
+  if(eliminate) # start with the typed individuals
+    indOrder = c(indOrder[informative], indOrder[!informative])
 
   # Loop through all individuals
   for(i in indOrder) {

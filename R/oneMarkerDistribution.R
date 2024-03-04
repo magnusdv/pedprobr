@@ -126,7 +126,7 @@ oneMarkerDistribution = function(x, ids, partialmarker, loopBreakers = NULL,
   # Subset of `probs` that is affected by grid.subset
   probs.subset = grid.subset
 
-  # Needs adjustment for X (in male colums)
+  # Needs adjustment for X (in male columns)
   if(onX) {
     homoz = which(allgenos[,1] == allgenos[,2])
     probs.subset[, sx == 1] = match(probs.subset[, sx == 1], homoz)
