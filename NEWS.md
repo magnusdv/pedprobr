@@ -1,3 +1,10 @@
+# dev
+
+* Fix bug in `likelihood()` affecting singleton with partial genotype (e.g. "1/-").
+
+* Minor optimisations in `reduceAlleles()` and `startdata_M()`.
+
+
 # pedprobr 0.9.2
 
 The version implements several improvements in the peeling algorithm, mostly invisible to end users (except that likelihoods calculations will be noticeably faster, and use much less memory, in many cases).
