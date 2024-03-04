@@ -1,7 +1,7 @@
 
 test_that("likelihood of inbred singleton agrees with expanded pedigree, and theory", {
   p = 0.1; q = 1-p
-  x = addChildren(nuclearPed(2, sex=1:2), 3, 4, 1)
+  x = nuclearPed(2, sex=1:2) |> addSon(3:4)
   mhom = marker(x, '5'=1, alleles=1:2, afreq=c(p,q), name="hom")
   mhet = marker(x, '5'=1:2, alleles=1:2, afreq=c(p,q), name="het")
   x = setMarkers(x, list(mhom, mhet))

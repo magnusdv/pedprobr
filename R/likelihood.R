@@ -363,7 +363,7 @@ likelihoodSingleton = function(x, m, theta = 0, Xchrom = isXmarker(m)) {
   m2 = m[2]
 
   # Quick return if empty
-  if(m1 == 0 || m2 == 0)
+  if(m1 + m2 == 0)
     return(1)
 
   afr = attr(m, "afreq")
@@ -376,7 +376,7 @@ likelihoodSingleton = function(x, m, theta = 0, Xchrom = isXmarker(m)) {
 
   # Male on X
   if (Xchrom && x$SEX == 1) {
-    if (all(m > 0) && m1 != m2)
+    if (m1 != m2)
       stop2("Heterozygous genotype at X-linked marker in male singleton")
     return(afr[m1])
   }

@@ -137,6 +137,18 @@ test_that("likelihoods are correct in looped ped", {
                likelihood(x, m4, verbose=F))
 })
 
+test_that("likelihood is correct with partial genotypes", {
+  p = 0.8; q = 1-p
+
+  # Singleton
+  x = singleton("a") |> addMarker(a = "2/-", alleles = 1:2, afreq= c(p, q))
+  expect_equal(likelihood(x), q * (q + 2*p))
+
+  # Nuclear
+  y = nuclearPed(ch = "a") |> addMarker(a = "2/-", alleles = 1:2, afreq= c(p, q))
+  expect_equal(likelihood(y), q * (q + 2*p))
+})
+
 # test_that("pedprobr and Familias give identical results", {
 #   skip("")
 #   library(forrel)
