@@ -67,3 +67,11 @@ test_that("oneMarkerDist works in conditional nuclear example", {
 })
 
 
+test_that("oneMarkerDist on X is independent of male-male", {
+  x = nuclearPed(1) |>
+    addMarker("1" = 1, alleles = 1:2, afreq = c(p,q), chrom = "X")
+
+  expect_equal(OMD(x, partialmarker = 1, ids=c(1,3))[1, ], c("1"=p, "2"=q))
+})
+
+

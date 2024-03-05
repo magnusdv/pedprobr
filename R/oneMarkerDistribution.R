@@ -4,7 +4,7 @@
 #' members, possibly conditional on known genotypes for the marker.
 #'
 #' @param x A `ped` object or a list of such.
-#' @param ids A numeric with ID labels of one or more pedigree members.
+#' @param ids A vector of ID labels of one or more members of `x`.
 #' @param partialmarker Either a `marker` object or the name (or index) of a
 #'   marker attached to `x`. If `x` has multiple components, only the latter is
 #'   allowed.
@@ -59,6 +59,8 @@
 oneMarkerDistribution = function(x, ids, partialmarker, loopBreakers = NULL,
                                  eliminate = 0, grid.subset = NULL, verbose = TRUE) {
 
+  ids = as.character(ids)
+
   if(is.pedList(x)) {
     if(is.marker(partialmarker))
       stop2("When `x` has multiple components, `partialmarker` cannot be an unattached marker object")
@@ -80,6 +82,12 @@ oneMarkerDistribution = function(x, ids, partialmarker, loopBreakers = NULL,
       stop2("`partialmarker` must have length 1")
     m = getMarkers(x, markers = m)[[1]]
   }
+
+  # Reorder if needed
+   if(!hasParentsBeforeChildren(x)) {
+    x = parentsBeforeChildren(setMarkers(x, m))
+    m = x$MARKERS[[1]]
+   }
 
   if (!is.null(x$LOOP_BREAKERS))
     stop2("`ped` objects with pre-broken loops are not allowed as input to `oneMarkerDistribution()`")

@@ -179,3 +179,43 @@ checkRho = function(rho, max = 0.5) {
     marker[swp, 1:2] = marker[swp, 2:1]
   marker
 }
+
+
+# For use in `genoCombinations`
+fastGridRestricted = function(argslist, linkedWith, compatible) {
+  # argslist: list of vectors of positive integers
+  # linkedWith: list of length nargs, dependencies for each index (no symmetries!)
+  # compatible: Compatible integers for each i = 1,..,max(unlist(argslist)).
+
+  unlinked = which(lengths(linkedWith) == 0)
+  linked = which(lengths(linkedWith) > 0)
+
+  # Normal grid of unrestricted indivs
+  argsTmp = argslist
+  argsTmp[linked] = 0
+  res = fastGrid(argsTmp)
+
+  # Add columns with restrictions
+  for (i in linked) {
+    x = argslist[[i]]
+    links = linkedWith[[i]]
+    compatx = lapply(compatible, function(a) .myintersect(a, x))
+
+    #intersect with first link column
+    compati = compatx[res[, links[1]]]
+
+    # intersect with further links
+    for(k in links[-1]) {
+      compatk = compatx[res[, k]]
+      compati = lapply(seq_along(compati), function(j) .myintersect(compati[[j]], compatk[[j]]))
+    }
+
+    nCompat = lengths(compati)
+
+    rowExp = rep.int(seq_along(nCompat), nCompat)
+    res = res[rowExp, , drop = FALSE]
+    res[, i] = unlist(compati, use.names = FALSE)
+  }
+
+  res
+}
