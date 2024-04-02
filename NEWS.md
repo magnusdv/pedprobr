@@ -1,8 +1,12 @@
-# dev
+# pedprobr 0.9.3
 
 * Fix bug in `likelihood()` affecting singleton with partial genotype (e.g. "1/-").
 
 * Minor optimisations in `reduceAlleles()` and `startdata_M()`.
+
+* More efficient `oneMarkerDistribution()` and `twoMarkerDistribution()` in cases without mutation models.
+
+* README updates.
 
 
 # pedprobr 0.9.2
