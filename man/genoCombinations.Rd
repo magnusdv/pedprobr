@@ -4,7 +4,7 @@
 \alias{genoCombinations}
 \title{Genotype combinations}
 \usage{
-genoCombinations(x, partialmarker, ids, make.grid = TRUE)
+genoCombinations(x, partialmarker = x$MARKERS[[1]], ids, make.grid = TRUE)
 }
 \arguments{
 \item{x}{a \code{\link[=ped]{ped()}} object.}

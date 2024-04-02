@@ -14,27 +14,31 @@ status](https://www.r-pkg.org/badges/version/pedprobr)](https://CRAN.R-project.o
 ## Introduction
 
 The main content of **pedprobr** is an implementation of the
-Elston-Stewart algorithm for pedigree likelihoods. It is a reboot of the
-implementation in
-[paramlink](https://CRAN.R-project.org/package=paramlink) which is no
-longer actively developed.
+Elston-Stewart algorithm for pedigree likelihoods given marker
+genotypes. It is part of the
+[pedsuite](https://magnusdv.github.io/pedsuite/), a collection of
+packages for pedigree analysis in R.
 
-**pedprobr** is part of the *ped suite*, a collection of packages for
-pedigree analysis in R, based on
-[pedtools](https://github.com/magnusdv/pedtools) for basic handling of
-pedigrees and marker data. In particular, **pedprobr** does much of the
-hard work in the [forrel](https://github.com/magnusdv/forrel) package
-for relatedness analysis and forensic pedigree analysis.
+The **pedprobr** package does much of the hard work in several other
+pedsuite packages:
 
-The workhorse of the **pedprobr** package is the `likelihood()`
-function, which works in a variety of situations:
+- [**forrel**](https://github.com/magnusdv/forrel) : relatedness
+  analysis and forensic pedigree analysis
+- [**dvir**](https://github.com/magnusdv/dvir) : disaster victim
+  identification
+- [**paramlink2**](https://github.com/magnusdv/paramlink2) : parametric
+  linkage analysis
+- [**pedbuildr**](https://github.com/magnusdv/pedbuildr) : pedigree
+  reconstruction
 
-- complex inbred pedigrees
-- pedigrees with inbred founders
+The workhorse of **pedprobr** is the `likelihood()` function, supporting
+a variety of situations:
+
 - autosomal and X-linked markers
 - a single marker or two linked markers
-- markers with mutation models (supported by
-  [pedmut](https://github.com/magnusdv/pedmut))
+- complex inbred pedigrees
+- pedigrees with inbred founders
+- mutation models
 
 ## Installation
 
@@ -111,7 +115,6 @@ oneMarkerDistribution(x, ids = 1:2, partialmarker = 1, verbose = F)
 #> b/b 0.13793103 0.27586207 0.0000000
 ```
 
-For example, the output confirms the intuitive result that the parents
-cannot both be homozygous for the same allele. The most likely
-combination is that one parent is heterozygous `a/b`, while the other is
-homozygous `b/b`.
+The output confirms the intuitive result that the parents cannot both be
+homozygous for the same allele. The most likely combination is that one
+parent is heterozygous `a/b`, while the other is homozygous `b/b`.

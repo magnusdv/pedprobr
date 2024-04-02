@@ -17,7 +17,7 @@ oneMarkerDistribution(
 \arguments{
 \item{x}{A \code{ped} object or a list of such.}
 
-\item{ids}{A numeric with ID labels of one or more pedigree members.}
+\item{ids}{A vector of ID labels of one or more members of \code{x}.}
 
 \item{partialmarker}{Either a \code{marker} object or the name (or index) of a
 marker attached to \code{x}. If \code{x} has multiple components, only the latter is
