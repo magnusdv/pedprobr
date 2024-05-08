@@ -2,6 +2,7 @@
 
 * Fixed rare bug in the peeling algorithm manifesting with reversed peeling order.
 
+* **pedtools** v2.2.0 is now required.
 
 # pedprobr 0.9.3
 
