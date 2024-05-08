@@ -1,3 +1,8 @@
+# pedprobr 0.9.4
+
+* Fixed rare bug in the peeling algorithm manifesting with reversed peeling order.
+
+
 # pedprobr 0.9.3
 
 * Fix bug in `likelihood()` affecting singleton with partial genotype (e.g. "1/-").
