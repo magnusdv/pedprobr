@@ -49,11 +49,10 @@ choosePeeler = function(twolocus, rho, Xchrom, SEX, mutmat, mutmat2 = NULL) {
     pivLen = length(pivDat$prob)
     transPat = .transProbM(faDat, pivDat$pat, mutmat = mutmat$male)
     transMat = .transProbM(moDat, pivDat$mat, mutmat = mutmat$female)
-    faPr = .rowSums(likel, faLen, moLen)
-    moPr = .colSums(likel, faLen, moLen)
-    chProbPat = .colSums(faPr * t.default(transPat), faLen, pivLen)
-    chProbMat = .colSums(moPr * t.default(transMat), moLen, pivLen)
-    res = pivDat$prob * chProbPat * chProbMat /sum(likel)
+
+    # Correct formula: diag(trP %*% likel %*% t(trM)), or
+    a = .rowSums((transPat %*% likel) * transMat, pivLen, moLen)
+    res = pivDat$prob * a
   }
 
   # Update the probabilities
@@ -113,11 +112,9 @@ choosePeeler = function(twolocus, rho, Xchrom, SEX, mutmat, mutmat2 = NULL) {
     else
       transPat = .transProbM(faDat, pivDat$pat, mutmat = mutmat$male)
     transMat = .transProbM(moDat, pivDat$mat, mutmat = mutmat$female)
-    faPr = .rowSums(likel, faLen, moLen)
-    moPr = .colSums(likel, faLen, moLen)
-    chProbPat = .colSums(faPr * t.default(transPat), faLen, pivLen)
-    chProbMat = .colSums(moPr * t.default(transMat), moLen, pivLen)
-    res = pivDat$prob * chProbPat * chProbMat / sum(likel)
+
+    a = .rowSums((transPat %*% likel) * transMat, pivLen, moLen) # diag(trP %*% likel %*% t(trM))
+    res = pivDat$prob * a
   }
 
   # Update the probabilities
@@ -214,11 +211,8 @@ choosePeeler = function(twolocus, rho, Xchrom, SEX, mutmat, mutmat2 = NULL) {
     transPat = .transProbMM(faDat, pivDat[c('pat1', 'pat2')], rho = rho, mutmat1 = mut1$male, mutmat2 = mut2$male)
     transMat = .transProbMM(moDat, pivDat[c('mat1', 'mat2')], rho = rho, mutmat1 = mut1$female, mutmat2 = mut2$female)
 
-    faPr = .rowSums(likel, faLen, moLen)
-    moPr = .colSums(likel, faLen, moLen)
-    chProbPat = .colSums(faPr * t.default(transPat), faLen, pivLen)
-    chProbMat = .colSums(moPr * t.default(transMat), moLen, pivLen)
-    res = pivDat$prob * chProbPat * chProbMat / sum(likel)
+    a = .rowSums((transPat %*% likel) * transMat, pivLen, moLen)
+    res = pivDat$prob * a
   }
 
   # Update the probabilities
@@ -276,11 +270,8 @@ choosePeeler = function(twolocus, rho, Xchrom, SEX, mutmat, mutmat2 = NULL) {
     else
       transPat = .transProbMM(faDat, pivDat[c('pat1', 'pat2')], rho = rho, mutmat1 = mut1$male, mutmat2 = mut2$male)
 
-    faPr = .rowSums(likel, faLen, moLen)
-    moPr = .colSums(likel, faLen, moLen)
-    chProbPat = .colSums(faPr * t.default(transPat), faLen, pivLen)
-    chProbMat = .colSums(moPr * t.default(transMat), moLen, pivLen)
-    res = pivDat$prob * chProbPat * chProbMat / sum(likel)
+    a = .rowSums((transPat %*% likel) * transMat, pivLen, moLen)
+    res = pivDat$prob * a
   }
 
   # Update the probabilities

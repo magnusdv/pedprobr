@@ -122,6 +122,13 @@ test_that("likelihoods are correct in 3 generat. SNP example", {
   expect_equal(likelihood(x, m), (2*p*q)^2 * (3/8 + p*q/2))
 })
 
+test_that("likelihoods is the same with different peelorder", {
+  x = avuncularPed() |> addMarker(geno = c(NA,NA, "1/2", "1/1", NA,NA))
+  xx = reorderPed(x, 6:1)
+  expect_equal(likelihood(x), likelihood(xx))
+})
+
+
 test_that("likelihoods are correct in looped ped", {
   x = fullSibMating(1)
   p = 0.1; q = 0.2; r = 1-p-q
@@ -154,18 +161,18 @@ test_that("likelihood is correct with partial genotypes", {
 #   library(forrel)
 #   library(pedlikCompare)
 #   testRandom = function() {
-#     x = randomPed(6)
-#     if(!is.ped(x)) return(NULL)
+#     x = randomPed(8)
 #     ids = sample(labels(x), size = sample(pedsize(x), 1))
 #     nals = sample.int(5, size = 1) + 1
 #     afr = runif(nals, .2, .8)
 #     afr = afr/sum(afr)
 #     sims = markerSim(x, N=10, ids = ids, alleles = sample.int(10, size = nals),
 #                      afreq = afr, mutmod = "prop", rate = 0.1, verbose = FALSE)
+#     sims = reorderPed(sims, 8:1)
 #     for(i in 1:10) {
 #       tes = compare(sims, i, verbose = FALSE, programs = c("pedprobr", "Familias"))
 #       if(nrow(tes) < 2) break
-#       if(!all.equal(tes[1,2], tes[2,2])) {
+#       if(!isTRUE(all.equal(tes[1,2], tes[2,2]))) {
 #         message("MISMATCH!")
 #         print(selectMarkers(x, i))
 #       }
