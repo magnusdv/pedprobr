@@ -13,7 +13,6 @@
 #' @param loopBreakers (Only relevant if the pedigree has loops). A vector with
 #'   ID labels of individuals to be used as loop breakers. If NULL (default)
 #'   loop breakers are selected automatically. See [breakLoops()].
-#' @param eliminate Deprecated, not used.
 #' @param verbose A logical.
 #'
 #' @return A named matrix giving the joint genotype distribution.
@@ -45,7 +44,7 @@
 #'
 #' @export
 twoMarkerDistribution <- function(x, id, partialmarker1, partialmarker2, rho = NULL,
-                                  loopBreakers = NULL, eliminate = 0, verbose = TRUE) {
+                                  loopBreakers = NULL, verbose = TRUE) {
 
   if(length(id) != 1)
     stop2("Argument `id` must have length 1: ", id)

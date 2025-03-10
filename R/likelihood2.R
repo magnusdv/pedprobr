@@ -5,8 +5,7 @@ likelihood2 = function(x, ...) UseMethod("likelihood2", x)
 #' @export
 #' @rdname likelihood
 likelihood2.ped = function(x, marker1, marker2, rho = NULL, peelOrder = NULL,
-                          eliminate = 0, logbase = NULL, loopBreakers = NULL,
-                          verbose = FALSE, ...) {
+                          logbase = NULL, loopBreakers = NULL, verbose = FALSE, ...) {
 
   if(hasInbredFounders(x))
     stop2("Likelihood of linked markers is not implemented in pedigrees with founder inbreeding.\n",

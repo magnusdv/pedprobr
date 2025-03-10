@@ -11,7 +11,6 @@
 #' @param loopBreakers (Only relevant if the pedigree has loops). A vector with
 #'   ID labels of individuals to be used as loop breakers. If NULL (default)
 #'   loop breakers are selected automatically. See [breakLoops()].
-#' @param eliminate Deprecated, not used.
 #' @param grid.subset (Optional; not relevant for most users.) A numeric matrix
 #'   describing a subset of all marker genotype combinations for the `ids`
 #'   individuals. The matrix should have one column for each of the `ids`
@@ -57,7 +56,7 @@
 #'
 #' @export
 oneMarkerDistribution = function(x, ids, partialmarker, loopBreakers = NULL,
-                                 eliminate = 0, grid.subset = NULL, verbose = TRUE) {
+                                 grid.subset = NULL, verbose = TRUE) {
 
   ids = as.character(ids)
 

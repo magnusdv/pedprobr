@@ -16,7 +16,6 @@ likelihood(x, ...)
   markers = NULL,
   peelOrder = NULL,
   lump = TRUE,
-  eliminate = 0,
   logbase = NULL,
   loopBreakers = NULL,
   allX = NULL,
@@ -35,7 +34,6 @@ likelihood2(x, ...)
   marker2,
   rho = NULL,
   peelOrder = NULL,
-  eliminate = 0,
   logbase = NULL,
   loopBreakers = NULL,
   verbose = FALSE,
@@ -65,8 +63,6 @@ is an important time saver, and should be applied in nearly all cases. (The
 parameter exists mainly for debugging purposes.) The lumping algorithm will
 detect (and complain) if any markers use a non-lumpable mutation model.
 Default: TRUE.}
-
-\item{eliminate}{Deprecated, not used.}
 
 \item{logbase}{Either NULL (default) or a positive number indicating the
 basis for logarithmic output. Typical values are \code{exp(1)} and 10.}

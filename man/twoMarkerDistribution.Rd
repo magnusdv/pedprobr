@@ -11,7 +11,6 @@ twoMarkerDistribution(
   partialmarker2,
   rho = NULL,
   loopBreakers = NULL,
-  eliminate = 0,
   verbose = TRUE
 )
 }
@@ -29,8 +28,6 @@ fraction between the two markers.}
 \item{loopBreakers}{(Only relevant if the pedigree has loops). A vector with
 ID labels of individuals to be used as loop breakers. If NULL (default)
 loop breakers are selected automatically. See \code{\link[=breakLoops]{breakLoops()}}.}
-
-\item{eliminate}{Deprecated, not used.}
 
 \item{verbose}{A logical.}
 }
