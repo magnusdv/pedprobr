@@ -1,3 +1,10 @@
+# dev
+
+* `oneMarkerDistribution()` now fully supports pedigrees with multiple components.
+
+* Updated dependencies: **pedtools** v2.6.0, **pedmut** v0.7.0.
+
+
 # pedprobr 0.9.4
 
 * Fixed rare bug in the peeling algorithm manifesting with reversed peeling order.
@@ -139,7 +146,7 @@ the call `likelihood(x, 1:2)` results in a vector of length 2 with the likelihoo
 of the first two markers attached to `x`. 
 
 * Recombination parameter `theta` is renamed to `rho` everywhere, to align 
-with other ped suite packages. `theta` still works, though.
+with other pedsuite packages.
 
 ## Other changes
 
