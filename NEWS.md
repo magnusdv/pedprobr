@@ -2,6 +2,8 @@
 
 * `oneMarkerDistribution()` now fully supports pedigrees with multiple components.
 
+* Renamed argument `partialmarker` to `marker` in `oneMarkerDistribution()`. The old name is deprecated, but still works as an alias. While the old argument had no default value, the new defaults to the first attached marker. This simplifies the call in many cases: `singleton("A") |> addMarker() |> oneMarkerDistribution("A")`.
+
 * Updated dependencies: **pedtools** v2.6.0, **pedmut** v0.7.0.
 
 
