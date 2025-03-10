@@ -54,6 +54,10 @@
 #'
 #' oneMarkerDistribution(y, ids = 8)
 #'
+#' # Muli-component (trivial) example
+#' z = singletons(1:2) |> addMarker(`1` = "1/2", `2` = "1/2", alleles = 1:2)
+#' oneMarkerDistribution(z, 1:2)
+#'
 #' @export
 oneMarkerDistribution = function(x, ids, marker = 1, loopBreakers = NULL,
                                  grid.subset = NULL, partialmarker = NULL,
@@ -73,8 +77,16 @@ oneMarkerDistribution = function(x, ids, marker = 1, loopBreakers = NULL,
     pednr = getComponent(x, ids, checkUnique = TRUE)
     if(all(pednr == pednr[1]))
       x = x[[pednr[1]]]
-    else
-      stop2("Individuals from different pedigree components are not implemented yet")
+    else {
+      compRes = lapply(unique.default(pednr), function(i) {
+        idsC = ids[pednr == i]
+        lb = if(is.null(loopBreakers)) NULL else .myintersect(loopBreakers, x[[i]]$ID)
+        gs = if(is.null(grid.subset)) NULL else unique.matrix(grid.subset[, pednr == i, drop = FALSE])
+        oneMarkerDistribution(x[[i]], idsC, marker = marker, loopBreakers = lb, grid.subset = gs, verbose = FALSE)
+      })
+      res = Reduce(`%o%`, compRes)
+      return(res)
+    }
   }
 
   if(!is.ped(x))
@@ -86,6 +98,17 @@ oneMarkerDistribution = function(x, ids, marker = 1, loopBreakers = NULL,
     if(length(m) != 1)
       stop2("`marker` must have length 1")
     m = getMarkers(x, markers = m)[[1]]
+  }
+
+  # Special case: Unconditional & all founders
+  # TODO: Generalisation to unrelated clusters - requires ribd!
+  if(length(ids) > 1 && all(m == 0) & all(ids %in% founders(x))) {
+    compRes = lapply(seq_along(ids), function(i) {
+      gs = if(is.null(grid.subset)) NULL else unique.matrix(grid.subset[, i, drop = FALSE])
+      oneMarkerDistribution(x, ids[i], marker = m, loopBreakers = loopBreakers,
+                            grid.subset = gs, verbose = FALSE)
+    })
+    return(Reduce(`%o%`, compRes))
   }
 
   # Reorder if needed
