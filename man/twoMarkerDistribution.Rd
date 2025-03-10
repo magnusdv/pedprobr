@@ -7,10 +7,12 @@
 twoMarkerDistribution(
   x,
   id,
-  partialmarker1,
-  partialmarker2,
+  marker1 = 1,
+  marker2 = 2,
   rho = NULL,
   loopBreakers = NULL,
+  partialmarker1 = NULL,
+  partialmarker2 = NULL,
   verbose = TRUE
 )
 }
@@ -19,8 +21,8 @@ twoMarkerDistribution(
 
 \item{id}{A single ID label.}
 
-\item{partialmarker1, partialmarker2}{Either a \code{marker} object, or the name (or
-index) of a marker attached to \code{x}.}
+\item{marker1, marker2}{Either \code{marker} objects, or the names (or indices) of
+markers attached to \code{x}.}
 
 \item{rho}{A single numeric in the interval \verb{[0, 0.5]}: the recombination
 fraction between the two markers.}
@@ -28,6 +30,9 @@ fraction between the two markers.}
 \item{loopBreakers}{(Only relevant if the pedigree has loops). A vector with
 ID labels of individuals to be used as loop breakers. If NULL (default)
 loop breakers are selected automatically. See \code{\link[=breakLoops]{breakLoops()}}.}
+
+\item{partialmarker1, partialmarker2}{(Deprecated) Aliases for \code{marker1} and
+\code{marker2}.}
 
 \item{verbose}{A logical.}
 }
@@ -41,30 +46,26 @@ between the markers.
 }
 \examples{
 
-# A sib-pair pedigree
-x = nuclearPed(children = c("bro1", "bro2"))
+# A sib-pair with two SNPs. The first child is homozygous 1/1.
+x = nuclearPed(children = c("bro1", "bro2")) |>
+  addMarker(bro1 = "1/1", alleles = 1:2, afreq = c(0.5, 0.5)) |>
+  addMarker(bro1 = "1/1", alleles = 1:2, afreq = c(0.5, 0.5))
 
-# Two SNP markers; first brother homozygous for the `1` allele
-SNP1 = SNP2 = marker(x, bro1 = "1/1", afreq = c("1" = 0.5, "2" = 0.5))
-
-plot(x, marker = list(SNP1, SNP2))
+plot(x, marker = 1:2)
 
 # Genotype distribution for the brother depends on linkage
-twoMarkerDistribution(x, id = "bro2", SNP1, SNP2, rho = 0)
-twoMarkerDistribution(x, id = "bro2", SNP1, SNP2, rho = 0.5)
+twoMarkerDistribution(x, id = "bro2", rho = 0)
+twoMarkerDistribution(x, id = "bro2", rho = 0.5)
 
-# X-linked
-chrom(SNP1) = chrom(SNP2) = "X"
+### Same example on X
+y = setChrom(x, marker = 1:2, chrom = "X")
 
-plot(x, marker = list(SNP1, SNP2))
+plot(y, marker = 1:2)
 
-twoMarkerDistribution(x, id = "bro2", SNP1, SNP2, rho = 0)
-twoMarkerDistribution(x, id = "bro2", SNP1, SNP2, rho = 0.5)
+twoMarkerDistribution(y, id = "bro2", rho = 0)
+twoMarkerDistribution(y, id = "bro2", rho = 0.5)
 
 }
 \seealso{
 \code{\link[=oneMarkerDistribution]{oneMarkerDistribution()}}
-}
-\author{
-Magnus Dehli Vigeland
 }

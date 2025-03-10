@@ -6,8 +6,10 @@
 #'
 #' @param x A `ped` object or a list of such.
 #' @param id A single ID label.
-#' @param partialmarker1,partialmarker2 Either a `marker` object, or the name (or
-#'   index) of a marker attached to `x`.
+#' @param marker1,marker2 Either `marker` objects, or the names (or indices) of
+#'   markers attached to `x`.
+#' @param partialmarker1,partialmarker2 (Deprecated) Aliases for `marker1` and
+#'   `marker2`.
 #' @param rho A single numeric in the interval `[0, 0.5]`: the recombination
 #'   fraction between the two markers.
 #' @param loopBreakers (Only relevant if the pedigree has loops). A vector with
@@ -17,41 +19,46 @@
 #'
 #' @return A named matrix giving the joint genotype distribution.
 #'
-#' @author Magnus Dehli Vigeland
 #' @seealso [oneMarkerDistribution()]
 #'
 #' @examples
 #'
-#' # A sib-pair pedigree
-#' x = nuclearPed(children = c("bro1", "bro2"))
+#' # A sib-pair with two SNPs. The first child is homozygous 1/1.
+#' x = nuclearPed(children = c("bro1", "bro2")) |>
+#'   addMarker(bro1 = "1/1", alleles = 1:2, afreq = c(0.5, 0.5)) |>
+#'   addMarker(bro1 = "1/1", alleles = 1:2, afreq = c(0.5, 0.5))
 #'
-#' # Two SNP markers; first brother homozygous for the `1` allele
-#' SNP1 = SNP2 = marker(x, bro1 = "1/1", afreq = c("1" = 0.5, "2" = 0.5))
-#'
-#' plot(x, marker = list(SNP1, SNP2))
+#' plot(x, marker = 1:2)
 #'
 #' # Genotype distribution for the brother depends on linkage
-#' twoMarkerDistribution(x, id = "bro2", SNP1, SNP2, rho = 0)
-#' twoMarkerDistribution(x, id = "bro2", SNP1, SNP2, rho = 0.5)
+#' twoMarkerDistribution(x, id = "bro2", rho = 0)
+#' twoMarkerDistribution(x, id = "bro2", rho = 0.5)
 #'
-#' # X-linked
-#' chrom(SNP1) = chrom(SNP2) = "X"
+#' ### Same example on X
+#' y = setChrom(x, marker = 1:2, chrom = "X")
 #'
-#' plot(x, marker = list(SNP1, SNP2))
+#' plot(y, marker = 1:2)
 #'
-#' twoMarkerDistribution(x, id = "bro2", SNP1, SNP2, rho = 0)
-#' twoMarkerDistribution(x, id = "bro2", SNP1, SNP2, rho = 0.5)
+#' twoMarkerDistribution(y, id = "bro2", rho = 0)
+#' twoMarkerDistribution(y, id = "bro2", rho = 0.5)
 #'
 #' @export
-twoMarkerDistribution <- function(x, id, partialmarker1, partialmarker2, rho = NULL,
-                                  loopBreakers = NULL, verbose = TRUE) {
+twoMarkerDistribution <- function(x, id, marker1 = 1, marker2 = 2, rho = NULL,
+                                  loopBreakers = NULL, partialmarker1 = NULL,
+                                  partialmarker2 = NULL, verbose = TRUE) {
+
+  if(!is.null(partialmarker1) | !is.null(partialmarker2)) {
+    cat("The arguments `partialmarker1`, `partialmarker2` have been renamed to `marker1` and `marker2` and will be removed in a future version.\n")
+    marker1 = partialmarker1
+    marker2 = partialmarker2
+  }
 
   if(length(id) != 1)
     stop2("Argument `id` must have length 1: ", id)
 
   if(is.pedList(x)) {
-    if(is.marker(partialmarker1) || is.marker(partialmarker2))
-      stop2("When `x` has multiple components, the partial markers must be attached")
+    if(is.marker(marker1) || is.marker(marker2))
+      stop2("When `x` has multiple components, the markers must be attached")
 
     pednr = getComponent(x, id, checkUnique = TRUE)
     x = x[[pednr]]
@@ -60,24 +67,24 @@ twoMarkerDistribution <- function(x, id, partialmarker1, partialmarker2, rho = N
   if(!is.ped(x))
     stop2("Input is not a pedigree")
 
-  m1 = partialmarker1
+  m1 = marker1
   if (!is.marker(m1)) {
     if(length(m1) != 1)
-      stop2("Argument `partialmarker1` must have length 1: ", partialmarker1)
+      stop2("Argument `marker1` must have length 1: ", marker1)
     m1 = getMarkers(x, markers = m1)[[1]]
   }
 
-  m2 = partialmarker2
+  m2 = marker2
   if (!is.marker(m2)) {
     if(length(m2) != 1)
-      stop2("Argument `partialmarker2` must have length 1: ", partialmarker2)
+      stop2("Argument `marker2` must have length 1: ", marker2)
     m2 = getMarkers(x, markers = m2)[[1]]
   }
   if (!is.null(x$LOOP_BREAKERS))
     stop2("Pedigrees with pre-broken loops are not allowed in this function")
 
   if (!identical(chrom(m1), chrom(m2)))
-    stop2("Partial markers are on different chromosomes: ", toString(c(chrom(m1), chrom(m2))))
+    stop2("Markers are on different chromosomes: ", toString(c(chrom(m1), chrom(m2))))
 
   checkRho(rho)
 
@@ -151,7 +158,7 @@ twoMarkerDistribution <- function(x, id, partialmarker1, partialmarker2, rho = N
 
   marginal = likelihood2(x, marker1 = m1, marker2 = m2, rho = rho)
   if (marginal == 0)
-    stop2("Partial marker data is impossible")
+    stop2("The given marker data is impossible")
 
   if(verbose) {
     cat("Marginal likelihood:", marginal, "\n")

@@ -7,9 +7,10 @@
 oneMarkerDistribution(
   x,
   ids,
-  partialmarker,
+  marker = 1,
   loopBreakers = NULL,
   grid.subset = NULL,
+  partialmarker = NULL,
   verbose = TRUE
 )
 }
@@ -18,8 +19,8 @@ oneMarkerDistribution(
 
 \item{ids}{A vector of ID labels of one or more members of \code{x}.}
 
-\item{partialmarker}{Either a \code{marker} object or the name (or index) of a
-marker attached to \code{x}. If \code{x} has multiple components, only the latter is
+\item{marker}{Either a \code{marker} object or the name (or index) of a marker
+attached to \code{x}. If \code{x} has multiple components, only the latter is
 allowed.}
 
 \item{loopBreakers}{(Only relevant if the pedigree has loops). A vector with
@@ -34,13 +35,15 @@ in terms of the matrix \code{M = allGenotypes(n)}, where \code{n} is the number 
 alleles for the marker. If the entry in column \code{j} is the integer \code{k}, this
 means that the genotype of individual \code{ids[j]} is row \code{k} of \code{M}.}
 
+\item{partialmarker}{(Deprecated) An alias for \code{marker}.}
+
 \item{verbose}{A logical.}
 }
 \value{
 A named \code{k}-dimensional array, where \code{k = length(ids)}, with the
 joint genotype distribution for the \code{ids} individuals. The probabilities
 are conditional on the known genotypes and the allele frequencies of
-\code{partialmarker}.
+\code{marker}.
 }
 \description{
 Computes the genotype probability distribution of one or several pedigree
@@ -48,35 +51,31 @@ members, possibly conditional on known genotypes for the marker.
 }
 \examples{
 
-# Trivial example giving Hardy-Weinberg probabilities
-s = singleton(id = 1)
-m = marker(s, alleles = 1:2) # equifrequent SNP
-oneMarkerDistribution(s, ids = 1, partialmarker = m)
+# Trivial example: Hardy-Weinberg probabilities for an equifrequent SNP
+s = singleton(id = 1) |> addMarker(alleles = 1:2, afreq = c(0.5, 0.5))
+oneMarkerDistribution(s, ids = 1)
 
 # Conditioning on a partial genotype
-genotype(m, id = 1) = "1/-"
-oneMarkerDistribution(s, ids = 1, partialmarker = m)
+s = setGenotype(s, ids = 1, geno = "1/-")
+oneMarkerDistribution(s, ids = 1)
 
 # Genotype distribution for a child of heterozygous parents
-trio = nuclearPed(father = "fa", mother = "mo", child = "ch")
-m1 = marker(trio, fa = "1/2", mo = "1/2")
-oneMarkerDistribution(trio, ids = "ch", partialmarker = m1)
+trio = nuclearPed(father = "fa", mother = "mo", child = "ch") |>
+  addMarker(fa = "1/2", mo = "1/2")
+oneMarkerDistribution(trio, ids = "ch")
 
 # Joint distribution of the parents, given that the child is heterozygous
-m2 = marker(trio, ch = "1/2", afreq = c("1" = 0.5, "2" = 0.5))
-oneMarkerDistribution(trio, ids = c("fa", "mo"), partialmarker = m2)
+trio = addMarker(trio, ch = "1/2")
+oneMarkerDistribution(trio, ids = c("fa", "mo"), marker = 2)
 
 # A different example: The genotype distribution of an individual (id = 8)
 # whose half cousin (id = 9) is homozygous for a rare allele.
 y = halfCousinPed(degree = 1) |>
   addMarker("9" = "a/a", afreq = c(a = 0.01, b = 0.99))
 
-oneMarkerDistribution(y, ids = 8, partialmarker = 1)
+oneMarkerDistribution(y, ids = 8)
 
 }
 \seealso{
 \code{\link[=twoMarkerDistribution]{twoMarkerDistribution()}}
-}
-\author{
-Magnus Dehli Vigeland
 }

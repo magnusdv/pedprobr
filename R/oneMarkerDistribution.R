@@ -5,9 +5,10 @@
 #'
 #' @param x A `ped` object or a list of such.
 #' @param ids A vector of ID labels of one or more members of `x`.
-#' @param partialmarker Either a `marker` object or the name (or index) of a
-#'   marker attached to `x`. If `x` has multiple components, only the latter is
+#' @param marker Either a `marker` object or the name (or index) of a marker
+#'   attached to `x`. If `x` has multiple components, only the latter is
 #'   allowed.
+#' @param partialmarker (Deprecated) An alias for `marker`.
 #' @param loopBreakers (Only relevant if the pedigree has loops). A vector with
 #'   ID labels of individuals to be used as loop breakers. If NULL (default)
 #'   loop breakers are selected automatically. See [breakLoops()].
@@ -23,46 +24,51 @@
 #' @return A named `k`-dimensional array, where `k = length(ids)`, with the
 #'   joint genotype distribution for the `ids` individuals. The probabilities
 #'   are conditional on the known genotypes and the allele frequencies of
-#'   `partialmarker`.
-#' @author Magnus Dehli Vigeland
+#'   `marker`.
+#'
 #' @seealso [twoMarkerDistribution()]
 #'
 #' @examples
 #'
-#' # Trivial example giving Hardy-Weinberg probabilities
-#' s = singleton(id = 1)
-#' m = marker(s, alleles = 1:2) # equifrequent SNP
-#' oneMarkerDistribution(s, ids = 1, partialmarker = m)
+#' # Trivial example: Hardy-Weinberg probabilities for an equifrequent SNP
+#' s = singleton(id = 1) |> addMarker(alleles = 1:2, afreq = c(0.5, 0.5))
+#' oneMarkerDistribution(s, ids = 1)
 #'
 #' # Conditioning on a partial genotype
-#' genotype(m, id = 1) = "1/-"
-#' oneMarkerDistribution(s, ids = 1, partialmarker = m)
+#' s = setGenotype(s, ids = 1, geno = "1/-")
+#' oneMarkerDistribution(s, ids = 1)
 #'
 #' # Genotype distribution for a child of heterozygous parents
-#' trio = nuclearPed(father = "fa", mother = "mo", child = "ch")
-#' m1 = marker(trio, fa = "1/2", mo = "1/2")
-#' oneMarkerDistribution(trio, ids = "ch", partialmarker = m1)
+#' trio = nuclearPed(father = "fa", mother = "mo", child = "ch") |>
+#'   addMarker(fa = "1/2", mo = "1/2")
+#' oneMarkerDistribution(trio, ids = "ch")
 #'
 #' # Joint distribution of the parents, given that the child is heterozygous
-#' m2 = marker(trio, ch = "1/2", afreq = c("1" = 0.5, "2" = 0.5))
-#' oneMarkerDistribution(trio, ids = c("fa", "mo"), partialmarker = m2)
+#' trio = addMarker(trio, ch = "1/2")
+#' oneMarkerDistribution(trio, ids = c("fa", "mo"), marker = 2)
 #'
 #' # A different example: The genotype distribution of an individual (id = 8)
 #' # whose half cousin (id = 9) is homozygous for a rare allele.
 #' y = halfCousinPed(degree = 1) |>
 #'   addMarker("9" = "a/a", afreq = c(a = 0.01, b = 0.99))
 #'
-#' oneMarkerDistribution(y, ids = 8, partialmarker = 1)
+#' oneMarkerDistribution(y, ids = 8)
 #'
 #' @export
-oneMarkerDistribution = function(x, ids, partialmarker, loopBreakers = NULL,
-                                 grid.subset = NULL, verbose = TRUE) {
+oneMarkerDistribution = function(x, ids, marker = 1, loopBreakers = NULL,
+                                 grid.subset = NULL, partialmarker = NULL,
+                                 verbose = TRUE) {
+
+  if(!is.null(partialmarker)) {
+    cat("The argument `partialmarker` has been renamed to `marker` and will be removed in a future version.\n")
+    marker = partialmarker
+  }
 
   ids = as.character(ids)
 
   if(is.pedList(x)) {
-    if(is.marker(partialmarker))
-      stop2("When `x` has multiple components, `partialmarker` cannot be an unattached marker object")
+    if(is.marker(marker))
+      stop2("When `x` has multiple components, `marker` cannot be an unattached marker object")
 
     pednr = getComponent(x, ids, checkUnique = TRUE)
     if(all(pednr == pednr[1]))
@@ -74,11 +80,11 @@ oneMarkerDistribution = function(x, ids, partialmarker, loopBreakers = NULL,
   if(!is.ped(x))
     stop2("Input is not a pedigree")
 
-  m = partialmarker
+  m = marker
 
   if (!is.marker(m)) {
     if(length(m) != 1)
-      stop2("`partialmarker` must have length 1")
+      stop2("`marker` must have length 1")
     m = getMarkers(x, markers = m)[[1]]
   }
 
