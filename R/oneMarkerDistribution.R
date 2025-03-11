@@ -96,7 +96,7 @@ oneMarkerDistribution = function(x, ids, marker = 1, loopBreakers = NULL,
     if(is.marker(marker))
       stop2("When `x` has multiple components, `marker` cannot be an unattached marker object")
 
-    pednr = getComponent(x, ids, checkUnique = TRUE)
+    pednr = getComponent(x, ids, checkUnique = TRUE, errorIfUnknown = TRUE)
     if(all(pednr == pednr[1]))
       x = x[[pednr[1]]]
     else {
