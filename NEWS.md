@@ -2,7 +2,11 @@
 
 * `oneMarkerDistribution()` now fully supports pedigrees with multiple components.
 
-* Renamed argument `partialmarker` to `marker` in `oneMarkerDistribution()`. The old name is deprecated, but still works as an alias. While the old argument had no default value, the new defaults to the first attached marker. This simplifies the call in many cases: `singleton("A") |> addMarker() |> oneMarkerDistribution("A")`.
+* `oneMarkerDistribution()` has a new argument `output` taking values `"array"` (default, as before), `"table"`, or `"sparse"`. Both `"table"` and `"sparse"` produce data frames where each row corresponds to a genotype combination. The `"sparse"` format only includes combinations with non-zero probability.
+
+* In `oneMarkerDistribution()`, the argument `partialmarker` has been renamed to `marker`. The old name still works as an alias, but will be removed in a future version. While the old argument had no default value, the new defaults to the first attached marker. This simplifies the call in many cases, for example `singleton("A") |> addMarker() |> oneMarkerDistribution("A")`.
+
+* In `twoMarkerDistribution()`, the arguments `partialmarker1` and `partialmarker2` have been renamed to `marker1` and `marker2`, respectively.
 
 * Updated dependencies: **pedtools** v2.6.0, **pedmut** v0.7.0.
 

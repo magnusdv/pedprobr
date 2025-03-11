@@ -8,7 +8,7 @@
 \description{
 \if{html}{\figure{logo.png}{options: style='float: right' alt='logo' width='120'}}
 
-An implementation of the Elston-Stewart algorithm for calculating pedigree likelihoods given genetic marker data (Elston and Stewart (1971) \doi{10.1159/000152448}). The standard algorithm is extended to allow inbred founders. 'pedprobr' is part of the 'ped suite', a collection of packages for pedigree analysis in R. In particular, 'pedprobr' depends on 'pedtools' for pedigree manipulations and 'pedmut' for mutation modelling. For more information, see 'Pedigree Analysis in R' (Vigeland, 2021, ISBN:9780128244302).
+An implementation of the Elston-Stewart algorithm for calculating pedigree likelihoods given genetic marker data (Elston and Stewart (1971) \doi{10.1159/000152448}). The standard algorithm is extended to allow inbred founders. 'pedprobr' is part of the 'pedsuite', a collection of packages for pedigree analysis in R. In particular, 'pedprobr' depends on 'pedtools' for pedigree manipulations and 'pedmut' for mutation modelling. For more information, see 'Pedigree Analysis in R' (Vigeland, 2021, ISBN:9780128244302).
 }
 \seealso{
 Useful links:
