@@ -11,6 +11,7 @@ oneMarkerDistribution(
   loopBreakers = NULL,
   grid.subset = NULL,
   partialmarker = NULL,
+  output = c("array", "table", "sparse"),
   verbose = TRUE
 )
 }
@@ -37,13 +38,23 @@ means that the genotype of individual \code{ids[j]} is row \code{k} of \code{M}.
 
 \item{partialmarker}{(Deprecated) An alias for \code{marker}.}
 
+\item{output}{A character string, either \code{"array"} (default), "table" or
+"sparse". See Value.}
+
 \item{verbose}{A logical.}
 }
 \value{
-A named \code{k}-dimensional array, where \code{k = length(ids)}, with the
-joint genotype distribution for the \code{ids} individuals. The probabilities
-are conditional on the known genotypes and the allele frequencies of
-\code{marker}.
+The output format depends on the \code{output} argument:
+\itemize{
+\item "array": A named \code{k}-dimensional array, where \code{k = length(ids)}, with the
+joint genotype distribution for the \code{ids} individuals, conditional on the
+known genotypes if present.
+\item "table": A data frame with \code{k+1} columns, where each row corresponds
+to a genotype combination, and the last column \code{prob} gives the
+probability.
+\item "sparse": A data frame with the same structure as the "table" output,
+but only combinations with non-zero probability are included.
+}
 }
 \description{
 Computes the genotype probability distribution of one or several pedigree
@@ -66,7 +77,12 @@ oneMarkerDistribution(trio, ids = "ch")
 
 # Joint distribution of the parents, given that the child is heterozygous
 trio = addMarker(trio, ch = "1/2")
-oneMarkerDistribution(trio, ids = c("fa", "mo"), marker = 2)
+ids = c("fa", "mo")
+oneMarkerDistribution(trio, ids = ids, marker = 2)
+
+# Table output of the previous example
+oneMarkerDistribution(trio, ids = ids, marker = 2, output = "table")
+oneMarkerDistribution(trio, ids = ids, marker = 2, output = "sparse")
 
 # A different example: The genotype distribution of an individual (id = 8)
 # whose half cousin (id = 9) is homozygous for a rare allele.

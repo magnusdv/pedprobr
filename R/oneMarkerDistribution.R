@@ -19,12 +19,20 @@
 #'   in terms of the matrix `M = allGenotypes(n)`, where `n` is the number of
 #'   alleles for the marker. If the entry in column `j` is the integer `k`, this
 #'   means that the genotype of individual `ids[j]` is row `k` of `M`.
+#' @param output A character string, either `"array"` (default), "table" or
+#'   "sparse". See Value.
 #' @param verbose A logical.
 #'
-#' @return A named `k`-dimensional array, where `k = length(ids)`, with the
-#'   joint genotype distribution for the `ids` individuals. The probabilities
-#'   are conditional on the known genotypes and the allele frequencies of
-#'   `marker`.
+#' @return The output format depends on the `output` argument:
+#'
+#' * "array": A named `k`-dimensional array, where `k = length(ids)`, with the
+#'   joint genotype distribution for the `ids` individuals, conditional on the
+#'   known genotypes if present.
+#' * "table": A data frame with `k+1` columns, where each row corresponds
+#'   to a genotype combination, and the last column `prob` gives the
+#'   probability.
+#' * "sparse": A data frame with the same structure as the "table" output,
+#'   but only combinations with non-zero probability are included.
 #'
 #' @seealso [twoMarkerDistribution()]
 #'
@@ -45,7 +53,12 @@
 #'
 #' # Joint distribution of the parents, given that the child is heterozygous
 #' trio = addMarker(trio, ch = "1/2")
-#' oneMarkerDistribution(trio, ids = c("fa", "mo"), marker = 2)
+#' ids = c("fa", "mo")
+#' oneMarkerDistribution(trio, ids = ids, marker = 2)
+#'
+#' # Table output of the previous example
+#' oneMarkerDistribution(trio, ids = ids, marker = 2, output = "table")
+#' oneMarkerDistribution(trio, ids = ids, marker = 2, output = "sparse")
 #'
 #' # A different example: The genotype distribution of an individual (id = 8)
 #' # whose half cousin (id = 9) is homozygous for a rare allele.
@@ -61,6 +74,7 @@
 #' @export
 oneMarkerDistribution = function(x, ids, marker = 1, loopBreakers = NULL,
                                  grid.subset = NULL, partialmarker = NULL,
+                                 output = c("array", "table", "sparse"),
                                  verbose = TRUE) {
 
   if(!is.null(partialmarker)) {
@@ -192,5 +206,24 @@ oneMarkerDistribution = function(x, ids, marker = 1, loopBreakers = NULL,
   if(verbose)
     cat("\nAnalysis finished in", format(Sys.time() - st, digits = 3), "\n")
 
-  probs/marginal
+  res = probs/marginal
+
+  # Array output (default)
+  output = match.arg(output)
+  if(output == "array")
+    return(res)
+
+  # Table output
+  dn = dimnames(res)
+  args = c(dn, stringsAsFactors = FALSE, KEEP.OUT.ATTRS = FALSE)
+  df = do.call(expand.grid, args)
+  names(df) = ids
+  df$prob = as.vector(res)
+
+  if(output == "sparse") {
+    df = df[df$prob > 0, , drop = FALSE]
+    rownames(df) = NULL
+  }
+
+  df
 }

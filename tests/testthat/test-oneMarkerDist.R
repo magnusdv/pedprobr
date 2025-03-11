@@ -79,13 +79,16 @@ test_that("oneMarkerDist with multiple components", {
   # Trivial
   x = singletons(1:2) |> addMarker(alleles = 1:2, afreq = c(p,q))
   y = nuclearPed(3) |> transferMarkers(from = x, to = _)
-  expect_equal(OMD(x, ids = 1:2), OMD(y, 1:2))
+
+  expect_equal(OMD(x, ids = 1:2), OMD(y, ids = 1:2))
 
   # Non-trivial example
   x = list(nuclearPed(ch = 5), nuclearPed(fa = 3, mo = 4, ch = 7))
   y = addSon(x, 3:2) |> reorderPed()
+
   x = x |> addMarker(`1` = "1/-", `2`="1/1", `3` = "2/2", alleles = 1:2, afreq = c(p,q))
   y = y |> addMarker(`1` = "1/-", `2`="1/1", `3` = "2/2", alleles = 1:2, afreq = c(p,q))
+
   # plotPedList(list(x,y), marker = 1, cex = 1.5, widths = c(1,1,2))
   expect_equal(OMD(x, ids = c(1,5,4,7)), OMD(y, ids = c(1,5,4,7)))
 })

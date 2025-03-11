@@ -92,9 +92,9 @@ likelihood(x, marker = 1)
 
 Besides `likelihood()`, other important functions in **pedprobr** are:
 
-- `oneMarkerDistribution()` : the joint genotype distribution at a
-  single marker, for any subset of pedigree members
-- `twoMarkerDistribution()` : the joint genotype distribution at two
+- `oneMarkerDistribution()`: the joint genotype distribution at a single
+  marker, for any subset of pedigree members
+- `twoMarkerDistribution()`: the joint genotype distribution at two
   linked markers, for a single person
 
 In both cases, the distributions are computed conditionally on any known
@@ -108,7 +108,7 @@ children?**
 The answer is found as follows:
 
 ``` r
-oneMarkerDistribution(x, ids = 1:2, partialmarker = 1, verbose = F)
+oneMarkerDistribution(x, ids = 1:2, verbose = F)
 #>            a/a        a/b       b/b
 #> a/a 0.00000000 0.01724138 0.1379310
 #> a/b 0.01724138 0.13793103 0.2758621
@@ -118,3 +118,25 @@ oneMarkerDistribution(x, ids = 1:2, partialmarker = 1, verbose = F)
 The output confirms the intuitive result that the parents cannot both be
 homozygous for the same allele. The most likely combination is that one
 parent is heterozygous `a/b`, while the other is homozygous `b/b`.
+
+The argument `output` controls how the output of
+`oneMarkerDistribution()` is formatted. Instead of the default matrix
+(or multidimensional array, if more than 2 individuals), we can also get
+the distribution in table format:
+
+``` r
+oneMarkerDistribution(x, ids = 1:2, verbose = F, output = "table")
+#>     1   2       prob
+#> 1 a/a a/a 0.00000000
+#> 2 a/b a/a 0.01724138
+#> 3 b/b a/a 0.13793103
+#> 4 a/a a/b 0.01724138
+#> 5 a/b a/b 0.13793103
+#> 6 b/b a/b 0.27586207
+#> 7 a/a b/b 0.13793103
+#> 8 a/b b/b 0.27586207
+#> 9 b/b b/b 0.00000000
+```
+
+A third possibility is `output = "sparse"`, which gives a table similar
+to the above, but with only the rows with non-zero probability.
