@@ -84,6 +84,13 @@ oneMarkerDistribution = function(x, ids, marker = 1, loopBreakers = NULL,
 
   ids = as.character(ids)
 
+  output = match.arg(output)
+  formatResult = function(res) {
+    switch(output, array = res,
+           table = omd2df(res, ids, sparse = FALSE),
+           sparse = omd2df(res, ids, sparse = TRUE))
+  }
+
   if(is.pedList(x)) {
     if(is.marker(marker))
       stop2("When `x` has multiple components, `marker` cannot be an unattached marker object")
@@ -99,7 +106,7 @@ oneMarkerDistribution = function(x, ids, marker = 1, loopBreakers = NULL,
         oneMarkerDistribution(x[[i]], idsC, marker = marker, loopBreakers = lb, grid.subset = gs, verbose = FALSE)
       })
       res = Reduce(`%o%`, compRes)
-      return(res)
+      return(formatResult(res))
     }
   }
 
@@ -120,9 +127,10 @@ oneMarkerDistribution = function(x, ids, marker = 1, loopBreakers = NULL,
     compRes = lapply(seq_along(ids), function(i) {
       gs = if(is.null(grid.subset)) NULL else unique.matrix(grid.subset[, i, drop = FALSE])
       oneMarkerDistribution(x, ids[i], marker = m, loopBreakers = loopBreakers,
-                            grid.subset = gs, verbose = FALSE)
+                            grid.subset = gs, output = "array", verbose = FALSE)
     })
-    return(Reduce(`%o%`, compRes))
+    res = Reduce(`%o%`, compRes)
+    return(formatResult(res))
   }
 
   # Reorder if needed
@@ -207,20 +215,19 @@ oneMarkerDistribution = function(x, ids, marker = 1, loopBreakers = NULL,
     cat("\nAnalysis finished in", format(Sys.time() - st, digits = 3), "\n")
 
   res = probs/marginal
+  formatResult(res)
+}
 
-  # Array output (default)
-  output = match.arg(output)
-  if(output == "array")
-    return(res)
 
-  # Table output
-  dn = dimnames(res)
+# Convert output array to data frame
+omd2df = function(arr, ids, sparse = FALSE) {
+  dn = dimnames(arr)
   args = c(dn, stringsAsFactors = FALSE, KEEP.OUT.ATTRS = FALSE)
   df = do.call(expand.grid, args)
   names(df) = ids
-  df$prob = as.vector(res)
+  df$prob = as.vector(arr)
 
-  if(output == "sparse") {
+  if(sparse) {
     df = df[df$prob > 0, , drop = FALSE]
     rownames(df) = NULL
   }
