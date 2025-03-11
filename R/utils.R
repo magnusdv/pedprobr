@@ -187,7 +187,6 @@ fastGridRestricted = function(argslist, linkedWith, compatible) {
   # linkedWith: list of length nargs, dependencies for each index (no symmetries!)
   # compatible: Compatible integers for each i = 1,..,max(unlist(argslist)).
 
-  unlinked = which(lengths(linkedWith) == 0)
   linked = which(lengths(linkedWith) > 0)
 
   # Normal grid of unrestricted indivs

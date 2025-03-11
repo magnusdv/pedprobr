@@ -67,9 +67,10 @@
 #'
 #' oneMarkerDistribution(y, ids = 8)
 #'
-#' # Muli-component (trivial) example
+#' # Multi-component (trivial) example
 #' z = singletons(1:2) |> addMarker(`1` = "1/2", `2` = "1/2", alleles = 1:2)
 #' oneMarkerDistribution(z, 1:2)
+#' oneMarkerDistribution(z, 1:2, output = "sparse")
 #'
 #' @export
 oneMarkerDistribution = function(x, ids, marker = 1, loopBreakers = NULL,
