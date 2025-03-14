@@ -8,6 +8,8 @@
 
 * In `twoMarkerDistribution()`, the arguments `partialmarker1` and `partialmarker2` have been renamed to `marker1` and `marker2`, respectively.
 
+* Fixed bug affecting likelihood calculations in pedigrees with partial genotypes (e.g. `"1/-"`) in founders.
+
 * Updated dependencies: **pedtools** v2.6.0, **pedmut** v0.7.0.
 
 

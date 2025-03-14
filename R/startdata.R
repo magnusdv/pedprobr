@@ -282,8 +282,8 @@ startdata_MM = function(x, marker1, marker2, pedInfo = NULL) {
   }
   else if (a == 0) { # partial founder genotype: -/b
     allele = nseq
-    prob = afr/2
-    prob[b] = prob[b] + 0.5
+    prob  = afr*afr[b]
+    prob[b] = afr[b]
     if(f > 0) {
       prob = prob * (1-f)
       prob[b] = prob[b] + f

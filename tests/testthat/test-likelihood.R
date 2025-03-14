@@ -148,12 +148,16 @@ test_that("likelihood is correct with partial genotypes", {
   p = 0.8; q = 1-p
 
   # Singleton
-  x = singleton("a") |> addMarker(a = "2/-", alleles = 1:2, afreq= c(p, q))
-  expect_equal(likelihood(x), q * (q + 2*p))
+  x = singleton() |> addMarker(`1` = "2/-", alleles = 1:2, afreq= c(p, q))
+  expect_equal(likelihood(x), 2*p*q + q^2)
 
-  # Nuclear
-  y = nuclearPed(ch = "a") |> addMarker(a = "2/-", alleles = 1:2, afreq= c(p, q))
-  expect_equal(likelihood(y), q * (q + 2*p))
+  # Nuclear - partial genotype in founder
+  y = nuclearPed() |> addMarker(`1` = "2/-", alleles = 1:2, afreq= c(p, q))
+  expect_equal(likelihood(y), 2*p*q + q^2)
+
+  # Nuclear - partial genotype in child
+  z = nuclearPed() |> addMarker(`3` = "2/-", alleles = 1:2, afreq= c(p, q))
+  expect_equal(likelihood(z), 2*p*q + q^2)
 })
 
 # test_that("pedprobr and Familias give identical results", {
