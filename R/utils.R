@@ -53,13 +53,12 @@ log_or_not = function(x, logbase) {
 }
 
 
-# Equivalent to t.default(combn(n, 2)), but ~6 times faster.
+# Fast version of t(combn(n, 2))
 .comb2 = function(n) {
   if (n < 2)
     return(matrix(nrow = 0, ncol = 2))
   v1 = rep.int(seq_len(n - 1), (n - 1):1)
-  v2 = NULL
-  for (i in 2:n) v2 = c(v2, i:n)
+  v2 = sequence.default((n - 1):1, 2:n)
   cbind(v1, v2, deparse.level = 0)
 }
 
@@ -104,14 +103,13 @@ HWprob = function(allele1, allele2, afreq, f = 0) {
 #'
 #' @export
 allGenotypes = function(n) {
-  # rbind(cbind(seq_len(n), seq_len(n)), .comb2(n))
+  # Version of .comb2(n) with homozygotes on top
   if (n < 1)
     return(matrix(integer(0), ncol = 2))
-  nseq = seq_len(n)
-  cbind(
-    rep.int(nseq, times = n:1),
-    unlist(lapply(nseq, function(i) i:n), recursive = FALSE, use.names = FALSE)
-  )
+
+  v1 = rep.int(seq_len(n), n:1)
+  v2 = sequence.default(n:1, seq_len(n))
+  cbind(v1, v2, deparse.level = 0)
 }
 
 # Debug tool, pretty-print "startdata" probs
