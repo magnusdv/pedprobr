@@ -29,7 +29,7 @@ fraction between the two markers.}
 
 \item{loopBreakers}{(Only relevant if the pedigree has loops). A vector with
 ID labels of individuals to be used as loop breakers. If NULL (default)
-loop breakers are selected automatically. See \code{\link[=breakLoops]{breakLoops()}}.}
+loop breakers are selected automatically. See \code{\link[pedtools:inbreedingLoops]{pedtools::breakLoops()}}.}
 
 \item{partialmarker1, partialmarker2}{(Deprecated) Aliases for \code{marker1} and
 \code{marker2}.}

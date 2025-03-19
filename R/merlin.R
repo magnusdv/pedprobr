@@ -28,7 +28,7 @@
 #' These will be converted to centiMorgan distances using Haldane's map
 #' function, and used to create genetic marker map in a MERLIN-friendly format.
 #'
-#' @param x A [`ped`] object.
+#' @param x A [pedtools::ped()] object.
 #' @param options A single string containing all arguments to merlin except for
 #'   the input file indications.
 #' @param markers A vector of names or indices of markers attached to `x`.

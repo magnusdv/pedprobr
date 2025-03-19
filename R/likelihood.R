@@ -25,9 +25,9 @@
 #' @param markers One or several markers compatible with `x`. Several input
 #'   forms are possible:
 #'
-#'   * A [marker()] object compatible with `x`.
+#'   * A `marker` object compatible with `x`.
 #'
-#'   * A list of marker objects.
+#'   * A list of `marker` objects.
 #'
 #'   * A vector of names or indices of markers attached to `x`. If `x` is a
 #'   list, this is the only valid input.
@@ -44,7 +44,7 @@
 #'   basis for logarithmic output. Typical values are `exp(1)` and 10.
 #' @param loopBreakers A vector of ID labels indicating loop breakers. If NULL
 #'   (default), automatic selection of loop breakers will be performed. See
-#'   [breakLoops()].
+#'   [pedtools::breakLoops()].
 #' @param peelOrder For internal use.
 #' @param allX For internal use; set to TRUE if all markers are X-chromosomal.
 #' @param verbose A logical.

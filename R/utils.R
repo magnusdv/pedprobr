@@ -62,7 +62,6 @@ log_or_not = function(x, logbase) {
   cbind(v1, v2, deparse.level = 0)
 }
 
-
 #' Hardy-Weinberg probabilities
 #'
 #' @param allele1,allele2 Vectors of equal length, containing alleles in the

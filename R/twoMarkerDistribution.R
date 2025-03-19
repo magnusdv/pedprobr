@@ -14,7 +14,7 @@
 #'   fraction between the two markers.
 #' @param loopBreakers (Only relevant if the pedigree has loops). A vector with
 #'   ID labels of individuals to be used as loop breakers. If NULL (default)
-#'   loop breakers are selected automatically. See [breakLoops()].
+#'   loop breakers are selected automatically. See [pedtools::breakLoops()].
 #' @param verbose A logical.
 #'
 #' @return A named matrix giving the joint genotype distribution.

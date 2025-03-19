@@ -26,7 +26,7 @@ allowed.}
 
 \item{loopBreakers}{(Only relevant if the pedigree has loops). A vector with
 ID labels of individuals to be used as loop breakers. If NULL (default)
-loop breakers are selected automatically. See \code{\link[=breakLoops]{breakLoops()}}.}
+loop breakers are selected automatically. See \code{\link[pedtools:inbreedingLoops]{pedtools::breakLoops()}}.}
 
 \item{grid.subset}{(Optional; not relevant for most users.) A numeric matrix
 describing a subset of all marker genotype combinations for the \code{ids}

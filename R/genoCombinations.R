@@ -3,8 +3,8 @@
 #' Returns the possible genotype combinations in a pedigree, given partial
 #' marker data. This function is mainly for internal use.
 #'
-#' @param x a [ped()] object.
-#' @param partialmarker a [marker()] object compatible with `x`.
+#' @param x a [pedtools::ped()] object.
+#' @param partialmarker a [pedtools::marker()] object compatible with `x`.
 #' @param ids a vector with ID labels of one or more pedigree members.
 #' @param make.grid a logical indicating if the result should be simplified to a
 #'   matrix.

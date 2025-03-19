@@ -7,9 +7,9 @@
 genoCombinations(x, partialmarker = x$MARKERS[[1]], ids, make.grid = TRUE)
 }
 \arguments{
-\item{x}{a \code{\link[=ped]{ped()}} object.}
+\item{x}{a \code{\link[pedtools:ped]{pedtools::ped()}} object.}
 
-\item{partialmarker}{a \code{\link[=marker]{marker()}} object compatible with \code{x}.}
+\item{partialmarker}{a \code{\link[pedtools:marker]{pedtools::marker()}} object compatible with \code{x}.}
 
 \item{ids}{a vector with ID labels of one or more pedigree members.}
 

@@ -50,8 +50,8 @@ likelihood2(x, ...)
 \item{markers}{One or several markers compatible with \code{x}. Several input
 forms are possible:
 \itemize{
-\item A \code{\link[=marker]{marker()}} object compatible with \code{x}.
-\item A list of marker objects.
+\item A \code{marker} object compatible with \code{x}.
+\item A list of \code{marker} objects.
 \item A vector of names or indices of markers attached to \code{x}. If \code{x} is a
 list, this is the only valid input.
 }}
@@ -69,7 +69,7 @@ basis for logarithmic output. Typical values are \code{exp(1)} and 10.}
 
 \item{loopBreakers}{A vector of ID labels indicating loop breakers. If NULL
 (default), automatic selection of loop breakers will be performed. See
-\code{\link[=breakLoops]{breakLoops()}}.}
+\code{\link[pedtools:inbreedingLoops]{pedtools::breakLoops()}}.}
 
 \item{allX}{For internal use; set to TRUE if all markers are X-chromosomal.}
 

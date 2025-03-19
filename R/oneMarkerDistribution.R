@@ -11,7 +11,7 @@
 #' @param partialmarker (Deprecated) An alias for `marker`.
 #' @param loopBreakers (Only relevant if the pedigree has loops). A vector with
 #'   ID labels of individuals to be used as loop breakers. If NULL (default)
-#'   loop breakers are selected automatically. See [breakLoops()].
+#'   loop breakers are selected automatically. See [pedtools::breakLoops()].
 #' @param grid.subset (Optional; not relevant for most users.) A numeric matrix
 #'   describing a subset of all marker genotype combinations for the `ids`
 #'   individuals. The matrix should have one column for each of the `ids`
