@@ -22,17 +22,19 @@ packages for pedigree analysis in R.
 The **pedprobr** package does much of the hard work in several other
 pedsuite packages:
 
-- [**forrel**](https://github.com/magnusdv/forrel) : relatedness
-  analysis and forensic pedigree analysis
-- [**dvir**](https://github.com/magnusdv/dvir) : disaster victim
+- [**forrel**](https://github.com/magnusdv/forrel): relatedness analysis
+  and forensic pedigree analysis
+- [**dvir**](https://github.com/magnusdv/dvir): disaster victim
   identification
-- [**paramlink2**](https://github.com/magnusdv/paramlink2) : parametric
+- [**paramlink2**](https://github.com/magnusdv/paramlink2): parametric
   linkage analysis
-- [**pedbuildr**](https://github.com/magnusdv/pedbuildr) : pedigree
+- [**pedbuildr**](https://github.com/magnusdv/pedbuildr): pedigree
   reconstruction
+- [**segregatr**](https://github.com/magnusdv/segregatr): medical
+  segregation analysis
 
-The workhorse of **pedprobr** is the `likelihood()` function, supporting
-a variety of situations:
+The workhorse of **pedprobr** is the `likelihood()` function, which
+supports a variety of situations:
 
 - autosomal and X-linked markers
 - a single marker or two linked markers
@@ -49,8 +51,7 @@ as follows:
 install.packages("pedprobr")
 ```
 
-Alternatively, you can obtain the latest development version from
-GitHub:
+Alternatively, get the latest development version from GitHub:
 
 ``` r
 # install.packages("devtools") # install devtools if needed
@@ -72,10 +73,10 @@ respectively, and both brothers are heterozygous `a/b`.
 ``` r
 # Pedigree with SNP marker
 x = nuclearPed(nch = 2) |> 
-  addMarker(geno = c(NA, NA, "a/b", "a/b"), afreq = c(a = 0.2, b = 0.8))
+  addMarker(geno = c(NA, NA, "a/b", "a/b"), afreq = c(a = 0.2, b = 0.8), name = "M1")
 
 # Plot with genotypes
-plot(x, marker = 1)
+plot(x, marker = "M1")
 ```
 
 <img src="man/figures/README-pedplot-1.png" style="display: block; margin: auto;" />
@@ -84,7 +85,7 @@ The pedigree likelihood, i.e., the probability of the genotypes given
 the pedigree, is obtained as follows:
 
 ``` r
-likelihood(x, marker = 1)
+likelihood(x)
 #> [1] 0.1856
 ```
 
