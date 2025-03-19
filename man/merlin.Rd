@@ -34,7 +34,7 @@ likelihoodMerlin(
 checkMerlin(program = NULL, version = TRUE, error = FALSE)
 }
 \arguments{
-\item{x}{A \code{\link{ped}} object.}
+\item{x}{A \code{\link[pedtools:ped]{pedtools::ped()}} object.}
 
 \item{options}{A single string containing all arguments to merlin except for
 the input file indications.}

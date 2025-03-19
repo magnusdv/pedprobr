@@ -1,4 +1,4 @@
-# dev
+# pedprobr 0.9.5
 
 * `oneMarkerDistribution()` now fully supports pedigrees with multiple components.
 
@@ -9,6 +9,8 @@
 * In `twoMarkerDistribution()`, the arguments `partialmarker1` and `partialmarker2` have been renamed to `marker1` and `marker2`, respectively.
 
 * Fixed bug affecting likelihood calculations in pedigrees with partial genotypes (e.g. `"1/-"`) in founders.
+
+* The function `allGenotypes()` is ~2-4 times faster due to a better implementation.
 
 * Updated dependencies: **pedtools** v2.6.0, **pedmut** v0.7.0.
 
