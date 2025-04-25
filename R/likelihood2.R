@@ -5,7 +5,8 @@ likelihood2 = function(x, ...) UseMethod("likelihood2", x)
 #' @export
 #' @rdname likelihood
 likelihood2.ped = function(x, marker1, marker2, rho = NULL, peelOrder = NULL,
-                          logbase = NULL, loopBreakers = NULL, verbose = FALSE, ...) {
+                           lump = TRUE, special = TRUE, logbase = NULL,
+                           loopBreakers = NULL, verbose = FALSE, ...) {
 
   if(hasInbredFounders(x))
     stop2("Likelihood of linked markers is not implemented in pedigrees with founder inbreeding.\n",
@@ -15,64 +16,55 @@ likelihood2.ped = function(x, marker1, marker2, rho = NULL, peelOrder = NULL,
     stop2("Likelihood of pedigrees with selfing is not implemented.\n",
           "Contact the maintainer if this is important to you.")
 
-  if(is.vector(marker1) && !is.list(marker1) && length(marker1) == 1)
-    marker1 = getMarkers(x, markers = marker1)[[1]]
-  else if(!is.marker(marker1))
-      stop2("Argument `marker1` must be a single marker. Received: ", class(marker1))
-
-  if(is.atomic(marker2) && !is.list(marker2) && length(marker2) == 1)
-    marker2 = getMarkers(x, markers = marker2)[[1]]
-  else if(!is.marker(marker2))
-    stop2("Argument `marker2` must be a single marker. Received: ", class(marker2))
+  if(is.marker(marker1) && is.marker(marker2))
+    x = setMarkers(x, list(marker1, marker2))
+  else if(length(marker1) == 1 && length(marker2) == 1)
+    x = selectMarkers(x, c(marker1, marker2))
+  else
+    stop2("Unrecognised markers; received objects of class: ", class(marker1), ", ", class(marker2))
 
   checkRho(rho)
 
   ### Quick return if singleton (linkage is then irrelevant)
   if(is.singleton(x)) {
-    lik1 = likelihoodSingleton(x, marker1)
-    lik2 = likelihoodSingleton(x, marker2)
-    if(is.numeric(logbase))
-      res = log(lik1, logbase) + log(lik2, logbase)
-    else
-      res = lik1 * lik2
+    lik1 = likelihoodSingleton(x, x$MARKERS[[1]])
+    lik2 = likelihoodSingleton(x, x$MARKERS[[2]])
+    res = if(is.numeric(logbase)) log(lik1, logbase) + log(lik2, logbase) else lik1 * lik2
     return(res)
   }
 
   # Allele lumping
-  marker1 = reduceAlleles(marker1, verbose = verbose)
-  marker2 = reduceAlleles(marker2, verbose = verbose)
+  if(lump)
+    x = lumpAlleles(x, always = FALSE, special = special, verbose = verbose)
 
-  # Break unbroken loops TODO: move up (avoid re-attaching)
-  if (x$UNBROKEN_LOOPS) {
-    if(verbose)
-      message("Tip: To optimize speed, consider breaking loops before calling 'likelihood'. See ?breakLoops.")
-    x = breakLoops(setMarkers(x, list(marker1, marker2)), loopBreakers = loopBreakers, verbose = verbose)
-    marker1 = x$MARKERS[[1]]
-    marker2 = x$MARKERS[[2]]
-  }
+  # Break unbroken loops
+  if(x$UNBROKEN_LOOPS)
+    x = breakLoops(x, loopBreakers = loopBreakers, verbose = verbose)
 
-  ### Quick return if unlinked
+  # Quick return if unlinked
   if(rho == 0.5) {
     if(verbose)
       message("Unlinked markers; computing likelihoods separately")
-    lik1 = likelihood.ped(x, marker1, logbase = logbase, verbose = FALSE)
-    lik2 = likelihood.ped(x, marker2, logbase = logbase, verbose = FALSE)
-    if(is.numeric(logbase))
-      res = log(lik1, logbase) + log(lik2, logbase)
-    else
-      res = lik1 * lik2
+    lik1 = likelihood.ped(x, 1, logbase = logbase, verbose = FALSE)
+    lik2 = likelihood.ped(x, 2, logbase = logbase, verbose = FALSE)
+    res = if(is.numeric(logbase)) log(lik1, logbase) + log(lik2, logbase) else lik1 * lik2
     return(res)
   }
 
   # Peeling order
   if(is.null(peelOrder))
-    peelOrder = informativeSubnucs(x, mlist = list(marker1, marker2), peelOrder = peelingOrder(x))
+    peelOrder = informativeSubnucs(x, peelOrder = peelingOrder(x))
 
   treatAsFou = attr(peelOrder, "treatAsFounder")
 
+  m1 = x$MARKERS[[1]]
+  m2 = x$MARKERS[[2]]
+  mut1 = mutmod(m1)
+  mut2 = mutmod(m2)
+
   # Autosomal or X?
-  x1 = isXmarker(marker1)
-  x2 = isXmarker(marker2)
+  x1 = isXmarker(m1)
+  x2 = isXmarker(m2)
   if(x1 != x2)
     stop2("Both markers must be either autosomal or X-linked")
   Xchrom = x1 && x2
@@ -81,18 +73,19 @@ likelihood2.ped = function(x, marker1, marker2, rho = NULL, peelOrder = NULL,
 
   # Peeler function
   if(!Xchrom)
-    peeler = function(dat, sub) .peel_MM_AUT(dat, sub, rho, mut1 = mutmod(marker1), mut2 = mutmod(marker2))
+    peeler = function(dat, sub) .peel_MM_AUT(dat, sub, rho, mut1 = mut1, mut2 = mut2)
   else
-    peeler = function(dat, sub) .peel_MM_X(dat, sub, rho, x$SEX, mut1 = mutmod(marker1), mut2 = mutmod(marker2))
+    peeler = function(dat, sub) .peel_MM_X(dat, sub, rho, x$SEX, mut1 = mut1, mut2 = mut2)
 
   # Startdata
   pedInfo = .pedInfo(x, treatAsFounder = treatAsFou, Xchrom = Xchrom)
-  startdata = startdata_MM(x, marker1, marker2, pedInfo = pedInfo)
+  startdata = startdata_MM(x, m1, m2, pedInfo = pedInfo)
 
   res = peelingProcess(x, m = NULL, startdata = startdata, peeler = peeler, peelOrder = peelOrder)
 
   if(is.numeric(logbase)) log(res, logbase) else res
 }
+
 
 
 #' @export
