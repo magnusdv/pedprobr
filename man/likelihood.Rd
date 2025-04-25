@@ -16,6 +16,7 @@ likelihood(x, ...)
   markers = NULL,
   peelOrder = NULL,
   lump = TRUE,
+  special = FALSE,
   logbase = NULL,
   loopBreakers = NULL,
   allX = NULL,
@@ -34,6 +35,8 @@ likelihood2(x, ...)
   marker2,
   rho = NULL,
   peelOrder = NULL,
+  lump = TRUE,
+  special = TRUE,
   logbase = NULL,
   loopBreakers = NULL,
   verbose = FALSE,
@@ -60,9 +63,12 @@ list, this is the only valid input.
 
 \item{lump}{Activate allele lumping, i.e., merging unobserved alleles. This
 is an important time saver, and should be applied in nearly all cases. (The
-parameter exists mainly for debugging purposes.) The lumping algorithm will
-detect (and complain) if any markers use a non-lumpable mutation model.
-Default: TRUE.}
+parameter exists mainly for debugging purposes.) If any markers use a
+non-lumpable mutation model, the \code{special} argument may be used to apply
+more advanced methods.}
+
+\item{special}{A logical indicating if special lumping procedures should be
+attempted if the mutation model is not generally lumpable. By default FALSE}
 
 \item{logbase}{Either NULL (default) or a positive number indicating the
 basis for logarithmic output. Typical values are \code{exp(1)} and 10.}
@@ -99,66 +105,57 @@ The implementation is based on the peeling algorithm of Elston and Stewart
 some demonstrations.
 \itemize{
 \item autosomal and X-linked markers
-\item 1 marker or 2 linked markers
 \item complex inbred pedigrees
 \item markers with mutation models
 \item pedigrees with inbred founders
+\item single markers or two linked markers
 }
 
 For more than two linked markers, see \code{\link[=likelihoodMerlin]{likelihoodMerlin()}}.
+
+Allele lumping can significantly reduce computation time with highly
+polymorphic STR markers and many untyped pedigree members. This is
+particularly important in \code{likelihood2()} which is prone to run out of memory
+without lumping. If a non-lumpable mutation model is used, specialised
+lumping may still be possible in some situations. This is attempted if
+\code{special = TRUE}, which is the default in \code{likelihood2()} but not in
+\code{likelihood()}.
 }
 \examples{
 
-### Simple likelihood ###
+### Simple likelihoods ###
 p = 0.1
 q = 1 - p
 afr = c("1" = p, "2" = q)
 
 # Singleton
 s = singleton() |> addMarker(geno = "1/2", afreq = afr)
-
 stopifnot(all.equal(likelihood(s), 2*p*q))
 
 # Trio
-trio = nuclearPed() |>
-  addMarker(geno = c("1/1", "1/2", "1/1"), afreq = afr)
-
-stopifnot(all.equal(likelihood(trio), p^2 * 2*p*q * 0.5))
-
-
-### Example of calculation with inbred founders ###
-
-### Case 1: Trio with inbred father
-x = cousinPed(0, child = TRUE)
-x = addSon(x, 5)
-x = relabel(x, old = 5:7, new = c("father", "mother", "child"))
-
-# Add equifrequent SNP; father homozygous, child heterozygous
-x = addMarker(x, father = "1/1", child = "1/2")
-
-# Plot with genotypes
-plot(x, marker = 1)
-
-# Compute the likelihood
-lik1 = likelihood(x, markers = 1)
+x = nuclearPed() |> addMarker(geno = c("1/1", "1/2", "1/1"), afreq = afr)
+lik = likelihood(x, verbose = TRUE)
+stopifnot(all.equal(lik, p^2 * 2*p*q * 0.5))
 
 
-### Case 2: Using founder inbreeding
-# Remove ancestry of father
-y = subset(x, c("father", "mother", "child"))
+### Example with inbred founder ###
 
-# Indicate that the father has inbreeding coefficient 1/4
-founderInbreeding(y, "father") = 1/4
+# Set 100\% inbreeding for the father in the previous example
+y = setFounderInbreeding(x, ids = 1, value = 1)
 
 # Plot (notice the inbreeding coefficient)
 plot(y, marker = 1)
 
-# Likelihood should be the same as above
-lik2 = likelihood(y, markers = 1)
-
-stopifnot(all.equal(lik1, lik2))
+stopifnot(all.equal(likelihood(y), p * 2*p*q * 0.5))
 
 
+### Example with two linked markers
+
+# Add a second marker, highly polymorphic
+x = addMarker(x, geno = c(NA, NA, "1/1"), alleles = 1:10)
+
+# Likelihood assuming complete linkage
+likelihood2(x, 1, 2, rho = 0, verbose = TRUE)
 
 }
 \references{

@@ -10,16 +10,20 @@
 #' some demonstrations.
 #'
 #' * autosomal and X-linked markers
-#'
-#' * 1 marker or 2 linked markers
-#'
 #' * complex inbred pedigrees
-#'
 #' * markers with mutation models
-#'
 #' * pedigrees with inbred founders
+#' * single markers or two linked markers
 #'
 #' For more than two linked markers, see [likelihoodMerlin()].
+#'
+#' Allele lumping can significantly reduce computation time with highly
+#' polymorphic STR markers and many untyped pedigree members. This is
+#' particularly important in `likelihood2()` which is prone to run out of memory
+#' without lumping. If a non-lumpable mutation model is used, specialised
+#' lumping may still be possible in some situations. This is attempted if
+#' `special = TRUE`, which is the default in `likelihood2()` but not in
+#' `likelihood()`.
 #'
 #' @param x A `ped` object, a `singleton` object, or a list of such objects.
 #' @param markers One or several markers compatible with `x`. Several input
@@ -37,9 +41,11 @@
 #'   biological sense `rho` should be between 0 and 0.5.
 #' @param lump Activate allele lumping, i.e., merging unobserved alleles. This
 #'   is an important time saver, and should be applied in nearly all cases. (The
-#'   parameter exists mainly for debugging purposes.) The lumping algorithm will
-#'   detect (and complain) if any markers use a non-lumpable mutation model.
-#'   Default: TRUE.
+#'   parameter exists mainly for debugging purposes.) If any markers use a
+#'   non-lumpable mutation model, the `special` argument may be used to apply
+#'   more advanced methods.
+#' @param special A logical indicating if special lumping procedures should be
+#'   attempted if the mutation model is not generally lumpable. By default FALSE
 #' @param logbase Either NULL (default) or a positive number indicating the
 #'   basis for logarithmic output. Typical values are `exp(1)` and 10.
 #' @param loopBreakers A vector of ID labels indicating loop breakers. If NULL
@@ -63,64 +69,47 @@
 #'
 #' @examples
 #'
-#' ### Simple likelihood ###
+#' ### Simple likelihoods ###
 #' p = 0.1
 #' q = 1 - p
 #' afr = c("1" = p, "2" = q)
 #'
 #' # Singleton
 #' s = singleton() |> addMarker(geno = "1/2", afreq = afr)
-#'
 #' stopifnot(all.equal(likelihood(s), 2*p*q))
 #'
 #' # Trio
-#' trio = nuclearPed() |>
-#'   addMarker(geno = c("1/1", "1/2", "1/1"), afreq = afr)
-#'
-#' stopifnot(all.equal(likelihood(trio), p^2 * 2*p*q * 0.5))
-#'
-#'
-#' ### Example of calculation with inbred founders ###
-#'
-#' ### Case 1: Trio with inbred father
-#' x = cousinPed(0, child = TRUE)
-#' x = addSon(x, 5)
-#' x = relabel(x, old = 5:7, new = c("father", "mother", "child"))
-#'
-#' # Add equifrequent SNP; father homozygous, child heterozygous
-#' x = addMarker(x, father = "1/1", child = "1/2")
-#'
-#' # Plot with genotypes
-#' plot(x, marker = 1)
-#'
-#' # Compute the likelihood
-#' lik1 = likelihood(x, markers = 1)
+#' x = nuclearPed() |> addMarker(geno = c("1/1", "1/2", "1/1"), afreq = afr)
+#' lik = likelihood(x, verbose = TRUE)
+#' stopifnot(all.equal(lik, p^2 * 2*p*q * 0.5))
 #'
 #'
-#' ### Case 2: Using founder inbreeding
-#' # Remove ancestry of father
-#' y = subset(x, c("father", "mother", "child"))
+#' ### Example with inbred founder ###
 #'
-#' # Indicate that the father has inbreeding coefficient 1/4
-#' founderInbreeding(y, "father") = 1/4
+#' # Set 100% inbreeding for the father in the previous example
+#' y = setFounderInbreeding(x, ids = 1, value = 1)
 #'
 #' # Plot (notice the inbreeding coefficient)
 #' plot(y, marker = 1)
 #'
-#' # Likelihood should be the same as above
-#' lik2 = likelihood(y, markers = 1)
-#'
-#' stopifnot(all.equal(lik1, lik2))
+#' stopifnot(all.equal(likelihood(y), p * 2*p*q * 0.5))
 #'
 #'
+#' ### Example with two linked markers
+#'
+#' # Add a second marker, highly polymorphic
+#' x = addMarker(x, geno = c(NA, NA, "1/1"), alleles = 1:10)
+#'
+#' # Likelihood assuming complete linkage
+#' likelihood2(x, 1, 2, rho = 0, verbose = TRUE)
 #'
 #' @export
 likelihood = function(x, ...) UseMethod("likelihood", x)
 
 #' @export
 #' @rdname likelihood
-likelihood.ped = function(x, markers = NULL, peelOrder = NULL, lump = TRUE,
-                          logbase = NULL, loopBreakers = NULL,allX = NULL,
+likelihood.ped = function(x, markers = NULL, peelOrder = NULL, lump = TRUE, special = FALSE,
+                          logbase = NULL, loopBreakers = NULL, allX = NULL,
                           verbose = FALSE, theta = 0, ...) {
 
   if(theta > 0 && hasInbredFounders(x))
@@ -134,26 +123,30 @@ likelihood.ped = function(x, markers = NULL, peelOrder = NULL, lump = TRUE,
   if(is.ped(peelOrder))
     stop2("Invalid input for argument `peelOrder`. Received object type: ", class(peelOrder))
 
-  if(is.null(markers))
-    markers = x$MARKERS
-  else if(is.vector(markers) && !is.list(markers))
-    markers = getMarkers(x, markers = markers)
-  else if(is.marker(markers))
-    markers = list(markers)
-  else if(!is.markerList(markers))
-    stop2("Invalid input for argument `markers`. Received object type: ", class(markers))
+  if(!is.null(markers)) {
+    if(is.vector(markers) && !is.list(markers))
+      x = selectMarkers(x, markers = markers)
+    else if(is.marker(markers) || is.markerList(markers))
+      x = setMarkers(x, markers)
+    else
+      stop2("Invalid input for argument `markers`. Received object type: ", class(markers))
+  }
 
+  # Just pedigree
+  ped = setMarkers(x, NULL)
+
+  nM = length(x$MARKERS)
   if(verbose)
-    message("Number of markers: ", length(markers))
+    message("Number of markers: ", nM)
 
-  if(length(markers) == 0)
+  if(nM == 0)
     return(numeric(0))
 
   # Autosomal or X?
-  if(length(allX) == 1)
+  if(length(allX) == 1 && is.logical(allX))
     Xchrom = allX
   else {
-    isX = vapply(markers, isXmarker, logical(1))
+    isX = vapply(x$MARKERS, isXmarker, logical(1))
     if(!all(isX == isX[1]))
       stop2("Cannot mix autosomal and X-linked markers in the same likelihood calculation")
     Xchrom = isX[1]
@@ -164,32 +157,28 @@ likelihood.ped = function(x, markers = NULL, peelOrder = NULL, lump = TRUE,
 
   ### Quick calculations if singleton
   if(is.singleton(x)) {
-    if(verbose)
-      message("Passing to singleton method")
-    liks = vapply(markers, function(m) likelihoodSingleton(x, m, theta = theta, Xchrom = Xchrom), FUN.VALUE = 1)
+    if(verbose) message("Passing to singleton method")
+    liks = vapply(x$MARKERS, function(m)
+      likelihoodSingleton(ped, m, theta = theta, Xchrom = Xchrom), FUN.VALUE = 1)
     return(if(is.numeric(logbase)) log(liks, logbase) else liks)
   }
 
   # Allele lumping
   if(lump)
-    markers = lapply(markers, function(m) reduceAlleles(m, verbose = verbose))
+    x = lumpAlleles(x, always = FALSE, special = special, verbose = verbose)
 
-  # Break unbroken loops TODO: move up (avoid re-attaching)
-  if (x$UNBROKEN_LOOPS) {
-    if(verbose)
-      message("Tip: To optimize speed, consider breaking loops before calling 'likelihood'. See ?breakLoops.")
-    x = breakLoops(setMarkers(x, markers), loopBreakers = loopBreakers, verbose = verbose)
-    markers = x$MARKERS
-  }
+  # Break unbroken loops
+  if (x$UNBROKEN_LOOPS)
+    x = breakLoops(x, loopBreakers = loopBreakers, verbose = verbose)
 
   # Peeling order: Same for all markers
   if(is.null(peelOrder))
     peelOrder = peelingOrder(x)
   if(theta == 0)
-    peelOrder = informativeSubnucs(x, mlist = markers, peelOrder = peelOrder)
+    peelOrder = informativeSubnucs(x, peelOrder = peelOrder)
 
   if(verbose)
-    message(sprintf("%d informative %s", length(peelOrder), if(length(peelOrder) == 1) "nucleus" else "nuclei"))
+    message("Informative nuclei: ", length(peelOrder))
 
   treatAsFou = attr(peelOrder, "treatAsFounder")
 
@@ -204,7 +193,7 @@ likelihood.ped = function(x, markers = NULL, peelOrder = NULL, lump = TRUE,
     peeler = function(x, m) function(dat, sub) .peel_M_AUT(dat, sub, mutmat = mutmod(m))
 
   # Loop over markers
-  resList = lapply(markers, function(m) {
+  resList = lapply(x$MARKERS, function(m) {
 
     # If theta correction, go to different function
     if(theta > 0)
