@@ -1,6 +1,6 @@
 ###### OTHER AUXILIARY FUNCTIONS
 
-informativeSubnucs = function(x, mlist, peelOrder = peelingOrder(x)) {
+informativeSubnucs = function(x, mlist = x$MARKERS, peelOrder = peelingOrder(x)) {
   # Trim pedigree by removing leaves without genotypes.
   # Also remove nucs that are completely uninformative
 

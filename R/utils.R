@@ -15,6 +15,10 @@ isCount = function(x, minimum = 1) {
   if(is.null(x)) y else x
 }
 
+`%na%` = function(x, y) {
+  if(length(x) == 1 && is.na(x)) y else x
+}
+
 .mysetdiff = function(x, y) {
   unique.default(x[match(x, y, 0L) == 0L])
 }
