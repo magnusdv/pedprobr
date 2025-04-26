@@ -46,6 +46,11 @@
 #'   more advanced methods.
 #' @param special A logical indicating if special lumping procedures should be
 #'   attempted if the mutation model is not generally lumpable. By default FALSE
+#'   in `likelihood()` and TRUE in `likelihood2()`.
+#' @param alleleLimit A positive number or `Inf`. If the mutation model is not
+#'   generally lumpable, and the allele count exceeds this limit, switch to an
+#'   `equal` model with the same rate and reapply lumping. Default: `Inf` for
+#'   `likelihood()` and 12 for `likelihood2()`.
 #' @param logbase Either NULL (default) or a positive number indicating the
 #'   basis for logarithmic output. Typical values are `exp(1)` and 10.
 #' @param loopBreakers A vector of ID labels indicating loop breakers. If NULL
@@ -108,7 +113,8 @@ likelihood = function(x, ...) UseMethod("likelihood", x)
 
 #' @export
 #' @rdname likelihood
-likelihood.ped = function(x, markers = NULL, peelOrder = NULL, lump = TRUE, special = FALSE,
+likelihood.ped = function(x, markers = NULL, peelOrder = NULL, lump = TRUE,
+                          special = FALSE, alleleLimit = Inf,
                           logbase = NULL, loopBreakers = NULL, allX = NULL,
                           verbose = FALSE, theta = 0, ...) {
 
@@ -165,7 +171,8 @@ likelihood.ped = function(x, markers = NULL, peelOrder = NULL, lump = TRUE, spec
 
   # Allele lumping
   if(lump)
-    x = lumpAlleles(x, always = FALSE, special = special, verbose = verbose)
+    x = lumpAlleles(x, always = FALSE, special = special,
+                    alleleLimit = alleleLimit, verbose = verbose)
 
   # Break unbroken loops
   if (x$UNBROKEN_LOOPS)

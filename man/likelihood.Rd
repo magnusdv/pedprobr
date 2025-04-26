@@ -17,6 +17,7 @@ likelihood(x, ...)
   peelOrder = NULL,
   lump = TRUE,
   special = FALSE,
+  alleleLimit = Inf,
   logbase = NULL,
   loopBreakers = NULL,
   allX = NULL,
@@ -37,6 +38,7 @@ likelihood2(x, ...)
   peelOrder = NULL,
   lump = TRUE,
   special = TRUE,
+  alleleLimit = 12,
   logbase = NULL,
   loopBreakers = NULL,
   verbose = FALSE,
@@ -68,7 +70,13 @@ non-lumpable mutation model, the \code{special} argument may be used to apply
 more advanced methods.}
 
 \item{special}{A logical indicating if special lumping procedures should be
-attempted if the mutation model is not generally lumpable. By default FALSE}
+attempted if the mutation model is not generally lumpable. By default FALSE
+in \code{likelihood()} and TRUE in \code{likelihood2()}.}
+
+\item{alleleLimit}{A positive number or \code{Inf}. If the mutation model is not
+generally lumpable, and the allele count exceeds this limit, switch to an
+\code{equal} model with the same rate and reapply lumping. Default: \code{Inf} for
+\code{likelihood()} and 12 for \code{likelihood2()}.}
 
 \item{logbase}{Either NULL (default) or a positive number indicating the
 basis for logarithmic output. Typical values are \code{exp(1)} and 10.}

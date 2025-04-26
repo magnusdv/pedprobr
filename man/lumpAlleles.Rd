@@ -4,7 +4,14 @@
 \alias{lumpAlleles}
 \title{Allele lumping}
 \usage{
-lumpAlleles(x, markers = NULL, always = FALSE, special = TRUE, verbose = FALSE)
+lumpAlleles(
+  x,
+  markers = NULL,
+  always = FALSE,
+  special = TRUE,
+  alleleLimit = Inf,
+  verbose = FALSE
+)
 }
 \arguments{
 \item{x}{A \code{ped} object or a list of such.}
@@ -16,8 +23,12 @@ lumpAlleles(x, markers = NULL, always = FALSE, special = TRUE, verbose = FALSE)
 (FALSE) lumping is skipped for markers where all individuals are genotyped.}
 
 \item{special}{A logical. If TRUE, special lumping procedures (depending on
-the pedigree) will be attempted if the marker is not lumpable in the
-Kemeny-Snell sense.}
+the pedigree) will be attempted if the marker is not generally lumpable (in
+the Kemeny-Snell sense).}
+
+\item{alleleLimit}{A positive number or \code{Inf} (default). If the mutation
+model is not generally lumpable, and the allele count exceeds this limit,
+switch to an \code{equal} model with the same rate and reapply lumping.}
 
 \item{verbose}{A logical.}
 }
@@ -57,4 +68,5 @@ mutmod(y3, 1)
 stopifnot(likelihood(x) == likelihood(y),
           likelihood(x2) == likelihood(y2),
           likelihood(x3) == likelihood(y3))
+
 }

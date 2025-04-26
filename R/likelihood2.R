@@ -5,8 +5,8 @@ likelihood2 = function(x, ...) UseMethod("likelihood2", x)
 #' @export
 #' @rdname likelihood
 likelihood2.ped = function(x, marker1, marker2, rho = NULL, peelOrder = NULL,
-                           lump = TRUE, special = TRUE, logbase = NULL,
-                           loopBreakers = NULL, verbose = FALSE, ...) {
+                           lump = TRUE, special = TRUE, alleleLimit = 12,
+                           logbase = NULL, loopBreakers = NULL, verbose = FALSE, ...) {
 
   if(hasInbredFounders(x))
     stop2("Likelihood of linked markers is not implemented in pedigrees with founder inbreeding.\n",
@@ -35,7 +35,8 @@ likelihood2.ped = function(x, marker1, marker2, rho = NULL, peelOrder = NULL,
 
   # Allele lumping
   if(lump)
-    x = lumpAlleles(x, always = FALSE, special = special, verbose = verbose)
+    x = lumpAlleles(x, always = FALSE, special = special, alleleLimit = alleleLimit,
+                    verbose = verbose)
 
   # Break unbroken loops
   if(x$UNBROKEN_LOOPS)

@@ -9,8 +9,11 @@
 #' @param always A logical. If TRUE, lumping is always attempted. By default
 #'   (FALSE) lumping is skipped for markers where all individuals are genotyped.
 #' @param special A logical. If TRUE, special lumping procedures (depending on
-#'   the pedigree) will be attempted if the marker is not lumpable in the
-#'   Kemeny-Snell sense.
+#'   the pedigree) will be attempted if the marker is not generally lumpable (in
+#'   the Kemeny-Snell sense).
+#' @param alleleLimit A positive number or `Inf` (default). If the mutation
+#'   model is not generally lumpable, and the allele count exceeds this limit,
+#'   switch to an `equal` model with the same rate and reapply lumping.
 #' @param verbose A logical.
 #'
 #' @return An object similar to `x`, but whose attached markers have reduced
@@ -44,8 +47,12 @@
 #' stopifnot(likelihood(x) == likelihood(y),
 #'           likelihood(x2) == likelihood(y2),
 #'           likelihood(x3) == likelihood(y3))
+#'
+#' @importFrom pedmut alwaysLumpable getParams isLumpable lumpedModel
+#'   lumpMutSpecial
 #' @export
-lumpAlleles = function(x, markers = NULL, always = FALSE, special = TRUE, verbose = FALSE) {
+lumpAlleles = function(x, markers = NULL, always = FALSE, special = TRUE,
+                       alleleLimit = Inf, verbose = FALSE) {
 
   if(is.pedList(x))
     return(lapply(x, function(comp) lumpAlleles(comp, markers, verbose = verbose)))
@@ -59,14 +66,22 @@ lumpAlleles = function(x, markers = NULL, always = FALSE, special = TRUE, verbos
   # Loop through
   for(i in midx) {
     m = x$MARKERS[[i]]
-    x$MARKERS[[i]] = .lumpMarker(m, always, special, ped, verbose = verbose)
+    newm = .lumpMarker(m, always, special, ped, verbose = verbose)
+
+    # If not regular lumpable, switch to fallback model if too many alleles
+    if(nAlleles(newm) > alleleLimit && !alwaysLumpable(mutmod(m))) {
+      if(verbose)
+        message("  --- allele limit exceeded; switching to `equal` model")
+      y = setMutmod(x, i, model = "equal", update = TRUE)
+      newm = .lumpMarker(y$MARKERS[[i]], always, verbose = verbose)
+    }
+
+    x$MARKERS[[i]] = newm
   }
 
   x
 }
 
-
-#' @importFrom pedmut isLumpable lumpedModel lumpMutSpecial
 .lumpMarker = function(marker, always = FALSE, special = TRUE, ped = NULL, verbose = FALSE) {
   if(is.null(marker))
     return(marker)
@@ -74,6 +89,7 @@ lumpAlleles = function(x, markers = NULL, always = FALSE, special = TRUE, verbos
   attrs = attributes(marker)
   origAlleles = attrs$alleles
   nall = length(origAlleles)
+  mut = attrs$mutmod
 
   # Internal allele indices as vector (speeds up things below)
   mInt = as.integer(marker)
@@ -82,8 +98,11 @@ lumpAlleles = function(x, markers = NULL, always = FALSE, special = TRUE, verbos
   isObs = seq_len(nall) %in% mInt
   nObs = sum(isObs)
 
-  if(verbose)
-      message(sprintf("Marker %s: %d alleles, %d seen. ", name(marker), nall, nObs), appendLF = FALSE)
+  if(verbose) {
+    modname = if(is.null(mut)) "no" else modelAbbr[getParams(mut, params = "model", format = 3)[[1]]]
+    message(sprintf("Marker %s: %d of %d alleles, %s model. ",
+                name(marker), nObs, nall, modname), appendLF = FALSE)
+  }
 
   if (!always && all(mInt != 0)) {
     if(verbose) message("Lumping not needed (all members genotyped)")
@@ -132,7 +151,7 @@ lumpAlleles = function(x, markers = NULL, always = FALSE, special = TRUE, verbos
   # Check if lumping was successful
   newAls = colnames(lumpedMut$female) # attr(lumpedMut, "afreq") may be NULL here
   if(length(newAls) == nall) {
-    if(verbose) message("Special lumping unsuccessful")
+    if(verbose) message("Special lumping ineffective")
     return(marker)
   }
 
@@ -144,7 +163,7 @@ lumpAlleles = function(x, markers = NULL, always = FALSE, special = TRUE, verbos
   attr(marker, "mutmod") = lumpedMut
 
   if(verbose)
-    message(sprintf("Special lumping: %d -> %d alleles", nall, length(newAls)))
+    message(sprintf("Special lumping: %d -> %d", nall, length(newAls)))
 
   marker
 }
@@ -214,3 +233,7 @@ uSignature = function(x, untyped = NULL, marker = NULL) {
   # Return
   c(Fdep = Fdep, Fwid = Fwid, Ndep = Ndep, Nwid = Nwid)
 }
+
+modelAbbr = c(custom = "custom", dawid = "dawid", equal ="equal",
+              proportional = "prop", random = "random", onestep = "onestep",
+              stepwise = "stepw", trivial = "trivial")
