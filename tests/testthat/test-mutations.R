@@ -134,7 +134,7 @@ test_that("nontrivial mutation models work in likelihood2()", {
 
   expect_equal(likelihood2(x, 1, 2, rho = 0.25), p^8 * M[1,2]^2)
 
-  y = setMutationModel(x, model = M, marker = 1)
+  y = setMutmod(x, model = M, marker = 1)
   expect_equal(likelihood2(y, 1, 2, rho = 0.25), p^8 * M[1,2]^2 * M[1,1]^2)
 })
 

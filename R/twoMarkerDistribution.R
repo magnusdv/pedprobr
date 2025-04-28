@@ -168,7 +168,8 @@ twoMarkerDistribution <- function(x, id, marker1 = 1, marker2 = 2, rho = NULL,
   probs[probs.subset] = apply(grid.subset, 1, function(allg_rows) {
     m1[int.id, ] = allgenos1[allg_rows[1], ]
     m2[int.id, ] = allgenos2[allg_rows[2], ]
-    likelihood2(x, marker1 = m1, marker2 = m2, rho = rho)
+    y = setMarkers(x, list(m1, m2), checkCons = FALSE)
+    likelihood2(y, 1, 2, rho = rho)
   })
 
   # Timing

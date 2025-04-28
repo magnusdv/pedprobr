@@ -209,7 +209,8 @@ oneMarkerDistribution = function(x, ids, marker = 1, loopBreakers = NULL,
     m[int.ids, ] = allgenos[r, ]; m})
 
   # Calculate likelihoods and insert in result array
-  probs[probs.subset] = likelihood(x, mlist, allX = Xchrom)
+  y = setMarkers(x, mlist, checkCons = FALSE)
+  probs[probs.subset] = likelihood(y, allX = Xchrom)
 
   # Timing
   if(verbose)
