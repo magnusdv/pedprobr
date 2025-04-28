@@ -1,3 +1,13 @@
+# pedprobr 0.9.6
+
+* Methods for allele lumping have been rewritten and expanded. In particular, markers with unlumpable mutation models (in the Kemeny-Snell sense) can now, in certain cases, be lumped using the *special lumping* recently implemented in **pedmut**. To activate this, set `special = TRUE` in `likelihood()` and `likelihood2()`. 
+
+* `likelihood()` and `likelihood2()` also gain a new argument `alleleLimit`, limiting the number of alleles in unlumpable markers. If the limit is exceeded, the mutation model is replaced with the simpler `equal` model, which always permits lumping. Current defaults are `likelihood(..., special = FALSE, alleleLimit = Inf)` and `likelihood2(..., special = TRUE, alleleLimit = 12)`. 
+
+* Improve structure of `likelihood()` and `likelihood2()`, to avoid redundant calculations. 
+
+* Skip unneeded checks in `...MarkerDistribution()`
+
 # pedprobr 0.9.5
 
 * `oneMarkerDistribution()` now fully supports pedigrees with multiple components.
