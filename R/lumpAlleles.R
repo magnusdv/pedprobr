@@ -7,10 +7,11 @@
 #' @param markers A vector of names or indices referring to markers attached to
 #'   `x`. (Default: All markers.)
 #' @param always A logical. If TRUE, lumping is always attempted. By default
-#'   (FALSE) lumping is skipped for markers where all individuals are genotyped.
+#'   (FALSE) lumping is skipped for markers where no individuals, or all
+#'   individuals, are genotyped.
 #' @param special A logical. If TRUE, special lumping procedures (depending on
-#'   the pedigree) will be attempted if the marker is not generally lumpable (in
-#'   the Kemeny-Snell sense).
+#'   the pedigree) will be attempted if the marker has a mutation model that is
+#'   not generally lumpable (in the Kemeny-Snell sense).
 #' @param alleleLimit A positive number or `Inf` (default). If the mutation
 #'   model is not generally lumpable, and the allele count exceeds this limit,
 #'   switch to an `equal` model with the same rate and reapply lumping.
@@ -140,7 +141,7 @@ lumpAlleles = function(x, markers = NULL, always = FALSE, special = TRUE,
 
   # Attempt special lumping?
   if(!special || is.null(ped)) {
-    if(verbose) message("Non-lumpable model; special lumping disabled")
+    if(verbose) message("Special lumping disabled")
     return(marker)
   }
 
@@ -148,6 +149,12 @@ lumpAlleles = function(x, markers = NULL, always = FALSE, special = TRUE,
 
   # Signature of untyped individuals (F-depth, N-depth, F-width, N-width)
   usign = uSignature(ped, marker = marker)
+
+  # Check if signature is implemented (better to do it in lumpMutSpecial?)
+  if(usign[1] > 1 || usign[3] + usign[4] > 0) {
+    if(verbose) message("Special lumping not available in this case")
+    return(marker)
+  }
 
   # Main calculation done in pedmut
   lumpedMut = lumpMutSpecial(mut, lump = lump, uSign = usign, verbose = FALSE)
