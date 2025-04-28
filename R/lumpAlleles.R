@@ -66,6 +66,12 @@ lumpAlleles = function(x, markers = NULL, always = FALSE, special = TRUE,
   # Loop through
   for(i in midx) {
     m = x$MARKERS[[i]]
+
+    if(sum(m) == 0 && !always) {
+      if(verbose) message(sprintf("Marker %s: empty -- no lumping needed", name(m)))
+      next
+    }
+
     newm = .lumpMarker(m, always, special, ped, verbose = verbose)
 
     # If not regular lumpable, switch to fallback model if too many alleles
@@ -83,8 +89,6 @@ lumpAlleles = function(x, markers = NULL, always = FALSE, special = TRUE,
 }
 
 .lumpMarker = function(marker, always = FALSE, special = TRUE, ped = NULL, verbose = FALSE) {
-  if(is.null(marker))
-    return(marker)
 
   attrs = attributes(marker)
   origAlleles = attrs$alleles

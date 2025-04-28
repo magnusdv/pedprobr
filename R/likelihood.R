@@ -201,6 +201,8 @@ likelihood.ped = function(x, markers = NULL, peelOrder = NULL, lump = TRUE,
 
   # Loop over markers
   resList = lapply(x$MARKERS, function(m) {
+    # If no data, return 1
+    if (sum(m) == 0) return(1)
 
     # If theta correction, go to different function
     if(theta > 0)

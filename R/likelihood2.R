@@ -16,6 +16,7 @@ likelihood2.ped = function(x, marker1, marker2, rho = NULL, peelOrder = NULL,
     stop2("Likelihood of pedigrees with selfing is not implemented.\n",
           "Contact the maintainer if this is important to you.")
 
+  # Attach markers if not already
   if(is.marker(marker1) && is.marker(marker2))
     x = setMarkers(x, list(marker1, marker2))
   else if(length(marker1) == 1 && length(marker2) == 1)
@@ -23,9 +24,16 @@ likelihood2.ped = function(x, marker1, marker2, rho = NULL, peelOrder = NULL,
   else
     stop2("Unrecognised markers; received objects of class: ", class(marker1), ", ", class(marker2))
 
+  # Check rho input
   checkRho(rho)
 
-  ### Quick return if singleton (linkage is then irrelevant)
+  # If both markers empty, return 1
+  if(sum(x$MARKERS[[1]]) + sum(x$MARKERS[[2]]) == 0) {
+    if(verbose) message("Both markers are empty; returning likelihood 1")
+    return(1)
+  }
+
+  # Quick return if singleton (linkage is then irrelevant)
   if(is.singleton(x)) {
     lik1 = likelihoodSingleton(x, x$MARKERS[[1]])
     lik2 = likelihoodSingleton(x, x$MARKERS[[2]])
@@ -42,19 +50,19 @@ likelihood2.ped = function(x, marker1, marker2, rho = NULL, peelOrder = NULL,
   if(x$UNBROKEN_LOOPS)
     x = breakLoops(x, loopBreakers = loopBreakers, verbose = verbose)
 
+  # Peeling order
+  if(is.null(peelOrder))
+    peelOrder = informativeSubnucs(x, peelOrder = peelingOrder(x))
+
   # Quick return if unlinked
   if(rho == 0.5) {
     if(verbose)
       message("Unlinked markers; computing likelihoods separately")
-    lik1 = likelihood.ped(x, 1, logbase = logbase, verbose = FALSE)
-    lik2 = likelihood.ped(x, 2, logbase = logbase, verbose = FALSE)
+    lik1 = likelihood.ped(x, 1, peelOrder = peelOrder, lump = FALSE, logbase = logbase, verbose = FALSE)
+    lik2 = likelihood.ped(x, 2, peelOrder = peelOrder, lump = FALSE, logbase = logbase, verbose = FALSE)
     res = if(is.numeric(logbase)) log(lik1, logbase) + log(lik2, logbase) else lik1 * lik2
     return(res)
   }
-
-  # Peeling order
-  if(is.null(peelOrder))
-    peelOrder = informativeSubnucs(x, peelOrder = peelingOrder(x))
 
   treatAsFou = attr(peelOrder, "treatAsFounder")
 
