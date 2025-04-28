@@ -11,6 +11,7 @@ twoMarkerDistribution(
   marker2 = 2,
   rho = NULL,
   loopBreakers = NULL,
+  lumpSpecial = TRUE,
   partialmarker1 = NULL,
   partialmarker2 = NULL,
   verbose = TRUE
@@ -30,6 +31,8 @@ fraction between the two markers.}
 \item{loopBreakers}{(Only relevant if the pedigree has loops). A vector with
 ID labels of individuals to be used as loop breakers. If NULL (default)
 loop breakers are selected automatically. See \code{\link[pedtools:inbreedingLoops]{pedtools::breakLoops()}}.}
+
+\item{lumpSpecial}{A logical, passed on to \code{\link[=likelihood2]{likelihood2()}}.}
 
 \item{partialmarker1, partialmarker2}{(Deprecated) Aliases for \code{marker1} and
 \code{marker2}.}

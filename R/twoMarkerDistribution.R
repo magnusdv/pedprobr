@@ -15,6 +15,7 @@
 #' @param loopBreakers (Only relevant if the pedigree has loops). A vector with
 #'   ID labels of individuals to be used as loop breakers. If NULL (default)
 #'   loop breakers are selected automatically. See [pedtools::breakLoops()].
+#' @param lumpSpecial A logical, passed on to [likelihood2()].
 #' @param verbose A logical.
 #'
 #' @return A named matrix giving the joint genotype distribution.
@@ -44,8 +45,9 @@
 #'
 #' @export
 twoMarkerDistribution <- function(x, id, marker1 = 1, marker2 = 2, rho = NULL,
-                                  loopBreakers = NULL, partialmarker1 = NULL,
-                                  partialmarker2 = NULL, verbose = TRUE) {
+                                  loopBreakers = NULL, lumpSpecial = TRUE,
+                                  partialmarker1 = NULL, partialmarker2 = NULL,
+                                  verbose = TRUE) {
 
   if(!is.null(partialmarker1) | !is.null(partialmarker2)) {
     cat("The arguments `partialmarker1`, `partialmarker2` have been renamed to `marker1` and `marker2` and will be removed in a future version.\n")
@@ -156,7 +158,8 @@ twoMarkerDistribution <- function(x, id, marker1 = 1, marker2 = 2, rho = NULL,
     probs.subset[, 2] = match(probs.subset[, 2], homoz2)
   }
 
-  marginal = likelihood2(x, marker1 = m1, marker2 = m2, rho = rho)
+  marginal = likelihood2(x, marker1 = m1, marker2 = m2, rho = rho,
+                         special = lumpSpecial)
   if (marginal == 0)
     stop2("The given marker data is impossible")
 
@@ -169,7 +172,7 @@ twoMarkerDistribution <- function(x, id, marker1 = 1, marker2 = 2, rho = NULL,
     m1[int.id, ] = allgenos1[allg_rows[1], ]
     m2[int.id, ] = allgenos2[allg_rows[2], ]
     y = setMarkers(x, list(m1, m2), checkCons = FALSE)
-    likelihood2(y, 1, 2, rho = rho)
+    likelihood2(y, 1, 2, rho = rho, special = lumpSpecial)
   })
 
   # Timing

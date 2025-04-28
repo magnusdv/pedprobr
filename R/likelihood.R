@@ -47,10 +47,9 @@
 #' @param special A logical indicating if special lumping procedures should be
 #'   attempted if the mutation model is not generally lumpable. By default FALSE
 #'   in `likelihood()` and TRUE in `likelihood2()`.
-#' @param alleleLimit A positive number or `Inf`. If the mutation model is not
-#'   generally lumpable, and the allele count exceeds this limit, switch to an
-#'   `equal` model with the same rate and reapply lumping. Default: `Inf` for
-#'   `likelihood()` and 12 for `likelihood2()`.
+#' @param alleleLimit A positive number or `Inf` (default). If the mutation
+#'   model is not generally lumpable, and the allele count exceeds this limit,
+#'   switch to an `equal` model with the same rate and reapply lumping.
 #' @param logbase Either NULL (default) or a positive number indicating the
 #'   basis for logarithmic output. Typical values are `exp(1)` and 10.
 #' @param loopBreakers A vector of ID labels indicating loop breakers. If NULL
