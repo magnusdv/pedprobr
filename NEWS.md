@@ -1,12 +1,13 @@
-# pedprobr 0.9.6
+# pedprobr 1.0.0
 
-* Methods for allele lumping have been rewritten and expanded. In particular, markers with unlumpable mutation models (in the Kemeny-Snell sense) can now, in certain cases, be lumped using the *special lumping* recently implemented in **pedmut**. To activate this, set `special = TRUE` in `likelihood()` and `likelihood2()`. By default, `special` is FALSE in the former and TRUE in the latter.
+* Methods for allele lumping have been rewritten and expanded. In particular, markers with an un-lumpable mutation model (in the Kemeny-Snell sense) can now, in certain cases, be lumped using the *special lumping* recently implemented in **pedmut**. To activate this, set `special = TRUE` in `likelihood()` and `likelihood2()`. By default, `special` is FALSE in the former and TRUE in the latter.
 
-* `likelihood()` and `likelihood2()` also gain a new argument `alleleLimit`, limiting the number of alleles in unlumpable markers. If the limit is exceeded, the mutation model is replaced with the simpler `equal` model, which always permits lumping. By default, this behaviour is disabled (i.e. `alleleLimit = Inf`).
+* `likelihood()` and `likelihood2()` also gain a new argument `alleleLimit`, limiting the number of alleles in unlumpable markers. If the limit is exceeded, the mutation model is replaced with the simpler `equal` model, which always permits lumping. By default, this behaviour is disabled (i.e., `alleleLimit = Inf`).
 
-* Improve structure of `likelihood()` and `likelihood2()`, to avoid redundant calculations. 
+* Improve structure of `likelihood()` and `likelihood2()`, to avoid redundant calculations.
 
-* Skip unneeded checks in `...MarkerDistribution()`
+* Skip unneeded checks in `[one/two]MarkerDistribution()`.
+
 
 # pedprobr 0.9.5
 

@@ -20,11 +20,12 @@ lumpAlleles(
 \code{x}. (Default: All markers.)}
 
 \item{always}{A logical. If TRUE, lumping is always attempted. By default
-(FALSE) lumping is skipped for markers where all individuals are genotyped.}
+(FALSE) lumping is skipped for markers where no individuals, or all
+individuals, are genotyped.}
 
 \item{special}{A logical. If TRUE, special lumping procedures (depending on
-the pedigree) will be attempted if the marker is not generally lumpable (in
-the Kemeny-Snell sense).}
+the pedigree) will be attempted if the marker has a mutation model that is
+not generally lumpable (in the Kemeny-Snell sense).}
 
 \item{alleleLimit}{A positive number or \code{Inf} (default). If the mutation
 model is not generally lumpable, and the allele count exceeds this limit,
