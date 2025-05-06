@@ -30,6 +30,7 @@ The **pedprobr** package does much of the hard work in several other pedsuite pa
 
 * [**forrel**](https://github.com/magnusdv/forrel): relatedness analysis and forensic pedigree analysis
 * [**dvir**](https://github.com/magnusdv/dvir): disaster victim identification
+* [**KLINK**](https://github.com/magnusdv/KLINK): kinship testing with linked markers
 * [**paramlink2**](https://github.com/magnusdv/paramlink2): parametric linkage analysis
 * [**pedbuildr**](https://github.com/magnusdv/pedbuildr): pedigree reconstruction
 * [**segregatr**](https://github.com/magnusdv/segregatr): medical segregation analysis

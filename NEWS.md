@@ -1,3 +1,8 @@
+# pedprobr 1.0.1
+
+* Fix CRAN error (an example failed on some platforms due to rounding issues).
+
+
 # pedprobr 1.0.0
 
 * Methods for allele lumping have been rewritten and expanded. In particular, markers with an un-lumpable mutation model (in the Kemeny-Snell sense) can now, in certain cases, be lumped using the *special lumping* recently implemented in **pedmut**. To activate this, set `special = TRUE` in `likelihood()` and `likelihood2()`. By default, `special` is FALSE in the former and TRUE in the latter.
