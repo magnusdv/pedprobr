@@ -64,10 +64,11 @@ mutmod(x3, 1)
 
 # Lump
 y3 = lumpAlleles(x3, verbose = TRUE)
+
 mutmod(y3, 1)
 
-stopifnot(likelihood(x) == likelihood(y),
-          likelihood(x2) == likelihood(y2),
-          likelihood(x3) == likelihood(y3))
+stopifnot(all.equal(likelihood(x), likelihood(y)),
+          all.equal(likelihood(x2), likelihood(y2)),
+          all.equal(likelihood(x3), likelihood(y3)))
 
 }
