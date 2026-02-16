@@ -6,7 +6,7 @@ test_that("likelihood of inbred singleton agrees with expanded pedigree, and the
   mhet = marker(x, '5'=1:2, alleles=1:2, afreq=c(p,q), name="het")
   x = setMarkers(x, list(mhom, mhet))
 
-  y = subset(x, 5)
+  y = extractSingletons(x, 5)
   founderInbreeding(y, 5) = 0.25
 
   lik_y_hom = likelihood(y, "hom")
@@ -54,7 +54,7 @@ test_that("founder inb raises error in likelihood of linked markers", {
                "Likelihood of linked markers is not implemented in pedigrees with founder inbreeding.")
 
   # singleton method
-  s = subset(x, 1)
+  s = extractSingletons(x, 1)
   expect_error(likelihood2(s, m, m, rho = 0.1),
                "Likelihood of linked markers is not implemented in pedigrees with founder inbreeding.")
 })
@@ -70,6 +70,5 @@ test_that("complete inbreeding + heterozygosity = 0", {
 
   y = list(x,s)
   expect_equal(likelihood(y), 0)
-
 })
 
