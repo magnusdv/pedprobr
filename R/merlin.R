@@ -181,8 +181,8 @@ merlin = function(x, options, markers = NULL, linkageMap = NULL, verbose = TRUE,
     err = mout[which(warn)[1] + 0:5]
 
   if(!is.null(err))
-    warning(paste0(err, collapse = "\n"), call. = FALSE)
-  else if (verbose)
+    warn2(err)
+  else if(verbose)
     cat("\nMERLIN run completed\n")
 
   invisible(mout)
@@ -193,7 +193,119 @@ merlin = function(x, options, markers = NULL, linkageMap = NULL, verbose = TRUE,
 #'
 #' @rdname merlin
 #' @export
-likelihoodMerlin = function(x, markers = NULL, linkageMap = NULL, rho = NULL, logbase = NULL, perChrom = FALSE,
+likelihoodMerlin = function(x, markers = NULL, linkageMap = NULL, rho = NULL,
+                            logbase = NULL, perChrom = FALSE,
+                            options = "--likelihood --bits:100 --megabytes:4000 --quiet",
+                            ...) {
+
+  # Select markers
+  x = selectMarkers(x, markers %||% seq_len(nMarkers(x)))
+
+  # If rho given, replace map
+  if(!is.null(rho)) {
+
+    if(!is.null(linkageMap))
+      stop2("At least one of `rho` and `linkageMap` must be NULL")
+
+    if(length(rho) != nMarkers(x) - 1)
+      stop2("Argument `rho` must have length one less than the number of markers")
+
+    # Avoid infinities
+    rho[rho == 0.5] = haldane(cM = 500)
+
+    # If no chromosome info given, place all markers on chrom 1
+    chr = chrom(x)
+    if(all(is.na(chr)))
+      chr = rep_len(1, nMarkers(x))
+
+    # Convert to centiMorgan positions
+    cm = c(0, haldane(rho = rho))
+
+    linkageMap = data.frame(CHROM = chr, MARKER = name(x), CM = cm)
+  }
+
+  # Run MERLIN
+  mout = merlin(x, linkageMap = linkageMap, options = options, ...)
+
+  if(any(skipped <- substr(mout, 3, 9) == "SKIPPED"))
+    stop2(paste(mout[sort(c(which(skipped) - 1, which(skipped)))], collapse = "\n"))
+
+  nFam = if(is.pedList(x)) length(x) else 1
+  likPat = sprintf("^lnLikelihood for %d families", nFam)
+
+  parse_lnlik = function(s) {
+    m = regmatches(s, regexec("=\\s*([-+]?\\d*\\.?\\d+(?:[eE][-+]?\\d+)?)", s))[[1]]
+    if (length(m) < 2) NA_real_ else as.numeric(m[2])
+  }
+
+  chromLines = which(grepl("^Analysing Chromosome", mout))
+
+  # Single chromosome (no chrom info in file)
+  if (length(chromLines) == 0) {
+    likLine = which(grepl(likPat, mout))
+    res0 = if (length(likLine) == 0) -Inf else parse_lnlik(mout[likLine[1]])
+    res = fixMerlinLog(res0, logbase = logbase)
+
+    badLines = mout[grepl("^\\s*Skipping Marker\\b.*\\[BAD INHERITANCE\\]", mout)]
+    if(length(badLines)) {
+      marker = sub("^\\s*Skipping Marker\\s+(\\S+).*", "\\1", badLines)
+      chrom = map$Chr[match(marker, map$Marker)]
+      diagn = data.frame(chrom = chrom, marker = marker, status = "bad_inheritance")
+      attr(res, "bad") = diagn
+      warn2("BAD INHERITANCE: ", diagn$marker)
+    }
+    return(res)
+  }
+
+  chromIds = trimws(sub("^Analysing Chromosome\\s*", "", mout[chromLines]))
+  endLines = c(chromLines[-1] - 1, length(mout))
+
+  lnliks = rep(NA_real_, length(chromLines))
+  badMarkers = vector("list", length(chromLines))
+
+  for (i in seq_along(chromLines)) {
+    block = mout[chromLines[i]:endLines[i]]
+
+    badLines = block[grepl("^\\s*Skipping Marker\\b.*\\[BAD INHERITANCE\\]", block)]
+    if (length(badLines))
+      badMarkers[[i]] = sub("^\\s*Skipping Marker\\s+(\\S+).*", "\\1", badLines)
+
+    likIdx = which(grepl(likPat, block))
+    if (length(likIdx))
+      lnliks[i] = parse_lnlik(block[likIdx[1]])
+  }
+
+  names(lnliks) = chromIds
+
+  names(badMarkers) = chromIds
+  badMarkers = badMarkers[lengths(badMarkers) > 0]
+
+  diagn = NULL
+  if(length(badMarkers))
+    diagn = data.frame(chrom = rep(names(badMarkers), lengths(badMarkers)),
+                       marker = unlist(badMarkers, use.names = FALSE),
+                       status = "bad_inheritance")
+
+  skippedChrom = chromIds[is.na(lnliks)]
+  if (length(skippedChrom))
+    warn2("MERLIN produced no likelihood for chromosome(s):", skippedChrom)
+  if (!is.null(diagn))
+    warn2("BAD INHERITANCE: ", diagn$marker)
+
+  # Returns
+  if (perChrom)
+    res = fixMerlinLog(lnliks, logbase = logbase)
+  else {
+    res0 = if (anyNA(lnliks)) -Inf else sum(lnliks)
+    res = fixMerlinLog(res0, logbase = logbase)
+  }
+
+  if(!is.null(diagn)) attr(res, "bad") = diagn
+  res
+}
+
+
+likelihoodMerlinOLD = function(x, markers = NULL, linkageMap = NULL, rho = NULL, logbase = NULL, perChrom = FALSE,
                             options = "--likelihood --bits:100 --megabytes:4000 --quiet",
                             ...) {
 

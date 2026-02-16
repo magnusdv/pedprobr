@@ -4,6 +4,12 @@ stop2 = function(...) {
   do.call(stop, a)
 }
 
+warn2 = function(..., immediate = TRUE) {
+  a = lapply(list(...), toString)
+  a = append(a, list(call. = FALSE, immediate. = immediate))
+  do.call(warning, a)
+}
+
 # Test that input is a positive (or similar) integer.
 isCount = function(x, minimum = 1) {
   isTRUE(length(x) == 1 &&
