@@ -30,7 +30,7 @@ fraction between the two markers.}
 
 \item{loopBreakers}{(Only relevant if the pedigree has loops). A vector with
 ID labels of individuals to be used as loop breakers. If NULL (default)
-loop breakers are selected automatically. See \code{\link[pedtools:inbreedingLoops]{pedtools::breakLoops()}}.}
+loop breakers are selected automatically. See \code{\link[pedtools:breakLoops]{pedtools::breakLoops()}}.}
 
 \item{lumpSpecial}{A logical, passed on to \code{\link[=likelihood2]{likelihood2()}}.}
 

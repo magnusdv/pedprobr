@@ -82,7 +82,7 @@ basis for logarithmic output. Typical values are \code{exp(1)} and 10.}
 
 \item{loopBreakers}{A vector of ID labels indicating loop breakers. If NULL
 (default), automatic selection of loop breakers will be performed. See
-\code{\link[pedtools:inbreedingLoops]{pedtools::breakLoops()}}.}
+\code{\link[pedtools:breakLoops]{pedtools::breakLoops()}}.}
 
 \item{allX}{For internal use; set to TRUE if all markers are X-chromosomal.}
 

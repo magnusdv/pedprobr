@@ -50,8 +50,7 @@
 #'           all.equal(likelihood(x2), likelihood(y2)),
 #'           all.equal(likelihood(x3), likelihood(y3)))
 #'
-#' @importFrom pedmut alwaysLumpable getParams isLumpable lumpedModel
-#'   lumpMutSpecial
+#' @importFrom pedmut alwaysLumpable getParams isLumpable lumpedModel lumpMutSpecial
 #' @export
 lumpAlleles = function(x, markers = NULL, always = FALSE, special = TRUE,
                        alleleLimit = Inf, verbose = FALSE) {
