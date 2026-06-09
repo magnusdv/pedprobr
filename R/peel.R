@@ -13,18 +13,63 @@ choosePeeler = function(twolocus, rho, Xchrom, SEX, mutmat, mutmat2 = NULL) {
   .f
 }
 
+.mget = function(mat, i, j, nr = nrow(mat)) mat[i + (j - 1L)*nr]
+
+.updatePivot = function(dat, link, pivDat, res) {
+  pivDat$prob = res
+  if(sum(res) == 0)
+    attr(dat, "impossible") = TRUE
+
+  dat[[link]] = .reduce(pivDat)
+  dat
+}
+
+
 .peel_M_AUT = function(dat, sub, mutmat = NULL) {
   fa = sub$father
   mo = sub$mother
   link = sub$link
+  kids = sub$children
 
   faDat = dat[[fa]]
   moDat = dat[[mo]]
+
+  oneChild = length(kids) == 1L &&
+    (link == 0L || link == fa || link == mo || link == kids[[1L]])
+
+  if(oneChild) {
+    ch = kids[[1L]]
+    chDat = dat[[ch]]
+
+    transPat = .transProbM(faDat, chDat$pat, mutmat = mutmat$male)
+    transMat = .transProbM(moDat, chDat$mat, mutmat = mutmat$female)
+    fterm = as.numeric(transPat %*% faDat$prob)
+    mterm = as.numeric(transMat %*% moDat$prob)
+
+    if(link == 0L)
+      return(sum(chDat$prob*fterm*mterm))
+
+    if(link == fa) {
+      res = faDat$prob*as.numeric(crossprod(chDat$prob*mterm, transPat))
+      return(.updatePivot(dat, link, faDat, res))
+    }
+
+    if(link == mo) {
+      res = moDat$prob*as.numeric(crossprod(chDat$prob*fterm, transMat))
+      return(.updatePivot(dat, link, moDat, res))
+    }
+
+    if(link == ch) {
+      res = chDat$prob*fterm*mterm
+      return(.updatePivot(dat, link, chDat, res))
+    }
+  }
+
   likel = tcrossprod(faDat$prob, moDat$prob) # faDat$prob %*% t.default(moDat$prob)
   faLen = nrow(likel)
   moLen = ncol(likel)
 
-  for (ch in .mysetdiff(sub$children, link)) {
+  for(ch in .mysetdiff(kids, link)) {
     chDat = dat[[ch]]
     transPat = .transProbM(faDat, chDat$pat, mutmat = mutmat$male)
     transMat = .transProbM(moDat, chDat$mat, mutmat = mutmat$female)
@@ -32,16 +77,16 @@ choosePeeler = function(twolocus, rho, Xchrom, SEX, mutmat, mutmat2 = NULL) {
     likel = likel * mm
   }
 
-  # If last individual: Return likelihood!
-  if (link == 0)
+  # If last individual: Return likelihood
+  if(link == 0)
     return(sum(likel))
 
   # Otherwise: Link (pivot) individual
   pivDat = dat[[link]]
 
-  if (link == fa)
+  if(link == fa)
     res = .rowSums(likel, faLen, moLen)
-  else if (link == mo)
+  else if(link == mo)
     res = .colSums(likel, faLen, moLen)
   else if(sum(likel) == 0)
     res = numeric(length(pivDat$prob))
@@ -55,13 +100,7 @@ choosePeeler = function(twolocus, rho, Xchrom, SEX, mutmat, mutmat2 = NULL) {
     res = pivDat$prob * a
   }
 
-  # Update the probabilities
-  pivDat$prob = res
-  if(sum(res) == 0)
-    attr(dat, "impossible") = TRUE
-
-  dat[[link]] = .reduce(pivDat)
-  dat
+  .updatePivot(dat, link, pivDat, res)
 }
 
 
@@ -117,13 +156,7 @@ choosePeeler = function(twolocus, rho, Xchrom, SEX, mutmat, mutmat2 = NULL) {
     res = pivDat$prob * a
   }
 
-  # Update the probabilities
-  pivDat$prob = res
-  if(sum(res) == 0)
-    attr(dat, "impossible") = TRUE
-
-  dat[[link]] = .reduce(pivDat)
-  dat
+  .updatePivot(dat, link, pivDat, res)
 }
 
 
@@ -140,10 +173,12 @@ choosePeeler = function(twolocus, rho, Xchrom, SEX, mutmat, mutmat2 = NULL) {
   if(!is.null(paral)) {
     if(nc > 1)
       paral = rep(paral, each = nc)
-    if(is.null(mutmat))
-      res = as.numeric(paral == childhap)
+
+    res = if(is.null(mutmat))
+      as.numeric(paral == childhap)
     else
-      res = mutmat[cbind(paral, childhap, deparse.level = 0)]
+      .mget(mutmat, paral, childhap)
+
     dim(res) = c(nc, length(res)/nc)
     return(res)
   }
@@ -157,10 +192,10 @@ choosePeeler = function(twolocus, rho, Xchrom, SEX, mutmat, mutmat2 = NULL) {
     mat = rep(mat, each = nc)
   }
 
-  if (is.null(mutmat))
+  if(is.null(mutmat))
     res = ((pat == childhap) + (mat == childhap))/2
   else
-    res = (mutmat[cbind(pat, childhap)] + mutmat[cbind(mat, childhap)])/2
+    res = (.mget(mutmat, pat, childhap) + .mget(mutmat, mat, childhap))/2
 
   # DEBUG:
   # print(matrix(res, nrow = nc, dimnames = list(childhap, pasteHap(parent))))
@@ -178,50 +213,84 @@ choosePeeler = function(twolocus, rho, Xchrom, SEX, mutmat, mutmat2 = NULL) {
   fa = sub$father
   mo = sub$mother
   link = sub$link
+  kids = sub$children
 
   faDat = dat[[fa]]
   moDat = dat[[mo]]
+
+  oneChild = length(kids) == 1L &&
+    (link == 0L || link == fa || link == mo || link == kids[[1L]])
+
+  if(oneChild) {
+    ch = kids[[1L]]
+    chDat = dat[[ch]]
+
+    transPat = .transProbMM(faDat, chDat[c("pat1", "pat2")],
+                            rho = rho, mutmat1 = mut1$male, mutmat2 = mut2$male)
+    transMat = .transProbMM(moDat, chDat[c("mat1", "mat2")],
+                            rho = rho, mutmat1 = mut1$female, mutmat2 = mut2$female)
+
+    fterm = as.numeric(transPat %*% faDat$prob)
+    mterm = as.numeric(transMat %*% moDat$prob)
+
+    if(link == 0L)
+      return(sum(chDat$prob*fterm*mterm))
+
+    if(link == fa) {
+      res = faDat$prob*as.numeric(crossprod(chDat$prob*mterm, transPat))
+      return(.updatePivot(dat, link, faDat, res))
+    }
+
+    if(link == mo) {
+      res = moDat$prob*as.numeric(crossprod(chDat$prob*fterm, transMat))
+      return(.updatePivot(dat, link, moDat, res))
+    }
+
+    if(link == ch) {
+      res = chDat$prob*fterm*mterm
+      return(.updatePivot(dat, link, chDat, res))
+    }
+  }
+
   likel = tcrossprod(faDat$prob, moDat$prob) # faDat$prob %*% t.default(moDat$prob)
   faLen = nrow(likel)
   moLen = ncol(likel)
 
   # Loop over the children, except the link if this is a child.
-  for (ch in .mysetdiff(sub$children, link)) {
+  for(ch in .mysetdiff(kids, link)) {
     chDat = dat[[ch]]
-    transPat = .transProbMM(faDat, chDat[c('pat1', 'pat2')], rho = rho, mutmat1 = mut1$male, mutmat2 = mut2$male)
-    transMat = .transProbMM(moDat, chDat[c('mat1', 'mat2')], rho = rho, mutmat1 = mut1$female, mutmat2 = mut2$female)
+    transPat = .transProbMM(faDat, chDat[c('pat1', 'pat2')], rho = rho,
+                            mutmat1 = mut1$male, mutmat2 = mut2$male)
+    transMat = .transProbMM(moDat, chDat[c('mat1', 'mat2')], rho = rho,
+                            mutmat1 = mut1$female, mutmat2 = mut2$female)
     mm = crossprod(chDat$prob * transPat, transMat)
     likel = likel * mm
   }
 
-  if (link == 0)
+  if(link == 0)
     return(sum(likel))
 
   # Goal is to update the probabilities of the link individual ("pivot"):
   pivDat = dat[[link]]
 
-  if (link == fa)
+  if(link == fa)
     res = .rowSums(likel, faLen, moLen)
-  else if (link == mo)
+  else if(link == mo)
     res = .colSums(likel, faLen, moLen)
   else if(sum(likel) == 0)
     res = numeric(length(pivDat$prob))
   else { # link is a child
     pivLen = length(pivDat$prob)
-    transPat = .transProbMM(faDat, pivDat[c('pat1', 'pat2')], rho = rho, mutmat1 = mut1$male, mutmat2 = mut2$male)
-    transMat = .transProbMM(moDat, pivDat[c('mat1', 'mat2')], rho = rho, mutmat1 = mut1$female, mutmat2 = mut2$female)
+    transPat = .transProbMM(faDat, pivDat[c('pat1', 'pat2')], rho = rho,
+                            mutmat1 = mut1$male, mutmat2 = mut2$male)
+    transMat = .transProbMM(moDat, pivDat[c('mat1', 'mat2')], rho = rho,
+                            mutmat1 = mut1$female, mutmat2 = mut2$female)
 
     a = .rowSums((transPat %*% likel) * transMat, pivLen, moLen)
     res = pivDat$prob * a
   }
 
-  # Update the probabilities
-  pivDat$prob = res
-  if(sum(res) == 0)
-    attr(dat, "impossible") = TRUE
-
-  dat[[link]] = .reduce(pivDat)
-  dat
+  .updatePivot(dat, link, pivDat, res)
 }
 
 .peel_MM_X = function(dat, sub, rho, SEX, mut1 = NULL, mut2 = NULL) { #print("peelX")
@@ -239,12 +308,14 @@ choosePeeler = function(twolocus, rho, Xchrom, SEX, mutmat, mutmat2 = NULL) {
   for (ch in .mysetdiff(sub$children, link)) {
     chDat = dat[[ch]]
     chLen = length(chDat$prob)
-    transMat = .transProbMM(moDat, chDat[c('mat1', 'mat2')], rho = rho, mutmat1 = mut1$female, mutmat2 = mut2$female)
+    transMat = .transProbMM(moDat, chDat[c('mat1', 'mat2')], rho = rho,
+                            mutmat1 = mut1$female, mutmat2 = mut2$female)
 
     if(SEX[ch] == 1)
       transPat = matrix(1, nrow = chLen, ncol = faLen)
     else
-      transPat = .transProbMM(faDat, chDat[c('pat1', 'pat2')], rho = rho, mutmat1 = mut1$male, mutmat2 = mut2$male)
+      transPat = .transProbMM(faDat, chDat[c('pat1', 'pat2')], rho = rho,
+                              mutmat1 = mut1$male, mutmat2 = mut2$male)
     mm = crossprod(chDat$prob * transPat, transMat)
     likel = likel * mm
   }
@@ -263,24 +334,20 @@ choosePeeler = function(twolocus, rho, Xchrom, SEX, mutmat, mutmat2 = NULL) {
     res = numeric(length(pivDat$prob))
   else { # link is a child
     pivLen = length(pivDat$prob)
-    transMat = .transProbMM(moDat, pivDat[c('mat1', 'mat2')], rho = rho, mutmat1 = mut1$female, mutmat2 = mut2$female)
+    transMat = .transProbMM(moDat, pivDat[c('mat1', 'mat2')], rho = rho,
+                            mutmat1 = mut1$female, mutmat2 = mut2$female)
 
     if(SEX[link] == 1)
       transPat = matrix(1, nrow = pivLen, ncol = faLen)
     else
-      transPat = .transProbMM(faDat, pivDat[c('pat1', 'pat2')], rho = rho, mutmat1 = mut1$male, mutmat2 = mut2$male)
+      transPat = .transProbMM(faDat, pivDat[c('pat1', 'pat2')], rho = rho,
+                              mutmat1 = mut1$male, mutmat2 = mut2$male)
 
     a = .rowSums((transPat %*% likel) * transMat, pivLen, moLen)
     res = pivDat$prob * a
   }
 
-  # Update the probabilities
-  pivDat$prob = res
-  if(sum(res) == 0)
-    attr(dat, "impossible") = TRUE
-
-  dat[[link]] = .reduce(pivDat)
-  dat
+  .updatePivot(dat, link, pivDat, res)
 }
 
 
@@ -305,8 +372,10 @@ choosePeeler = function(twolocus, rho, Xchrom, SEX, mutmat, mutmat2 = NULL) {
       a1 = rep(a1, each = nc)
       a2 = rep(a2, each = nc)
     }
-    prob1 = if(is.null(mutmat1)) as.numeric(a1 == gam1) else mutmat1[cbind(a1, gam1, deparse.level = 0)]
-    prob2 = if(is.null(mutmat2)) as.numeric(a2 == gam2) else mutmat2[cbind(a2, gam2, deparse.level = 0)]
+
+    prob1 = if(is.null(mutmat1)) as.numeric(a1 == gam1) else .mget(mutmat1, a1, gam1)
+    prob2 = if(is.null(mutmat2)) as.numeric(a2 == gam2) else .mget(mutmat2, a2, gam2)
+
     res = prob1 * prob2
     dim(res) = c(nc, length(res)/nc)
     return(res)
@@ -320,12 +389,13 @@ choosePeeler = function(twolocus, rho, Xchrom, SEX, mutmat, mutmat2 = NULL) {
   p2 = if(nc > 1) rep(par$pat2, each = nc) else par$pat2
   m2 = if(nc > 1) rep(par$mat2, each = nc) else par$mat2
 
-  loc1pat = if(is.null(mutmat1)) as.integer(p1 == gam1) else mutmat1[cbind(p1, gam1, deparse.level = 0)]
-  loc1mat = if(is.null(mutmat1)) as.integer(m1 == gam1) else mutmat1[cbind(m1, gam1, deparse.level = 0)]
-  loc2pat = if(is.null(mutmat2)) as.integer(p2 == gam2) else mutmat2[cbind(p2, gam2, deparse.level = 0)]
-  loc2mat = if(is.null(mutmat2)) as.integer(m2 == gam2) else mutmat2[cbind(m2, gam2, deparse.level = 0)]
+  loc1pat = if(is.null(mutmat1)) as.integer(p1 == gam1) else .mget(mutmat1, p1, gam1)
+  loc1mat = if(is.null(mutmat1)) as.integer(m1 == gam1) else .mget(mutmat1, m1, gam1)
+  loc2pat = if(is.null(mutmat2)) as.integer(p2 == gam2) else .mget(mutmat2, p2, gam2)
+  loc2mat = if(is.null(mutmat2)) as.integer(m2 == gam2) else .mget(mutmat2, m2, gam2)
 
-  res = (loc1pat * loc2pat * (1 - rho) + loc1mat * loc2mat * (1 - rho) + loc1pat * loc2mat * rho + loc1mat * loc2pat * rho)/2
+  norho = 1 - rho
+  res = (loc1pat*loc2pat*norho + loc1mat*loc2mat*norho + loc1pat*loc2mat*rho + loc1mat*loc2pat*rho)/2
 
   # DEBUG:
   if(debug) {
