@@ -225,9 +225,9 @@ choosePeeler = function(twolocus, rho, Xchrom, SEX, mutmat, mutmat2 = NULL) {
     ch = kids[[1L]]
     chDat = dat[[ch]]
 
-    transPat = .transProbMM(faDat, chDat[c("pat1", "pat2")],
+    transPat = .transProbMM(faDat, chDat$pat1, chDat$pat2,
                             rho = rho, mutmat1 = mut1$male, mutmat2 = mut2$male)
-    transMat = .transProbMM(moDat, chDat[c("mat1", "mat2")],
+    transMat = .transProbMM(moDat, chDat$mat1, chDat$mat2,
                             rho = rho, mutmat1 = mut1$female, mutmat2 = mut2$female)
 
     fterm = as.numeric(transPat %*% faDat$prob)
@@ -259,9 +259,9 @@ choosePeeler = function(twolocus, rho, Xchrom, SEX, mutmat, mutmat2 = NULL) {
   # Loop over the children, except the link if this is a child.
   for(ch in .mysetdiff(kids, link)) {
     chDat = dat[[ch]]
-    transPat = .transProbMM(faDat, chDat[c('pat1', 'pat2')], rho = rho,
+    transPat = .transProbMM(faDat, chDat$pat1, chDat$pat2, rho = rho,
                             mutmat1 = mut1$male, mutmat2 = mut2$male)
-    transMat = .transProbMM(moDat, chDat[c('mat1', 'mat2')], rho = rho,
+    transMat = .transProbMM(moDat, chDat$mat1, chDat$mat2, rho = rho,
                             mutmat1 = mut1$female, mutmat2 = mut2$female)
     mm = crossprod(chDat$prob * transPat, transMat)
     likel = likel * mm
@@ -281,9 +281,9 @@ choosePeeler = function(twolocus, rho, Xchrom, SEX, mutmat, mutmat2 = NULL) {
     res = numeric(length(pivDat$prob))
   else { # link is a child
     pivLen = length(pivDat$prob)
-    transPat = .transProbMM(faDat, pivDat[c('pat1', 'pat2')], rho = rho,
+    transPat = .transProbMM(faDat, pivDat$pat1, pivDat$pat2, rho = rho,
                             mutmat1 = mut1$male, mutmat2 = mut2$male)
-    transMat = .transProbMM(moDat, pivDat[c('mat1', 'mat2')], rho = rho,
+    transMat = .transProbMM(moDat, pivDat$mat1, pivDat$mat2, rho = rho,
                             mutmat1 = mut1$female, mutmat2 = mut2$female)
 
     a = .rowSums((transPat %*% likel) * transMat, pivLen, moLen)
@@ -308,13 +308,13 @@ choosePeeler = function(twolocus, rho, Xchrom, SEX, mutmat, mutmat2 = NULL) {
   for (ch in .mysetdiff(sub$children, link)) {
     chDat = dat[[ch]]
     chLen = length(chDat$prob)
-    transMat = .transProbMM(moDat, chDat[c('mat1', 'mat2')], rho = rho,
+    transMat = .transProbMM(moDat, chDat$mat1, chDat$mat2, rho = rho,
                             mutmat1 = mut1$female, mutmat2 = mut2$female)
 
     if(SEX[ch] == 1)
       transPat = matrix(1, nrow = chLen, ncol = faLen)
     else
-      transPat = .transProbMM(faDat, chDat[c('pat1', 'pat2')], rho = rho,
+      transPat = .transProbMM(faDat, chDat$pat1, chDat$pat2, rho = rho,
                               mutmat1 = mut1$male, mutmat2 = mut2$male)
     mm = crossprod(chDat$prob * transPat, transMat)
     likel = likel * mm
@@ -334,13 +334,13 @@ choosePeeler = function(twolocus, rho, Xchrom, SEX, mutmat, mutmat2 = NULL) {
     res = numeric(length(pivDat$prob))
   else { # link is a child
     pivLen = length(pivDat$prob)
-    transMat = .transProbMM(moDat, pivDat[c('mat1', 'mat2')], rho = rho,
+    transMat = .transProbMM(moDat, pivDat$mat1, pivDat$mat2, rho = rho,
                             mutmat1 = mut1$female, mutmat2 = mut2$female)
 
     if(SEX[link] == 1)
       transPat = matrix(1, nrow = pivLen, ncol = faLen)
     else
-      transPat = .transProbMM(faDat, pivDat[c('pat1', 'pat2')], rho = rho,
+      transPat = .transProbMM(faDat, pivDat$pat1, pivDat$pat2, rho = rho,
                               mutmat1 = mut1$male, mutmat2 = mut2$male)
 
     a = .rowSums((transPat %*% likel) * transMat, pivLen, moLen)
@@ -351,11 +351,10 @@ choosePeeler = function(twolocus, rho, Xchrom, SEX, mutmat, mutmat2 = NULL) {
 }
 
 
-.transProbMM = function(par, gamete, rho, mutmat1 = NULL, mutmat2 = NULL, debug = FALSE) {
+.transProbMM = function(par, gam1, gam2, rho, mutmat1 = NULL, mutmat2 = NULL, debug = FALSE) {
   # parent = list(pat1, mat1, pat2, mat2, prob); vectors of same length
-  # gamete = list(pat1, pat2) or list(mat1, mat2); vecs of same length
-  gam1 = gamete[[1]]
-  gam2 = gamete[[2]]
+  # gam1, gam2: vecs of same length
+
   np = length(par$prob)
   nc = length(gam1)
 
