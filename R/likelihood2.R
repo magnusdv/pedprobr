@@ -58,8 +58,8 @@ likelihood2.ped = function(x, marker1, marker2, rho = NULL, peelOrder = NULL,
   if(rho == 0.5) {
     if(verbose)
       message("Unlinked markers; computing likelihoods separately")
-    lik1 = likelihood.ped(x, 1, peelOrder = peelOrder, lump = FALSE, logbase = logbase, verbose = FALSE)
-    lik2 = likelihood.ped(x, 2, peelOrder = peelOrder, lump = FALSE, logbase = logbase, verbose = FALSE)
+    lik1 = likelihood.ped(x, 1, peelOrder = peelOrder, lump = FALSE, logbase = NULL, verbose = FALSE)
+    lik2 = likelihood.ped(x, 2, peelOrder = peelOrder, lump = FALSE, logbase = NULL, verbose = FALSE)
     res = if(is.numeric(logbase)) log(lik1, logbase) + log(lik2, logbase) else lik1 * lik2
     return(res)
   }
