@@ -399,7 +399,8 @@ choosePeeler = function(twolocus, rho, Xchrom, SEX, mutmat, mutmat2 = NULL) {
   # DEBUG:
   if(debug) {
     parHap = paste(pasteHap(par[c(1,3)], ""), pasteHap(par[c(2,4)], ""), sep = "|")
-    print(matrix(res, ncol = np, dimnames = list(pasteHap(gamete, ""), parHap)))
+    gamHap = pasteHap(list(gam1, gam2), "")
+    print(matrix(res, ncol = np, dimnames = list(gamHap, parHap)))
   }
 
   dim(res) = c(nc, np)
