@@ -247,9 +247,13 @@ likelihoodMerlin = function(x, markers = NULL, linkageMap = NULL, rho = NULL,
     res = fixMerlinLog(res0, logbase = logbase)
 
     badLines = mout[grepl("^\\s*Skipping Marker\\b.*\\[BAD INHERITANCE\\]", mout)]
+
     if(length(badLines)) {
       marker = sub("^\\s*Skipping Marker\\s+(\\S+).*", "\\1", badLines)
-      chrom = map$Chr[match(marker, map$Marker)]
+      if(isTRUE(ncol(linkageMap) > 2)) # safeguard
+        chrom = linkageMap[,1][match(marker, linkageMap[,2])]
+      else
+        chrom = rep(NA_character_, length(marker))
       diagn = data.frame(chrom = chrom, marker = marker, status = "bad_inheritance")
       attr(res, "bad") = diagn
       warn2("BAD INHERITANCE: ", diagn$marker)
@@ -287,102 +291,22 @@ likelihoodMerlin = function(x, markers = NULL, linkageMap = NULL, rho = NULL,
                        status = "bad_inheritance")
 
   skippedChrom = chromIds[is.na(lnliks)]
-  if (length(skippedChrom))
+  if(length(skippedChrom))
     warn2("MERLIN produced no likelihood for chromosome(s):", skippedChrom)
-  if (!is.null(diagn))
+  if(!is.null(diagn))
     warn2("BAD INHERITANCE: ", diagn$marker)
 
   # Returns
-  if (perChrom)
+  if(perChrom)
     res = fixMerlinLog(lnliks, logbase = logbase)
   else {
-    res0 = if (anyNA(lnliks)) -Inf else sum(lnliks)
+    res0 = if(anyNA(lnliks)) -Inf else sum(lnliks)
     res = fixMerlinLog(res0, logbase = logbase)
   }
 
   if(!is.null(diagn)) attr(res, "bad") = diagn
   res
 }
-
-
-likelihoodMerlinOLD = function(x, markers = NULL, linkageMap = NULL, rho = NULL, logbase = NULL, perChrom = FALSE,
-                            options = "--likelihood --bits:100 --megabytes:4000 --quiet",
-                            ...) {
-
-  # Select markers
-  x = selectMarkers(x, markers %||% seq_len(nMarkers(x)))
-
-  # If rho given, replace map
-  if(!is.null(rho)) {
-
-    if(!is.null(linkageMap))
-      stop2("At least one of `rho` and `linkageMap` must be NULL")
-
-    if(length(rho) != nMarkers(x) - 1)
-      stop2("Argument `rho` must have length one less than the number of markers")
-
-    # Avoid infinities
-    rho[rho == 0.5] = haldane(cM = 500)
-
-    # If no chromosome info given, place all markers on chrom 1
-    chr = chrom(x)
-    if(all(is.na(chr)))
-      chr = rep_len(1, nMarkers(x))
-
-    # Convert to centiMorgan positions
-    cm = c(0, haldane(rho = rho))
-
-    linkageMap = data.frame(CHROM = chr, MARKER = name(x), CM = cm)
-  }
-
-  # Run MERLIN
-  mout = merlin(x, linkageMap = linkageMap, options = options, ...)
-
-  # Catch possible errors
-  if (any(skipped <- substr(mout, 3, 9) == "SKIPPED"))
-    stop2(paste(mout[sort(c(which(skipped)-1, which(skipped)))], collapse = "\n"))
-
-  # Bad inheritance? Return lnLik = -Inf (i.e. L = 0)
-  if (any(grepl("Skipping Marker .* [BAD INHERITANCE]", mout)))
-    return(fixMerlinLog(-Inf, logbase = logbase))
-
-  # Different chromosomes?
-  chromLines = which(substr(mout, 1, 20) == "Analysing Chromosome")
-
-  # Lines with loglik results
-  nFam = if(is.pedList(x)) length(x) else 1
-  likLines = which(substr(mout, 1, 27) == sprintf("lnLikelihood for %d families", nFam))
-
-  if(length(likLines) == 0)
-    return(fixMerlinLog(-Inf, logbase = logbase))
-
-  # If single output value: Return likelihood
-  if(length(chromLines) == 0 && length(likLines) == 1) {
-    lnlik = as.numeric(strsplit(mout[likLines]," = ")[[1]][2])
-    return(fixMerlinLog(lnlik, logbase = logbase))
-  }
-
-  #---------------
-  # Otherwise: Return total likelihood
-  #---------------
-
-  if(length(chromLines) != length(likLines))
-    stop2(mout)
-
-  # Extract log-likelihoods
-  lnliks = as.numeric(unlist(lapply(strsplit(mout[likLines]," = "), '[', 2),
-                             recursive = FALSE, use.names = FALSE))
-
-  if(perChrom) {
-    res = lnliks
-    names(res) = trimws(sub("Analysing Chromosome", "", mout[chromLines]))
-  }
-  else
-    res = sum(lnliks)
-
-  fixMerlinLog(res, logbase = logbase)
-}
-
 
 
 #' @rdname merlin
@@ -416,4 +340,29 @@ checkMerlin = function(program = NULL, version = TRUE, error = FALSE) {
   }
 
   TRUE
+}
+
+
+fixMerlinLog = function(a, logbase = NULL) {
+  if(!is.null(logbase)) {
+    if(length(logbase) != 1 || !is.numeric(logbase) || logbase <= 0)
+      stop2("`logbase` must be a positive number: ", logbase)
+
+    if(logbase == exp(1))
+      res = a
+    else
+      res = round(a/log(logbase),3)
+  }
+  else {
+    res = signif(exp(a), digits = 3)
+    uflow = res == 0 & a > -Inf
+    if(any(uflow))
+      warning("Underflow!\nSome lnLikelihoods reported by MERLIN are too small to be exp'ed.",
+              immediate. = TRUE, call. = FALSE)
+    oflow = res == Inf & a < Inf
+    if(any(oflow))
+      warning("Overflow!\nSome lnLikelihoods reported by MERLIN are too large to be exp'ed.",
+              immediate. = TRUE, call. = FALSE)
+  }
+  res
 }

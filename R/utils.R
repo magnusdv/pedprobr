@@ -34,6 +34,10 @@ isCount = function(x, minimum = 1) {
   y[match(x, y, 0L)]
 }
 
+.mysetequal = function(x, y) {
+  !anyNA(match(x, y)) && !anyNA(match(y, x))
+}
+
 # Stripped version of expand.grid
 fastGrid = function(argslist, as.list = FALSE) {
   nargs = length(argslist)
