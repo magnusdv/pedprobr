@@ -115,11 +115,9 @@ startdata_MM = function(x, marker1, marker2, pedInfo = NULL) {
     g2 = glist2[[i]]
     len1 = length(g1$prob)
     len2 = length(g2$prob)
-    idx1 = rep(seq_len(len1), each = len2)
-    idx2 = rep(seq_len(len2), times = len1)
-
-    # Same in all cases
-    prob = as.numeric(g1$prob[idx1] * g2$prob[idx2])
+    rep1 = function(z) rep(z, each = len2)
+    rep2 = function(z) rep.int(z, len1)
+    prob = as.numeric(rep1(g1$prob)*rep2(g2$prob))
 
     if(sum(prob == 0)) {
       imp = TRUE
@@ -128,23 +126,23 @@ startdata_MM = function(x, marker1, marker2, pedInfo = NULL) {
 
     # Case 1: Hemizygous
     if(Xchrom && SEX[i] == 1) {
-      g = list(mat1 = g1$mat[idx1], mat2 = g2$mat[idx2], prob = prob)
+      g = list(mat1 = rep1(g1$mat), mat2 = rep2(g2$mat), prob = prob)
       glist[[i]] = .reduce(g)
       next
     }
 
     # Case 2: Simple founder
     if(!is.null(g1$allele)) {
-      g = list(allele1 = g1$allele[idx1], allele2 = g2$allele[idx2], prob = prob)
+      g = list(allele1 = rep1(g1$allele), allele2 = rep2(g2$allele), prob = prob)
       glist[[i]] = .reduce(g)
       next
     }
 
     # Main case
-    pat1 = g1$pat[idx1]
-    mat1 = g1$mat[idx1]
-    pat2 = g2$pat[idx2]
-    mat2 = g2$mat[idx2]
+    pat1 = rep1(g1$pat)
+    mat1 = rep1(g1$mat)
+    pat2 = rep2(g2$pat)
+    mat2 = rep2(g2$mat)
 
     # Doubly heterozygous founders: Include the other phase as well
     if (isFounder[i]) {
