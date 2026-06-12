@@ -21,6 +21,9 @@ isCount = function(x, minimum = 1) {
   if(is.null(x)) y else x
 }
 
+`%notin%` = function(x, table)
+  match(x, table, nomatch = 0L) == 0L
+
 `%na%` = function(x, y) {
   if(length(x) == 1 && is.na(x)) y else x
 }
