@@ -41,6 +41,10 @@ likTheta = function(x, m, theta, peeler, peelOrder) {
 
   # Founders (internal ID)
   FOU = c(founders(x, internal = TRUE), attr(peelOrder, "treatAsFounder"))
+
+  if(!is.null(x$LOOP_BREAKERS))
+    FOU = .mysetdiff(FOU, x$LOOP_BREAKERS[, "copy"])
+
   NONFOU = seq_len(pedsize(x))[-FOU]
 
   # List of all combinations of founder genotypes

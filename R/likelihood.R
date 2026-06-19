@@ -256,13 +256,18 @@ peelingProcess = function(x, m = x$MARKERS[[1]], startdata = NULL, peeler = NULL
     return(dat)
   }
 
-  ### If broken loops
-  LB = x$LOOP_BREAKERS
-  nr = nrow(LB)
 
-  # For each orig, find the indices of its genotypes that also occur in its copy.
-  genoMatching = lapply(seq_len(nr), function(i)
-    matchDat(dat[[LB[[i,"orig"]]]], dat[[LB[[i,"copy"]]]]))
+  # Loops ---------------------------------------------------------------------------------------
+
+  LB = x$LOOP_BREAKERS
+  origs = unique.default(LB[, "orig"])
+  copies = lapply(origs, function(i) LB[LB[, "orig"] == i, "copy"])
+
+  # For each orig, find the indices of genos occurring in orig and every copy
+  genoMatching = lapply(seq_along(origs), function(i) {
+    dati = dat[[origs[i]]]
+    Reduce(.myintersect, lapply(copies[[i]], \(cop) matchDat(dati, dat[[cop]])))
+  })
 
   # Then take cross product of these vectors.
   loopgrid = fastGrid(genoMatching, as.list = TRUE)
@@ -270,28 +275,35 @@ peelingProcess = function(x, m = x$MARKERS[[1]], startdata = NULL, peeler = NULL
   # Initialise likelihood
   likelihood = 0
 
-  for (r in loopgrid) {
+  for(r in loopgrid) {
     dat1 = dat
     attr(dat1, "impossible") = FALSE
 
-    for (i in seq_len(nr)) { # Note: r[i] is a valid index of orig[i]$pat/mat
-      origi = LB[[i, "orig"]]
-      copyi = LB[[i, "copy"]]
-      origDat = dat[[origi]]
-      dat1[[origi]] = dat1[[copyi]] = lapply(origDat, function(vec) vec[r[i]])
-      dat1[[copyi]]$prob = 1
-      if (sum(dat1[[origi]]$prob) == 0)
+    for(i in seq_along(origs)) {  # r[i] is now a valid index of orig[i]$pat/mat
+      oi = origs[i]
+      cp = copies[[i]]
+
+      origDat = lapply(dat[[oi]], function(v) v[r[i]])
+      dat1[[oi]] = origDat
+
+      copyDat = origDat
+      copyDat$prob = 1
+      dat1[cp] = rep.int(list(copyDat), length(cp))
+
+      if(sum(origDat$prob) == 0)
         message("The likelihood algorithm reached a strange place. The maintainer would be grateful to see this example.")
     }
 
-    for (nuc in peelOrder) {
+    for(nuc in peelOrder) {
       dat1 = peeler(dat1, nuc)
 
       # If impossible data - break out of ES-algorithm and go to next r in loopgrid.
-      if (nuc$link > 0 && attr(dat1, "impossible")) break
+      if(nuc$link > 0 && attr(dat1, "impossible"))
+        break
 
       # If pedigree traversed, dat1 is a number. Add to total and goto next
-      if (nuc$link == 0) likelihood = likelihood + dat1
+      if(nuc$link == 0)
+        likelihood = likelihood + dat1
     }
   }
 
