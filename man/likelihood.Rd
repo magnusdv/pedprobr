@@ -65,11 +65,9 @@ list, this is the only valid input.
 
 \item{peelOrder}{For internal use.}
 
-\item{lump}{Activate allele lumping, i.e., merging unobserved alleles. This
-is an important time saver, and should be applied in nearly all cases. (The
-parameter exists mainly for debugging purposes.) If any markers use a
-non-lumpable mutation model, the \code{special} argument may be used to apply
-more advanced methods.}
+\item{lump}{Activate allele lumping when this does not change the likelihood.
+If any markers use a non-lumpable mutation model, the \code{special} argument may
+be used to apply more advanced methods.}
 
 \item{special}{A logical indicating if special lumping procedures should be
 attempted if the mutation model is not generally lumpable. By default FALSE
@@ -77,23 +75,22 @@ in \code{likelihood()} and TRUE in \code{likelihood2()}.}
 
 \item{alleleLimit}{A positive number or \code{Inf} (default). If the mutation
 model is not generally lumpable, and the allele count exceeds this limit,
-switch to an \code{equal} model with the same rate and reapply lumping.}
+the calculation switches to an \code{equal} mutation model to enable lumping.
+This is an approximation intended to avoid very large computations.}
 
 \item{theta}{Theta correction.}
 
 \item{logbase}{Either NULL (default) or a positive number indicating the
 basis for logarithmic output. Typical values are \code{exp(1)} and 10.}
 
-\item{loopBreakers}{A vector of ID labels indicating loop breakers. If NULL
-(default), automatic selection of loop breakers will be performed. See
-\code{\link[pedtools:breakLoops]{pedtools::breakLoops()}}.}
+\item{loopBreakers}{A vector of ID labels indicating loop breakers. Repeated
+values are allowed, as are founders. If NULL, loop breakers are chosen automatically.
+This is usually recommended. See \code{\link[pedtools:breakLoops]{pedtools::breakLoops()}}.}
 
 \item{allX}{For internal use; set to TRUE if all markers are X-chromosomal.}
 
-\item{verbose}{A logical.}
-
-\item{.diagnostics}{A logical; if TRUE, the peeling process prints diagnostic
-info.}
+\item{verbose, .diagnostics}{Logicals. If \code{.diagnostics = TRUE}, the peeling
+process prints diagnostic messages.}
 
 \item{marker1, marker2}{Single markers compatible with \code{x}.}
 
@@ -104,6 +101,10 @@ biological sense \code{rho} should be between 0 and 0.5.}
 A numeric with the same length as the number of markers indicated by
 \code{markers}. If \code{logbase} is a positive number, the output is
 \code{log(likelihood, logbase)}.
+
+\code{likelihood2()} returns a single value for the two linked markers.
+
+If \code{x} is a list, component likelihoods are multiplied (or log-likelihoods are added).
 }
 \description{
 The \code{likelihood()} and \code{likelihood2()} functions constitute the heart of
@@ -116,18 +117,18 @@ The implementation is based on the peeling algorithm of Elston and Stewart
 (1971). A variety of situations are covered; see the Examples section for
 some demonstrations.
 \itemize{
-\item autosomal and X-linked markers
-\item complex inbred pedigrees
-\item markers with mutation models
+\item pedigrees with loops
 \item pedigrees with inbred founders
+\item autosomal and X-linked markers
+\item markers with mutation models
 \item single markers or two linked markers
 }
 
 For more than two linked markers, see \code{\link[=likelihoodMerlin]{likelihoodMerlin()}}.
 
-Allele lumping can significantly reduce computation time with highly
-polymorphic STR markers and many untyped pedigree members. This is
-particularly important in \code{likelihood2()} which is prone to run out of memory
+Allele lumping merges unobserved alleles when this does not change the likelihood.
+This can greatly reduce computation time for highly polymorphic markers,
+particularly in \code{likelihood2()} which is prone to run out of memory
 without lumping. If a non-lumpable mutation model is used, specialised
 lumping may still be possible in some situations. This is attempted if
 \code{special = TRUE}, which is the default in \code{likelihood2()} but not in
@@ -172,7 +173,7 @@ likelihood2(x, 1, 2, rho = 0, verbose = TRUE)
 }
 \references{
 Elston and Stewart (1971). \emph{A General Model for the Genetic
-Analysis of Pedigree Data}. \doi{https://doi.org/10.1159/000152448}
+Analysis of Pedigree Data}. \doi{10.1159/000152448}
 }
 \seealso{
 \code{\link[=likelihoodMerlin]{likelihoodMerlin()}}, for likelihoods involving more than 2 linked markers.

@@ -9,17 +9,17 @@
 #' (1971). A variety of situations are covered; see the Examples section for
 #' some demonstrations.
 #'
-#' * autosomal and X-linked markers
-#' * complex inbred pedigrees
-#' * markers with mutation models
+#' * pedigrees with loops
 #' * pedigrees with inbred founders
+#' * autosomal and X-linked markers
+#' * markers with mutation models
 #' * single markers or two linked markers
 #'
 #' For more than two linked markers, see [likelihoodMerlin()].
 #'
-#' Allele lumping can significantly reduce computation time with highly
-#' polymorphic STR markers and many untyped pedigree members. This is
-#' particularly important in `likelihood2()` which is prone to run out of memory
+#' Allele lumping merges unobserved alleles when this does not change the likelihood.
+#' This can greatly reduce computation time for highly polymorphic markers,
+#' particularly in `likelihood2()` which is prone to run out of memory
 #' without lumping. If a non-lumpable mutation model is used, specialised
 #' lumping may still be possible in some situations. This is attempted if
 #' `special = TRUE`, which is the default in `likelihood2()` but not in
@@ -39,23 +39,22 @@
 #' @param marker1,marker2 Single markers compatible with `x`.
 #' @param rho The recombination rate between `marker1` and `marker2`. To make
 #'   biological sense `rho` should be between 0 and 0.5.
-#' @param lump Activate allele lumping, i.e., merging unobserved alleles. This
-#'   is an important time saver, and should be applied in nearly all cases. (The
-#'   parameter exists mainly for debugging purposes.) If any markers use a
-#'   non-lumpable mutation model, the `special` argument may be used to apply
-#'   more advanced methods.
+#' @param lump Activate allele lumping when this does not change the likelihood.
+#'   If any markers use a non-lumpable mutation model, the `special` argument may
+#'   be used to apply more advanced methods.
 #' @param special A logical indicating if special lumping procedures should be
 #'   attempted if the mutation model is not generally lumpable. By default FALSE
 #'   in `likelihood()` and TRUE in `likelihood2()`.
 #' @param alleleLimit A positive number or `Inf` (default). If the mutation
 #'   model is not generally lumpable, and the allele count exceeds this limit,
-#'   switch to an `equal` model with the same rate and reapply lumping.
+#'   the calculation switches to an `equal` mutation model to enable lumping.
+#'   This is an approximation intended to avoid very large computations.
 #' @param theta Theta correction.
 #' @param logbase Either NULL (default) or a positive number indicating the
 #'   basis for logarithmic output. Typical values are `exp(1)` and 10.
-#' @param loopBreakers A vector of ID labels indicating loop breakers. If NULL
-#'   (default), automatic selection of loop breakers will be performed. See
-#'   [pedtools::breakLoops()].
+#' @param loopBreakers A vector of ID labels indicating loop breakers. Repeated
+#'   values are allowed, as are founders. If NULL, loop breakers are chosen automatically.
+#'   This is usually recommended. See [pedtools::breakLoops()].
 #' @param peelOrder For internal use.
 #' @param allX For internal use; set to TRUE if all markers are X-chromosomal.
 #' @param verbose,.diagnostics Logicals. If `.diagnostics = TRUE`, the peeling
@@ -66,11 +65,15 @@
 #'   `markers`. If `logbase` is a positive number, the output is
 #'   `log(likelihood, logbase)`.
 #'
+#'   `likelihood2()` returns a single value for the two linked markers.
+#'
+#'   If `x` is a list, component likelihoods are multiplied (or log-likelihoods are added).
+#'
 #' @seealso [likelihoodMerlin()], for likelihoods involving more than 2 linked markers.
 #'
 #' @author Magnus Dehli Vigeland
 #' @references Elston and Stewart (1971). _A General Model for the Genetic
-#'   Analysis of Pedigree Data_. \doi{https://doi.org/10.1159/000152448}
+#'   Analysis of Pedigree Data_. \doi{10.1159/000152448}
 #'
 #' @examples
 #'
