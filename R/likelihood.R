@@ -179,7 +179,7 @@ likelihood.ped = function(x, markers = NULL, peelOrder = NULL, lump = TRUE,
 
   # Peeling order: Same for all markers
   if(is.null(peelOrder))
-    peelOrder = peelingOrder(x)
+    peelOrder = .peelOrder(x)
   if(theta == 0)
     peelOrder = informativeSubnucs(x, peelOrder = peelOrder)
 

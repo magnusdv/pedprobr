@@ -24,7 +24,7 @@ likTheta = function(x, m, theta, peeler, peelOrder) {
 
   if(missing(peelOrder)) {
     # NB: Don't use `informativeSubnucs()` here: pedigree cannot be trimmed (at least not upwards).
-    peelOrder = peelingOrder(x)
+    peelOrder = .peelOrder(x)
   }
 
   #----------------------

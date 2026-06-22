@@ -1,5 +1,53 @@
 #### PEELING FUNCTIONS
 
+# Moved from pedtools
+.peelOrder = function(x) {
+  # Output: list of nuclear subfamilies. Format for each nuc:
+  # list(father,mother,children,link), where link = 0 for the last nuc.
+
+  nucs = subnucs(x)
+  Nnucs = length(nucs)
+  if(!Nnucs)
+    return(nucs)
+
+  if(hasUnbrokenLoops(x))
+    return(nucs)
+
+  members = lapply(nucs, function(z) c(z$father, if(z$mother != z$father) z$mother, z$children))
+  count = tabulate(unlist(members, use.names = FALSE), nbins = length(x$ID))
+
+  peeling = vector("list", Nnucs)
+  i = k = 1L
+
+  while(length(nucs)) {
+    mem = members[[i]]
+    links = if(length(nucs) == 1L) 0L else mem[count[mem] > 1L]
+
+    if(length(links) == 1L) {
+      nuc = nucs[[i]]
+      nuc$link = links
+      peeling[[k]] = nuc
+
+      count[mem] = count[mem] - 1L
+      nucs[i] = NULL
+      members[i] = NULL
+
+      i = 1L
+      k = k + 1L
+    }
+    else if(i == length(nucs)) {
+      # Unexpected loop! Include remaining nucs without 'link', and break
+      peeling[k:Nnucs] = nucs
+      break
+    }
+    else {
+      i = i + 1L
+    }
+  }
+
+  peeling
+}
+
 # Not currently used (?)
 choosePeeler = function(twolocus, rho, Xchrom, SEX, mutmat, mutmat2 = NULL) {
   if(!twolocus && !Xchrom)

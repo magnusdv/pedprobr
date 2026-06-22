@@ -52,7 +52,7 @@ likelihood2.ped = function(x, marker1, marker2, rho = NULL, peelOrder = NULL,
 
   # Peeling order
   if(is.null(peelOrder))
-    peelOrder = informativeSubnucs(x, peelOrder = peelingOrder(x))
+    peelOrder = informativeSubnucs(x, peelOrder = .peelOrder(x))
 
   # Quick return if unlinked
   if(rho == 0.5) {
