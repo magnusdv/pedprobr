@@ -123,7 +123,7 @@ test_that("X-likelihoods are correct in looped ped", {
 })
 
 test_that("X-likelihoods are correct when child is link", {
-  x = reorderPed(linearPed(2), c(1,4,5,2,3)) # force reverse peelingOrder(x)
+  x = reorderPed(linearPed(2), c(1,4,5,2,3)) # force reverse peeling order
   m = marker(x, '1'=1, alleles = 1:2, afreq = c(0.1, 0.9), chrom = 23)
   expect_equal(likelihood(x, m), 0.1)
 })

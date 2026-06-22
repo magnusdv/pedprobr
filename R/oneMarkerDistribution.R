@@ -73,7 +73,7 @@
 #'
 #' @export
 oneMarkerDistribution = function(x, ids, marker = 1, loopBreakers = NULL,
-                                 grid.subset = NULL, partialmarker = NULL,
+                                 grid.subset = NULL,
                                  output = c("array", "table", "sparse"),
                                  verbose = TRUE) {
 
