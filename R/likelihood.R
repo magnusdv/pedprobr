@@ -218,16 +218,15 @@ likelihood.ped = function(x, markers = NULL, peelOrder = NULL, lump = TRUE,
 
 
 # Internal function: likelihood of a single marker
-peelingProcess = function(x, m = x$MARKERS[[1]], startdata = NULL, peeler = NULL, peelOrder = NULL) {
+peelingProcess = function(x, m = x$MARKERS[[1]], startdata = NULL,
+                          peeler = NULL, peelOrder = NULL, verbose = FALSE) {
 
   if(hasUnbrokenLoops(x))
     stop2("Peeling process cannot handle unbroken pedigree loops")
 
-    # Default start
   if(is.null(startdata))
     startdata = function(x, m) startdata_M(x, m)
 
-  # Default peeler
   if(is.null(peeler))
     if(isXmarker(m))
       peeler = function(dat, sub) .peel_M_X(dat, sub, SEX = x$SEX, mutmat = mutmod(m))
@@ -237,18 +236,28 @@ peelingProcess = function(x, m = x$MARKERS[[1]], startdata = NULL, peeler = NULL
   if(is.null(peelOrder))
     peelOrder = informativeSubnucs(x, m)
 
+  # Create the initial genotype data
   if(is.function(startdata))
     startdata = startdata(x, m)
 
+  # Impossible data gives likelihood zero
   if(attr(startdata, "impossible"))
     return(0)
 
   dat = startdata
 
-  if (is.null(x$LOOP_BREAKERS)) { # If no loops
-    for (nuc in peelOrder) {
+  # If no loops: peel and return
+  if(is.null(x$LOOP_BREAKERS)) {
+    if(verbose) {
+      len = lengths(lapply(dat, `[[`, "prob"))
+      message("No loops")
+      message("Number of nuclei: ", length(peelOrder))
+      message("Number of genos : ", paste(x$ID, len, sep = ":", collapse = ", "))
+    }
+
+    for(nuc in peelOrder) {
       dat = peeler(dat, nuc)
-      if (nuc$link > 0 && attr(dat, "impossible"))
+      if(nuc$link > 0 && attr(dat, "impossible"))
         return(0)
     }
 
@@ -256,30 +265,42 @@ peelingProcess = function(x, m = x$MARKERS[[1]], startdata = NULL, peeler = NULL
     return(dat)
   }
 
-
   # Loops ---------------------------------------------------------------------------------------
 
   LB = x$LOOP_BREAKERS
   origs = unique.default(LB[, "orig"])
   copies = lapply(origs, function(i) LB[LB[, "orig"] == i, "copy"])
 
-  # For each orig, find the indices of genos occurring in orig and every copy
+  # Genotype choices compatible with each loop breaker and its copies
   genoMatching = lapply(seq_along(origs), function(i) {
     dati = dat[[origs[i]]]
     Reduce(.myintersect, lapply(copies[[i]], \(cop) matchDat(dati, dat[[cop]])))
   })
 
-  # Then take cross product of these vectors.
-  loopgrid = fastGrid(genoMatching, as.list = TRUE)
+  lens = lengths(genoMatching)
 
-  # Initialise likelihood
+  if(verbose) {
+    message("Loop breakers: ", toString(x$ID[origs]))
+    message("Total genotype combos: ", paste(lens, collapse = "*"), " = ", prod(lens))
+  }
+
+  if(any(lens == 0L))
+    return(0)
+
+  # Start with the first combination of loop-breaker genotypes
+  nOrig = length(origs)
+  pos = rep.int(1L, nOrig)
+  r = vapply(genoMatching, function(z) z[1L], integer(1))
   likelihood = 0
+  shown = FALSE
 
-  for(r in loopgrid) {
+  # Try each compatible combination of loop-breaker genotypes
+  repeat {
     dat1 = dat
     attr(dat1, "impossible") = FALSE
 
-    for(i in seq_along(origs)) {  # r[i] is now a valid index of orig[i]$pat/mat
+    # Fix the loop breakers and copies to the current genotype combination
+    for(i in seq_len(nOrig)) {
       oi = origs[i]
       cp = copies[[i]]
 
@@ -294,22 +315,47 @@ peelingProcess = function(x, m = x$MARKERS[[1]], startdata = NULL, peeler = NULL
         message("The likelihood algorithm reached a strange place. The maintainer would be grateful to see this example.")
     }
 
+    if(verbose && !shown) {
+      len = lengths(lapply(dat1, `[[`, "prob"))
+      keep = len > 1L
+      if(any(keep))
+        message("Unfixed genotype counts: ", paste(x$ID[keep], len[keep], sep = ":", collapse = ", "))
+      shown = TRUE
+    }
+
+    # Peel the pedigree for the current genotype combination
     for(nuc in peelOrder) {
       dat1 = peeler(dat1, nuc)
 
-      # If impossible data - break out of ES-algorithm and go to next r in loopgrid.
+      # If impossible, skip to the next one
       if(nuc$link > 0 && attr(dat1, "impossible"))
         break
 
-      # If pedigree traversed, dat1 is a number. Add to total and goto next
+      # If peeling is complete, add this contribution
       if(nuc$link == 0)
         likelihood = likelihood + dat1
     }
+
+    # Move to the next genotype combination (emulates `fastGrid()`)
+    j = 1L
+    while(j <= nOrig && pos[j] == lens[j]) {
+      pos[j] = 1L
+      r[j] = genoMatching[[j]][1L]
+      j = j + 1L
+    }
+
+    # Stop when all combinations have been checked
+    if(j > nOrig)
+      break
+
+    # Increase the first position that can still be increased
+    pos[j] = pos[j] + 1L
+    r[j] = genoMatching[[j]][pos[j]]
   }
 
+  # Return final likelihood
   likelihood
 }
-
 
 
 #' @export
