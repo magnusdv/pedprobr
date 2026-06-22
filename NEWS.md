@@ -1,3 +1,20 @@
+# pedprobr 1.1.0
+
+* Updated loop handling to match **pedtools** v2.11.0, including support for founder and repeated loop breakers.
+
+* Improved likelihood calculations for looped pedigrees, with lower memory usage.
+
+* Improved peeling algorithm, including single-child shortcuts and several minor optimisations.
+
+* Added optional peeling diagnostics in `likelihood()` and `likelihood2()`, activated by `.diagnostics = TRUE`.
+
+* Fixed edge case bugs in `likelihood2()` involving `logbase`.
+
+* Improved `likelihoodMerlin()`, including better parsing of MERLIN output and handling of "bad inheritance" messages.
+
+* Updated documentation of `likelihood()`.
+
+
 # pedprobr 1.0.1
 
 * Fix CRAN error (an example failed on some platforms due to rounding issues).
