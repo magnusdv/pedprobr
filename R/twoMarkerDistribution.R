@@ -8,8 +8,6 @@
 #' @param id A single ID label.
 #' @param marker1,marker2 Either `marker` objects, or the names (or indices) of
 #'   markers attached to `x`.
-#' @param partialmarker1,partialmarker2 (Deprecated) Aliases for `marker1` and
-#'   `marker2`.
 #' @param rho A single numeric in the interval `[0, 0.5]`: the recombination
 #'   fraction between the two markers.
 #' @param loopBreakers (Only relevant if the pedigree has loops). A vector with
@@ -46,14 +44,7 @@
 #' @export
 twoMarkerDistribution <- function(x, id, marker1 = 1, marker2 = 2, rho = NULL,
                                   loopBreakers = NULL, lumpSpecial = TRUE,
-                                  partialmarker1 = NULL, partialmarker2 = NULL,
                                   verbose = TRUE) {
-
-  if(!is.null(partialmarker1) | !is.null(partialmarker2)) {
-    cat("The arguments `partialmarker1`, `partialmarker2` have been renamed to `marker1` and `marker2` and will be removed in a future version.\n")
-    marker1 = partialmarker1
-    marker2 = partialmarker2
-  }
 
   if(length(id) != 1)
     stop2("Argument `id` must have length 1: ", id)

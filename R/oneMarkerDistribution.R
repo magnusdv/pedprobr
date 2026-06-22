@@ -8,7 +8,6 @@
 #' @param marker Either a `marker` object or the name (or index) of a marker
 #'   attached to `x`. If `x` has multiple components, only the latter is
 #'   allowed.
-#' @param partialmarker (Deprecated) An alias for `marker`.
 #' @param loopBreakers (Only relevant if the pedigree has loops). A vector with
 #'   ID labels of individuals to be used as loop breakers. If NULL (default)
 #'   loop breakers are selected automatically. See [pedtools::breakLoops()].
@@ -77,11 +76,6 @@ oneMarkerDistribution = function(x, ids, marker = 1, loopBreakers = NULL,
                                  grid.subset = NULL, partialmarker = NULL,
                                  output = c("array", "table", "sparse"),
                                  verbose = TRUE) {
-
-  if(!is.null(partialmarker)) {
-    cat("The argument `partialmarker` has been renamed to `marker` and will be removed in a future version.\n")
-    marker = partialmarker
-  }
 
   ids = as.character(ids)
 
