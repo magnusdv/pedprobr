@@ -232,3 +232,54 @@ fastGridRestricted = function(argslist, linkedWith, compatible) {
 
   res
 }
+
+
+
+# Loop utilities ------------------------------------------------------------------------------
+
+
+# Thin wrapper of pedtools::breakLoops
+.breakLoops = function(x, loopBreakers = NULL, verbose = TRUE) {
+  score = if(is.null(loopBreakers)) .lbScores(x) else NULL
+  breakLoops(x, loopBreakers = loopBreakers, allowFounder = TRUE, allowRepeated = TRUE,
+             score = score, verbose = verbose)
+}
+
+.lbScores = function(x, Xchrom = FALSE) {
+  n = length(x$ID)
+  L = min(length(x$MARKERS), 100L)
+  if(L == 0L)
+    return(setNames(numeric(n), x$ID))
+
+  score = numeric(n)
+  mlist = x$MARKERS[1:L]
+  A = vapply(mlist, nAlleles, 1L)
+
+  # One logical column per marker. Partial genotypes count as typed.
+  g = unlist(mlist, recursive = FALSE, use.names = FALSE)
+  dim(g) = c(n, 2L * L)
+
+  j = seq.int(1L, 2L * L, by = 2L)
+  typed = g[, j, drop = FALSE] > 0L
+
+  # Approximate LB states: phased diploid A^2; founder A(A+1)/2;
+  # X male A; typed 1.
+  states = matrix(A^2, nrow = n, ncol = L, byrow = TRUE)
+  fou = founders(x, internal = TRUE)
+  states[fou, ] = rep(A * (A + 1) / 2, each = length(fou))
+
+  if(isTRUE(Xchrom)) {
+    mal = males(x, internal = TRUE)
+    states[mal, ] = rep(A, each = length(mal))
+  }
+
+  states[typed] = 1
+
+  # Empty markers are skipped by likelihood() and should not affect scoring.
+  states[, .colSums(typed, n, L) == 0L] = 0
+  score = -.rowSums(states, n, L)
+
+  # Leaves cannot be loop breakers.
+  score[leaves(x, internal = TRUE)] = -Inf
+  setNames(score, x$ID)
+}

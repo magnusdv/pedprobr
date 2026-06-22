@@ -175,7 +175,7 @@ likelihood.ped = function(x, markers = NULL, peelOrder = NULL, lump = TRUE,
 
   # Break unbroken loops
   if (x$UNBROKEN_LOOPS)
-    x = breakLoops(x, loopBreakers = loopBreakers, verbose = verbose)
+    x = .breakLoops(x, loopBreakers = loopBreakers, verbose = verbose)
 
   # Peeling order: Same for all markers
   if(is.null(peelOrder))

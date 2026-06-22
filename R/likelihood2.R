@@ -48,7 +48,7 @@ likelihood2.ped = function(x, marker1, marker2, rho = NULL, peelOrder = NULL,
 
   # Break unbroken loops
   if(x$UNBROKEN_LOOPS)
-    x = breakLoops(x, loopBreakers = loopBreakers, verbose = verbose)
+    x = .breakLoops(x, loopBreakers = loopBreakers, verbose = verbose)
 
   # Peeling order
   if(is.null(peelOrder))
