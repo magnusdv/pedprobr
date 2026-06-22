@@ -41,6 +41,11 @@ isCount = function(x, minimum = 1) {
   !anyNA(match(x, y)) && !anyNA(match(y, x))
 }
 
+.setnames = function (x, nms = x) {
+  names(x) = nms
+  x
+}
+
 # Stripped version of expand.grid
 fastGrid = function(argslist, as.list = FALSE) {
   nargs = length(argslist)
@@ -239,19 +244,19 @@ fastGridRestricted = function(argslist, linkedWith, compatible) {
 
 
 # Thin wrapper of pedtools::breakLoops
-.breakLoops = function(x, loopBreakers = NULL, verbose = TRUE) {
+.breakLoops = function(x, loopBreakers = NULL, ...) {
   score = if(is.null(loopBreakers)) .lbScores(x) else NULL
   breakLoops(x, loopBreakers = loopBreakers, allowFounder = TRUE, allowRepeated = TRUE,
-             score = score, verbose = verbose)
+             score = score, ...)
 }
 
-.lbScores = function(x, Xchrom = FALSE) {
+.lbScores = function(x, Xchrom = FALSE, maxMarkers = 100L) {
   n = length(x$ID)
-  L = min(length(x$MARKERS), 100L)
-  if(L == 0L)
-    return(setNames(numeric(n), x$ID))
 
-  score = numeric(n)
+  L = min(length(x$MARKERS), maxMarkers)
+  if(L == 0L)
+    return(.setnames(numeric(n), x$ID))
+
   mlist = x$MARKERS[1:L]
   A = vapply(mlist, nAlleles, 1L)
 
@@ -281,5 +286,5 @@ fastGridRestricted = function(argslist, linkedWith, compatible) {
 
   # Leaves cannot be loop breakers.
   score[leaves(x, internal = TRUE)] = -Inf
-  setNames(score, x$ID)
+  .setnames(score, x$ID)
 }
