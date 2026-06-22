@@ -368,7 +368,7 @@ peelingProcess = function(x, m = x$MARKERS[[1]], startdata = NULL,
 
 #' @export
 #' @rdname likelihood
-likelihood.list = function(x, markers = NULL, logbase = NULL, ...) {
+likelihood.list = function(x, markers = NULL, logbase = NULL, loopBreakers = NULL, ...) {
   if(!is.pedList(x))
     stop2("Input is a list, but not a list of `ped` objects")
 
@@ -384,9 +384,10 @@ likelihood.list = function(x, markers = NULL, logbase = NULL, ...) {
   if(length(markers) == 0)
     return(numeric(0))
 
-  liks = vapply(x, function(comp)
-    likelihood.ped(comp, markers, logbase = logbase, ...),
-    FUN.VALUE = numeric(length(markers)))
+  liks = vapply(x, function(comp) {
+    lb = loopBreakers[loopBreakers %in% comp$ID]
+    likelihood.ped(comp, markers, logbase = logbase, loopBreakers = lb, ...)
+  }, FUN.VALUE = numeric(length(markers)))
 
   if(length(markers) == 1)
     dim(liks) = c(1, length(x))

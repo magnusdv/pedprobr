@@ -101,7 +101,7 @@ likelihood2.ped = function(x, marker1, marker2, rho = NULL, peelOrder = NULL,
 
 #' @export
 #' @rdname likelihood
-likelihood2.list = function(x, marker1, marker2, logbase = NULL, ...) {
+likelihood2.list = function(x, marker1, marker2, logbase = NULL, loopBreakers = NULL, ...) {
   if(!is.pedList(x))
     stop2("Input is a list, but not a list of `ped` objects")
 
@@ -110,9 +110,10 @@ likelihood2.list = function(x, marker1, marker2, logbase = NULL, ...) {
   if (!(is.vector(marker2) && !is.list(marker2)))
     stop2("`likelihood2.list()` requires `marker2` to be a vector of marker names or indices. Received: ", class(marker2))
 
-  likel = vapply(x, function(comp)
-    likelihood2.ped(comp, marker1, marker2, logbase = logbase, ...),
-    FUN.VALUE = 1)
+  likel = vapply(x, function(comp) {
+    lb = loopBreakers[loopBreakers %in% comp$ID]
+    likelihood2.ped(comp, marker1, marker2, logbase = logbase, loopBreakers = lb, ...)
+  }, FUN.VALUE = 1)
 
   if(is.numeric(logbase)) sum(likel) else prod(likel)
 }

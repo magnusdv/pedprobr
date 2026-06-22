@@ -27,7 +27,7 @@ likelihood(x, ...)
   ...
 )
 
-\method{likelihood}{list}(x, markers = NULL, logbase = NULL, ...)
+\method{likelihood}{list}(x, markers = NULL, logbase = NULL, loopBreakers = NULL, ...)
 
 likelihood2(x, ...)
 
@@ -47,7 +47,7 @@ likelihood2(x, ...)
   ...
 )
 
-\method{likelihood2}{list}(x, marker1, marker2, logbase = NULL, ...)
+\method{likelihood2}{list}(x, marker1, marker2, logbase = NULL, loopBreakers = NULL, ...)
 }
 \arguments{
 \item{x}{A \code{ped} object, a \code{singleton} object, or a list of such objects.}
