@@ -185,7 +185,7 @@ uSignature = function(x, untyped = NULL, marker = NULL) {
 
   if(is.pedList(x)) {
     usList = lapply(x, function(comp) uSignature(comp, untyped, marker))
-    return(do.call(pmax, usList))
+    return(do.call(pmax.int, usList))
   }
 
   # If marker is NULL, check all markers; return max scores
@@ -196,7 +196,7 @@ uSignature = function(x, untyped = NULL, marker = NULL) {
 
     untyp = lapply(x$MARKERS, function(m) x$ID[m[,1] + m[,2] == 0])
     usigs = lapply(unique.default(untyp), function(u) uSignature(x, untyped = u))
-    return(do.call(pmax, usigs))
+    return(do.call(pmax.int, usigs))
   }
 
   if(!is.null(marker) && !is.marker(marker))
