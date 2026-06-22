@@ -119,7 +119,7 @@ startdata_MM = function(x, marker1, marker2, pedInfo = NULL) {
     rep2 = function(z) rep.int(z, len1)
     prob = as.numeric(rep1(g1$prob)*rep2(g2$prob))
 
-    if(sum(prob == 0)) {
+    if(sum(prob) == 0) {
       imp = TRUE
       break
     }

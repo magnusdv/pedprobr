@@ -31,7 +31,7 @@ likelihood2.ped = function(x, marker1, marker2, rho = NULL, peelOrder = NULL,
   # If both markers empty, return 1
   if(sum(x$MARKERS[[1]]) + sum(x$MARKERS[[2]]) == 0) {
     if(verbose) message("Both markers are empty; returning likelihood 1")
-    return(1)
+    return(if(is.numeric(logbase)) 0 else 1)
   }
 
   # Autosomal or X?
