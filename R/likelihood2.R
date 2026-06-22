@@ -34,6 +34,15 @@ likelihood2.ped = function(x, marker1, marker2, rho = NULL, peelOrder = NULL,
     return(1)
   }
 
+  # Autosomal or X?
+  x1 = isXmarker(x$MARKERS[[1]])
+  x2 = isXmarker(x$MARKERS[[2]])
+  if(x1 != x2)
+    stop2("Both markers must be either autosomal or X-linked")
+  Xchrom = x1 && x2
+  if(verbose)
+    message("Chromosome type: ", if(Xchrom) "X" else "autosomal")
+
   # Quick return if singleton (linkage is then irrelevant)
   if(is.singleton(x)) {
     lik1 = likelihoodSingleton(x, x$MARKERS[[1]])
@@ -49,7 +58,7 @@ likelihood2.ped = function(x, marker1, marker2, rho = NULL, peelOrder = NULL,
 
   # Break unbroken loops
   if(x$UNBROKEN_LOOPS)
-    x = .breakLoops(x, loopBreakers = loopBreakers, verbose = verbose)
+    x = .breakLoops(x, loopBreakers = loopBreakers, Xchrom = Xchrom, verbose = verbose)
 
   # Peeling order
   if(is.null(peelOrder))
@@ -71,15 +80,6 @@ likelihood2.ped = function(x, marker1, marker2, rho = NULL, peelOrder = NULL,
   m2 = x$MARKERS[[2]]
   mut1 = mutmod(m1)
   mut2 = mutmod(m2)
-
-  # Autosomal or X?
-  x1 = isXmarker(m1)
-  x2 = isXmarker(m2)
-  if(x1 != x2)
-    stop2("Both markers must be either autosomal or X-linked")
-  Xchrom = x1 && x2
-  if(verbose)
-    message("Chromosome type: ", if(Xchrom) "X" else "autosomal")
 
   # Peeler function
   if(!Xchrom)

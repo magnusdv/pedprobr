@@ -86,3 +86,32 @@ test_that("theta counts loop-breaker copies only once", {
   expect_equal(likelihood(x, loopBreakers = 1, theta = theta),
                p * (theta + (1 - theta) * p))
 })
+
+test_that("verbose looped likelihood shows loop complexity", {
+  x = ped(
+    id = 1:6,
+    fid = c(0, 0, 1, 1, 1, 5),
+    mid = c(0, 0, 2, 2, 3, 3),
+    sex = c(1, 2, 2, 2, 1, 1)
+  ) |>
+    addMarker(`6` = "1/1", alleles = 1:2)
+  # plot(x)
+  expect_message(likelihood(x, loopBreakers = c(3, 3), .diagnostics = TRUE),
+                 "Genotype combinations")
+})
+
+
+test_that("automatic loop breaking uses X-specific scores", {
+  x = ped(
+    id = 1:6,
+    fid = c(0, 0, 0, 2, 3, 4),
+    mid = c(0, 0, 0, 1, 1, 5),
+    sex = c(2, 1, 1, 1, 2, 1)
+  ) |>
+    addMarker(`6` = "1", alleles = 1:10, chrom = "X")
+
+  y = pedprobr:::.breakLoops(x, verbose = FALSE)
+  lb = y$ID[y$LOOP_BREAKERS[, "orig"]]
+
+  expect_equal(lb, "4")
+})

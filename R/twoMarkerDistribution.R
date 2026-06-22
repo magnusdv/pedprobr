@@ -114,7 +114,8 @@ twoMarkerDistribution <- function(x, id, marker1 = 1, marker2 = 2, rho = NULL,
                            genoCombinations(x, m2, id, make.grid = FALSE)))
 
   if (x$UNBROKEN_LOOPS) {
-    x = .breakLoops(setMarkers(x, list(m1, m2)), loopBreakers = loopBreakers, verbose = verbose)
+    x = .breakLoops(setMarkers(x, list(m1, m2)), loopBreakers = loopBreakers, Xchrom = onX,
+                    verbose = verbose)
     m1 = x$MARKERS[[1]]
     m2 = x$MARKERS[[2]]
   }

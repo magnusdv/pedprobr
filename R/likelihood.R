@@ -175,8 +175,14 @@ likelihood.ped = function(x, markers = NULL, peelOrder = NULL, lump = TRUE,
                     alleleLimit = alleleLimit, verbose = verbose)
 
   # Break unbroken loops
-  if (x$UNBROKEN_LOOPS)
-    x = .breakLoops(x, loopBreakers = loopBreakers, verbose = verbose)
+  if(x$UNBROKEN_LOOPS)
+    x = .breakLoops(x, loopBreakers = loopBreakers, Xchrom = Xchrom, verbose = verbose)
+  else if(verbose) {
+    if(!is.null(x$LOOP_BREAKERS))
+      message("All loops already broken: ", toString(x$ID[x$LOOP_BREAKERS[, "orig"]]))
+    else
+      message("No loops to break")
+  }
 
   # Peeling order: Same for all markers
   if(is.null(peelOrder))
