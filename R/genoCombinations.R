@@ -22,12 +22,15 @@ genoCombinations = function(x, partialmarker = x$MARKERS[[1]], ids, make.grid = 
   ids = as.character(ids)
   int.ids = internalID(x, ids)
 
-  allg = allGenotypes(nAlleles(partialmarker))
+  A = nAlleles(partialmarker)
+  allg = allGenotypes(A)
   homoz = which(allg[,1] == allg[,2])
-  allgRef = 1000 * (allg[, 1] + allg[, 2]) + abs(allg[, 1] - allg[, 2])
+  R = A + 1L # radix for encoding genotypes as integers
+  allgRef = R * (allg[,1] + allg[,2]) + abs(allg[,1] - allg[,2])
 
-  matchRefRows = function(g) { # get corresponding row numbers of 'allg'
-    sort.int(unique.default(match(1000 * (g$pat + g$mat) + abs(g$pat - g$mat), allgRef)))
+  matchRefRows = function(g) {
+    ref = R * (g$pat + g$mat) + abs(g$pat - g$mat)
+    sort.int(unique.default(match(ref, allgRef)))
   }
 
   Xchrom = isXmarker(partialmarker)

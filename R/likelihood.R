@@ -344,14 +344,18 @@ likelihood.list = function(x, markers = NULL, logbase = NULL, ...) {
 
 # Utility for finding which genotypes in dat1 are also in dat2
 matchDat = function(dat1, dat2) {
+
   twolocus = !is.null(dat1$allele2) || !is.null(dat1$mat2)
+
   if(!twolocus) {
     nseq = seq_along(dat1$mat)
     Xchrom = is.null(dat1$pat)
     if(Xchrom)
       nseq[dat1$mat %in% dat2$mat]
-    else
-      nseq[(dat1$pat + 1000*dat1$mat) %in% (dat2$pat + 1000*dat2$mat)]
+    else {
+      R = max(0L, dat1$pat, dat1$mat) + 1L
+      nseq[(dat1$pat + R*dat1$mat) %in% (dat2$pat + R*dat2$mat)]
+    }
   }
   else {
     nseq = seq_along(dat1$mat1)
@@ -359,8 +363,9 @@ matchDat = function(dat1, dat2) {
     if(Xchrom)
       nseq[(dat1$mat1 %in% dat2$mat1) & (dat1$mat2 %in% dat2$mat2)]
     else {
-      loc1 = (dat1$pat1 + 1000*dat1$mat1) %in% (dat2$pat1 + 1000*dat2$mat1)
-      loc2 = (dat1$pat2 + 1000*dat1$mat2) %in% (dat2$pat2 + 1000*dat2$mat2)
+      R = max(0L, unlist(dat1, use.names = FALSE), unlist(dat2, use.names = FALSE)) + 1L
+      loc1 = (dat1$pat1 + R*dat1$mat1) %in% (dat2$pat1 + R*dat2$mat1)
+      loc2 = (dat1$pat2 + R*dat1$mat2) %in% (dat2$pat2 + R*dat2$mat2)
       nseq[loc1 & loc2]
     }
   }
