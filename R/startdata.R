@@ -119,7 +119,7 @@ startdata_MM = function(x, marker1, marker2, pedInfo = NULL) {
     rep2 = function(z) rep.int(z, len1)
     prob = as.numeric(rep1(g1$prob)*rep2(g2$prob))
 
-    if(sum(prob == 0)) {
+    if(sum(prob) == 0) {
       imp = TRUE
       break
     }
@@ -201,17 +201,23 @@ startdata_MM = function(x, marker1, marker2, pedInfo = NULL) {
 
 # Various info used repeatedly
 .pedInfo = function(x, treatAsFounder = NULL, Xchrom = FALSE) {
+
   nInd = length(x$ID)
+
+  LB = x$LOOP_BREAKERS
+  LBorig = if(is.null(LB)) integer(0) else LB[, "orig"]
+  LBcopy = if(is.null(LB)) integer(0) else LB[, "copy"]
 
   # Founders (except LB-copies): Genotypes need not be phased
   fouInt = founders(x, internal = TRUE)
   isFounder = logical(nInd)
   isFounder[fouInt] = TRUE
   isFounder[treatAsFounder] = TRUE
-  isFounder[x$LOOP_BREAKERS[, 2]] = FALSE
+  isFounder[LBcopy] = FALSE
 
   # Founders with 1 child
   simpleFou = isFounder & tabulate(c(x$FIDX, x$MIDX), nInd) == 1
+  simpleFou[LBorig] = FALSE
 
   # Founder inbreeding lookup vector; 0's for nonfounders
   fi = numeric(nInd)

@@ -9,17 +9,17 @@
 #' (1971). A variety of situations are covered; see the Examples section for
 #' some demonstrations.
 #'
-#' * autosomal and X-linked markers
-#' * complex inbred pedigrees
-#' * markers with mutation models
+#' * pedigrees with loops
 #' * pedigrees with inbred founders
+#' * autosomal and X-linked markers
+#' * markers with mutation models
 #' * single markers or two linked markers
 #'
 #' For more than two linked markers, see [likelihoodMerlin()].
 #'
-#' Allele lumping can significantly reduce computation time with highly
-#' polymorphic STR markers and many untyped pedigree members. This is
-#' particularly important in `likelihood2()` which is prone to run out of memory
+#' Allele lumping merges unobserved alleles when this does not change the likelihood.
+#' This can greatly reduce computation time for highly polymorphic markers,
+#' particularly in `likelihood2()` which is prone to run out of memory
 #' without lumping. If a non-lumpable mutation model is used, specialised
 #' lumping may still be possible in some situations. This is attempted if
 #' `special = TRUE`, which is the default in `likelihood2()` but not in
@@ -39,37 +39,41 @@
 #' @param marker1,marker2 Single markers compatible with `x`.
 #' @param rho The recombination rate between `marker1` and `marker2`. To make
 #'   biological sense `rho` should be between 0 and 0.5.
-#' @param lump Activate allele lumping, i.e., merging unobserved alleles. This
-#'   is an important time saver, and should be applied in nearly all cases. (The
-#'   parameter exists mainly for debugging purposes.) If any markers use a
-#'   non-lumpable mutation model, the `special` argument may be used to apply
-#'   more advanced methods.
+#' @param lump Activate allele lumping when this does not change the likelihood.
+#'   If any markers use a non-lumpable mutation model, the `special` argument may
+#'   be used to apply more advanced methods.
 #' @param special A logical indicating if special lumping procedures should be
 #'   attempted if the mutation model is not generally lumpable. By default FALSE
 #'   in `likelihood()` and TRUE in `likelihood2()`.
 #' @param alleleLimit A positive number or `Inf` (default). If the mutation
 #'   model is not generally lumpable, and the allele count exceeds this limit,
-#'   switch to an `equal` model with the same rate and reapply lumping.
+#'   the calculation switches to an `equal` mutation model to enable lumping.
+#'   This is an approximation intended to avoid very large computations.
+#' @param theta Theta correction.
 #' @param logbase Either NULL (default) or a positive number indicating the
 #'   basis for logarithmic output. Typical values are `exp(1)` and 10.
-#' @param loopBreakers A vector of ID labels indicating loop breakers. If NULL
-#'   (default), automatic selection of loop breakers will be performed. See
-#'   [pedtools::breakLoops()].
+#' @param loopBreakers A vector of ID labels indicating loop breakers. Repeated
+#'   values are allowed, as are founders. If NULL, loop breakers are chosen automatically.
+#'   This is usually recommended. See [pedtools::breakLoops()].
 #' @param peelOrder For internal use.
 #' @param allX For internal use; set to TRUE if all markers are X-chromosomal.
-#' @param verbose A logical.
-#' @param theta Theta correction.
+#' @param verbose,.diagnostics Logicals. If `.diagnostics = TRUE`, the peeling
+#'   process prints diagnostic messages.
 #' @param \dots Further arguments.
 
 #' @return A numeric with the same length as the number of markers indicated by
 #'   `markers`. If `logbase` is a positive number, the output is
 #'   `log(likelihood, logbase)`.
 #'
+#'   `likelihood2()` returns a single value for the two linked markers.
+#'
+#'   If `x` is a list, component likelihoods are multiplied (or log-likelihoods are added).
+#'
 #' @seealso [likelihoodMerlin()], for likelihoods involving more than 2 linked markers.
 #'
 #' @author Magnus Dehli Vigeland
 #' @references Elston and Stewart (1971). _A General Model for the Genetic
-#'   Analysis of Pedigree Data_. \doi{https://doi.org/10.1159/000152448}
+#'   Analysis of Pedigree Data_. \doi{10.1159/000152448}
 #'
 #' @examples
 #'
@@ -113,9 +117,9 @@ likelihood = function(x, ...) UseMethod("likelihood", x)
 #' @export
 #' @rdname likelihood
 likelihood.ped = function(x, markers = NULL, peelOrder = NULL, lump = TRUE,
-                          special = FALSE, alleleLimit = Inf,
+                          special = FALSE, alleleLimit = Inf, theta = 0,
                           logbase = NULL, loopBreakers = NULL, allX = NULL,
-                          verbose = FALSE, theta = 0, ...) {
+                          verbose = FALSE, .diagnostics = FALSE, ...) {
 
   if(theta > 0 && hasInbredFounders(x))
     stop2("Theta correction cannot be used in pedigrees with inbred founders")
@@ -174,12 +178,18 @@ likelihood.ped = function(x, markers = NULL, peelOrder = NULL, lump = TRUE,
                     alleleLimit = alleleLimit, verbose = verbose)
 
   # Break unbroken loops
-  if (x$UNBROKEN_LOOPS)
-    x = breakLoops(x, loopBreakers = loopBreakers, verbose = verbose)
+  if(x$UNBROKEN_LOOPS)
+    x = .breakLoops(x, loopBreakers = loopBreakers, Xchrom = Xchrom, verbose = verbose)
+  else if(verbose) {
+    if(!is.null(x$LOOP_BREAKERS))
+      message("All loops already broken: ", toString(x$ID[x$LOOP_BREAKERS[, "orig"]]))
+    else
+      message("No loops to break")
+  }
 
   # Peeling order: Same for all markers
   if(is.null(peelOrder))
-    peelOrder = peelingOrder(x)
+    peelOrder = .peelOrder(x)
   if(theta == 0)
     peelOrder = informativeSubnucs(x, peelOrder = peelOrder)
 
@@ -207,7 +217,7 @@ likelihood.ped = function(x, markers = NULL, peelOrder = NULL, lump = TRUE,
     if(theta > 0)
       likTheta(x, m, theta, peeler(x,m), peelOrder)
     else
-      peelingProcess(x, m, starter(x,m), peeler(x,m), peelOrder)
+      peelingProcess(x, m, starter(x,m), peeler(x,m), peelOrder, .diagnostics = .diagnostics)
   })
 
   res = unlist(resList, recursive = FALSE)
@@ -218,16 +228,15 @@ likelihood.ped = function(x, markers = NULL, peelOrder = NULL, lump = TRUE,
 
 
 # Internal function: likelihood of a single marker
-peelingProcess = function(x, m = x$MARKERS[[1]], startdata = NULL, peeler = NULL, peelOrder = NULL) {
+peelingProcess = function(x, m = x$MARKERS[[1]], startdata = NULL,
+                          peeler = NULL, peelOrder = NULL, .diagnostics = FALSE) {
 
   if(hasUnbrokenLoops(x))
     stop2("Peeling process cannot handle unbroken pedigree loops")
 
-    # Default start
   if(is.null(startdata))
     startdata = function(x, m) startdata_M(x, m)
 
-  # Default peeler
   if(is.null(peeler))
     if(isXmarker(m))
       peeler = function(dat, sub) .peel_M_X(dat, sub, SEX = x$SEX, mutmat = mutmod(m))
@@ -237,18 +246,34 @@ peelingProcess = function(x, m = x$MARKERS[[1]], startdata = NULL, peeler = NULL
   if(is.null(peelOrder))
     peelOrder = informativeSubnucs(x, m)
 
+  # Create the initial genotype data
   if(is.function(startdata))
     startdata = startdata(x, m)
 
+  # Impossible data gives likelihood zero
   if(attr(startdata, "impossible"))
     return(0)
 
+  if(.diagnostics) {
+    message("--- Peeling diagnostics ---")
+    message("Number of nuclei: ", length(peelOrder))
+  }
+
   dat = startdata
 
-  if (is.null(x$LOOP_BREAKERS)) { # If no loops
-    for (nuc in peelOrder) {
+  # If no loops: peel and return
+  if(is.null(x$LOOP_BREAKERS)) {
+    if(.diagnostics) {
+      glen = lengths(lapply(dat, `[[`, "prob"))
+      keep = glen > 1L
+      unfixed = if(any(keep)) paste(x$ID[keep], glen[keep], sep = ":", collapse = ", ") else "None"
+      message("No loops")
+      message("Unfixed genotype counts: ", unfixed)
+    }
+
+    for(nuc in peelOrder) {
       dat = peeler(dat, nuc)
-      if (nuc$link > 0 && attr(dat, "impossible"))
+      if(nuc$link > 0 && attr(dat, "impossible"))
         return(0)
     }
 
@@ -256,53 +281,103 @@ peelingProcess = function(x, m = x$MARKERS[[1]], startdata = NULL, peeler = NULL
     return(dat)
   }
 
-  ### If broken loops
+  # Loops ---------------------------------------------------------------------------------------
+
   LB = x$LOOP_BREAKERS
-  nr = nrow(LB)
+  origs = unique.default(LB[, "orig"])
+  copies = lapply(origs, function(i) LB[LB[, "orig"] == i, "copy"])
 
-  # For each orig, find the indices of its genotypes that also occur in its copy.
-  genoMatching = lapply(seq_len(nr), function(i)
-    matchDat(dat[[LB[[i,"orig"]]]], dat[[LB[[i,"copy"]]]]))
+  # Genotype choices compatible with each loop breaker and its copies
+  genoMatching = lapply(seq_along(origs), function(i) {
+    dati = dat[[origs[i]]]
+    Reduce(.myintersect, lapply(copies[[i]], \(cop) matchDat(dati, dat[[cop]])))
+  })
 
-  # Then take cross product of these vectors.
-  loopgrid = fastGrid(genoMatching, as.list = TRUE)
+  lens = lengths(genoMatching)
 
-  # Initialise likelihood
+  if(.diagnostics) {
+    message("Loop breakers: ", toString(x$ID[LB[, "orig"]]))
+    prodtext = if(length(lens) > 1) paste(lens, collapse = "*") |> paste0(" = ") else ""
+    message("Genotype combinations: ", prodtext, prod(lens))
+  }
+
+  if(any(lens == 0L))
+    return(0)
+
+  # Start with the first combination of loop-breaker genotypes
+  nOrig = length(origs)
+  pos = rep.int(1L, nOrig)
+  r = vapply(genoMatching, function(z) z[1L], integer(1))
   likelihood = 0
+  shown = FALSE
 
-  for (r in loopgrid) {
+  # Try each compatible combination of loop-breaker genotypes
+  repeat {
     dat1 = dat
     attr(dat1, "impossible") = FALSE
 
-    for (i in seq_len(nr)) { # Note: r[i] is a valid index of orig[i]$pat/mat
-      origi = LB[[i, "orig"]]
-      copyi = LB[[i, "copy"]]
-      origDat = dat[[origi]]
-      dat1[[origi]] = dat1[[copyi]] = lapply(origDat, function(vec) vec[r[i]])
-      dat1[[copyi]]$prob = 1
-      if (sum(dat1[[origi]]$prob) == 0)
+    # Fix the loop breakers and copies to the current genotype combination
+    for(i in seq_len(nOrig)) {
+      oi = origs[i]
+      cp = copies[[i]]
+
+      origDat = lapply(dat[[oi]], function(v) v[r[i]])
+      dat1[[oi]] = origDat
+
+      copyDat = origDat
+      copyDat$prob = 1
+      dat1[cp] = rep.int(list(copyDat), length(cp))
+
+      if(sum(origDat$prob) == 0)
         message("The likelihood algorithm reached a strange place. The maintainer would be grateful to see this example.")
     }
 
-    for (nuc in peelOrder) {
+    if(.diagnostics && !shown) {
+      glen = lengths(lapply(dat1, `[[`, "prob"))
+      keep = glen > 1L
+      unfixed = if(any(keep)) paste(x$ID[keep], glen[keep], sep = ":", collapse = ", ") else "None"
+      message("Unfixed genotype counts: ", unfixed)
+      shown = TRUE
+    }
+
+    # Peel the pedigree for the current genotype combination
+    for(nuc in peelOrder) {
       dat1 = peeler(dat1, nuc)
 
-      # If impossible data - break out of ES-algorithm and go to next r in loopgrid.
-      if (nuc$link > 0 && attr(dat1, "impossible")) break
+      # If impossible, skip to the next one
+      if(nuc$link > 0 && attr(dat1, "impossible"))
+        break
 
-      # If pedigree traversed, dat1 is a number. Add to total and goto next
-      if (nuc$link == 0) likelihood = likelihood + dat1
+      # If peeling is complete, add this contribution
+      if(nuc$link == 0)
+        likelihood = likelihood + dat1
     }
+
+    # Move to the next genotype combination (emulates `fastGrid()`)
+    j = 1L
+    while(j <= nOrig && pos[j] == lens[j]) {
+      pos[j] = 1L
+      r[j] = genoMatching[[j]][1L]
+      j = j + 1L
+    }
+
+    # Stop when all combinations have been checked
+    if(j > nOrig)
+      break
+
+    # Increase the first position that can still be increased
+    pos[j] = pos[j] + 1L
+    r[j] = genoMatching[[j]][pos[j]]
   }
 
+  # Return final likelihood
   likelihood
 }
 
 
-
 #' @export
 #' @rdname likelihood
-likelihood.list = function(x, markers = NULL, logbase = NULL, ...) {
+likelihood.list = function(x, markers = NULL, logbase = NULL, loopBreakers = NULL, ...) {
   if(!is.pedList(x))
     stop2("Input is a list, but not a list of `ped` objects")
 
@@ -318,9 +393,10 @@ likelihood.list = function(x, markers = NULL, logbase = NULL, ...) {
   if(length(markers) == 0)
     return(numeric(0))
 
-  liks = vapply(x, function(comp)
-    likelihood.ped(comp, markers, logbase = logbase, ...),
-    FUN.VALUE = numeric(length(markers)))
+  liks = vapply(x, function(comp) {
+    lb = loopBreakers[loopBreakers %in% comp$ID]
+    likelihood.ped(comp, markers, logbase = logbase, loopBreakers = lb, ...)
+  }, FUN.VALUE = numeric(length(markers)))
 
   if(length(markers) == 1)
     dim(liks) = c(1, length(x))
@@ -332,14 +408,18 @@ likelihood.list = function(x, markers = NULL, logbase = NULL, ...) {
 
 # Utility for finding which genotypes in dat1 are also in dat2
 matchDat = function(dat1, dat2) {
+
   twolocus = !is.null(dat1$allele2) || !is.null(dat1$mat2)
+
   if(!twolocus) {
     nseq = seq_along(dat1$mat)
     Xchrom = is.null(dat1$pat)
     if(Xchrom)
       nseq[dat1$mat %in% dat2$mat]
-    else
-      nseq[(dat1$pat + 1000*dat1$mat) %in% (dat2$pat + 1000*dat2$mat)]
+    else {
+      R = max(0L, dat1$pat, dat1$mat, dat2$pat, dat2$mat) + 1L
+      nseq[(dat1$pat + R*dat1$mat) %in% (dat2$pat + R*dat2$mat)]
+    }
   }
   else {
     nseq = seq_along(dat1$mat1)
@@ -347,8 +427,9 @@ matchDat = function(dat1, dat2) {
     if(Xchrom)
       nseq[(dat1$mat1 %in% dat2$mat1) & (dat1$mat2 %in% dat2$mat2)]
     else {
-      loc1 = (dat1$pat1 + 1000*dat1$mat1) %in% (dat2$pat1 + 1000*dat2$mat1)
-      loc2 = (dat1$pat2 + 1000*dat1$mat2) %in% (dat2$pat2 + 1000*dat2$mat2)
+      R = max(0L, unlist(dat1, use.names = FALSE), unlist(dat2, use.names = FALSE)) + 1L
+      loc1 = (dat1$pat1 + R*dat1$mat1) %in% (dat2$pat1 + R*dat2$mat1)
+      loc2 = (dat1$pat2 + R*dat1$mat2) %in% (dat2$pat2 + R*dat2$mat2)
       nseq[loc1 & loc2]
     }
   }

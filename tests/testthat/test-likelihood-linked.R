@@ -43,6 +43,31 @@ test_that("linked empty markers give likelihood 1", {
   expect_equal(liktest(x3, m3, m3), c(1,1,1))
 })
 
+test_that("linked empty markers give log-likelihood 0", {
+  x = nuclearPed(1) |>
+    addMarker(alleles = 1:2) |>
+    addMarker(alleles = 1:2)
+
+  expect_equal(likelihood2(x, 1, 2, rho = 0.25, logbase = 10), 0)
+})
+
+
+test_that("likelihood2 rejects mixed autosomal and X markers", {
+  x = singleton(1, sex = 2)
+  m1 = marker(x, `1` = "1/1", alleles = 1:2)
+  m2 = marker(x, `1` = "1/1", alleles = 1:2, chrom = "X")
+
+  expect_error(likelihood2(x, m1, m2, rho = 0.25),
+               "Both markers must be either autosomal or X-linked")
+
+  y = nuclearPed(1) |>
+    addMarker(`1` = "1/1", alleles = 1:2) |>
+    addMarker(`1` = "1/1", alleles = 1:2, chrom = "X")
+
+  expect_error(likelihood2(y, 1, 2, rho = 0.25),
+               "Both markers must be either autosomal or X-linked")
+})
+
 test_that("two linked HW-like markers are indep of rho", {
   p = 0.9; q = 1-p
   r = 0.8; s = 1-r

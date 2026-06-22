@@ -12,8 +12,6 @@ twoMarkerDistribution(
   rho = NULL,
   loopBreakers = NULL,
   lumpSpecial = TRUE,
-  partialmarker1 = NULL,
-  partialmarker2 = NULL,
   verbose = TRUE
 )
 }
@@ -33,9 +31,6 @@ ID labels of individuals to be used as loop breakers. If NULL (default)
 loop breakers are selected automatically. See \code{\link[pedtools:breakLoops]{pedtools::breakLoops()}}.}
 
 \item{lumpSpecial}{A logical, passed on to \code{\link[=likelihood2]{likelihood2()}}.}
-
-\item{partialmarker1, partialmarker2}{(Deprecated) Aliases for \code{marker1} and
-\code{marker2}.}
 
 \item{verbose}{A logical.}
 }

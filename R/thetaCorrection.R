@@ -11,7 +11,7 @@ thetaCorr = function(v, afr, theta) {
 }
 
 
-likTheta = function(x, m, theta, peeler, peelOrder) {
+likTheta = function(x, m, theta, peeler, peelOrder, .diagnostics = FALSE) {
 
   #---------------------
   # Mostly for debug (peeler and peelOrder will not be missing in practice)
@@ -24,7 +24,7 @@ likTheta = function(x, m, theta, peeler, peelOrder) {
 
   if(missing(peelOrder)) {
     # NB: Don't use `informativeSubnucs()` here: pedigree cannot be trimmed (at least not upwards).
-    peelOrder = peelingOrder(x)
+    peelOrder = .peelOrder(x)
   }
 
   #----------------------
@@ -41,6 +41,10 @@ likTheta = function(x, m, theta, peeler, peelOrder) {
 
   # Founders (internal ID)
   FOU = c(founders(x, internal = TRUE), attr(peelOrder, "treatAsFounder"))
+
+  if(!is.null(x$LOOP_BREAKERS))
+    FOU = .mysetdiff(FOU, x$LOOP_BREAKERS[, "copy"])
+
   NONFOU = seq_len(pedsize(x))[-FOU]
 
   # List of all combinations of founder genotypes
@@ -78,7 +82,7 @@ likTheta = function(x, m, theta, peeler, peelOrder) {
 
     attr(gli, "impossible") = any(probs == 0)
 
-    li = peelingProcess(x, m, startdata=gli, peeler, peelOrder)
+    li = peelingProcess(x, m, startdata=gli, peeler, peelOrder, .diagnostics = .diagnostics)
     likel = likel + li
   }
 

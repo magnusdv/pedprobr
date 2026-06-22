@@ -6,7 +6,8 @@ likelihood2 = function(x, ...) UseMethod("likelihood2", x)
 #' @rdname likelihood
 likelihood2.ped = function(x, marker1, marker2, rho = NULL, peelOrder = NULL,
                            lump = TRUE, special = TRUE, alleleLimit = Inf,
-                           logbase = NULL, loopBreakers = NULL, verbose = FALSE, ...) {
+                           logbase = NULL, loopBreakers = NULL, verbose = FALSE,
+                           .diagnostics = FALSE, ...) {
 
   if(hasInbredFounders(x))
     stop2("Likelihood of linked markers is not implemented in pedigrees with founder inbreeding.\n",
@@ -30,8 +31,17 @@ likelihood2.ped = function(x, marker1, marker2, rho = NULL, peelOrder = NULL,
   # If both markers empty, return 1
   if(sum(x$MARKERS[[1]]) + sum(x$MARKERS[[2]]) == 0) {
     if(verbose) message("Both markers are empty; returning likelihood 1")
-    return(1)
+    return(if(is.numeric(logbase)) 0 else 1)
   }
+
+  # Autosomal or X?
+  x1 = isXmarker(x$MARKERS[[1]])
+  x2 = isXmarker(x$MARKERS[[2]])
+  if(x1 != x2)
+    stop2("Both markers must be either autosomal or X-linked")
+  Xchrom = x1 && x2
+  if(verbose)
+    message("Chromosome type: ", if(Xchrom) "X" else "autosomal")
 
   # Quick return if singleton (linkage is then irrelevant)
   if(is.singleton(x)) {
@@ -48,11 +58,11 @@ likelihood2.ped = function(x, marker1, marker2, rho = NULL, peelOrder = NULL,
 
   # Break unbroken loops
   if(x$UNBROKEN_LOOPS)
-    x = breakLoops(x, loopBreakers = loopBreakers, verbose = verbose)
+    x = .breakLoops(x, loopBreakers = loopBreakers, Xchrom = Xchrom, verbose = verbose)
 
   # Peeling order
   if(is.null(peelOrder))
-    peelOrder = informativeSubnucs(x, peelOrder = peelingOrder(x))
+    peelOrder = informativeSubnucs(x, peelOrder = .peelOrder(x))
 
   # Quick return if unlinked
   if(rho == 0.5) {
@@ -71,15 +81,6 @@ likelihood2.ped = function(x, marker1, marker2, rho = NULL, peelOrder = NULL,
   mut1 = mutmod(m1)
   mut2 = mutmod(m2)
 
-  # Autosomal or X?
-  x1 = isXmarker(m1)
-  x2 = isXmarker(m2)
-  if(x1 != x2)
-    stop2("Both markers must be either autosomal or X-linked")
-  Xchrom = x1 && x2
-  if(verbose)
-    message("Chromosome type: ", if(Xchrom) "X" else "autosomal")
-
   # Peeler function
   if(!Xchrom)
     peeler = function(dat, sub) .peel_MM_AUT(dat, sub, rho, mut1 = mut1, mut2 = mut2)
@@ -90,7 +91,8 @@ likelihood2.ped = function(x, marker1, marker2, rho = NULL, peelOrder = NULL,
   pedInfo = .pedInfo(x, treatAsFounder = treatAsFou, Xchrom = Xchrom)
   startdata = startdata_MM(x, m1, m2, pedInfo = pedInfo)
 
-  res = peelingProcess(x, m = NULL, startdata = startdata, peeler = peeler, peelOrder = peelOrder)
+  res = peelingProcess(x, m = NULL, startdata = startdata, peeler = peeler,
+                       peelOrder = peelOrder, .diagnostics = .diagnostics)
 
   if(is.numeric(logbase)) log(res, logbase) else res
 }
@@ -99,18 +101,19 @@ likelihood2.ped = function(x, marker1, marker2, rho = NULL, peelOrder = NULL,
 
 #' @export
 #' @rdname likelihood
-likelihood2.list = function(x, marker1, marker2, logbase = NULL, ...) {
+likelihood2.list = function(x, marker1, marker2, logbase = NULL, loopBreakers = NULL, ...) {
   if(!is.pedList(x))
     stop2("Input is a list, but not a list of `ped` objects")
 
   if (!(is.vector(marker1) && !is.list(marker1)))
-    stop2("`likelihood.list()` requires `marker1` to be a vector of marker names or indices. Received: ", class(marker1))
+    stop2("`likelihood2.list()` requires `marker1` to be a vector of marker names or indices. Received: ", class(marker1))
   if (!(is.vector(marker2) && !is.list(marker2)))
-    stop2("`likelihood.list()` requires `marker2` to be a vector of marker names or indices. Received: ", class(marker2))
+    stop2("`likelihood2.list()` requires `marker2` to be a vector of marker names or indices. Received: ", class(marker2))
 
-  likel = vapply(x, function(comp)
-    likelihood2.ped(comp, marker1, marker2, logbase = logbase, ...),
-    FUN.VALUE = 1)
+  likel = vapply(x, function(comp) {
+    lb = loopBreakers[loopBreakers %in% comp$ID]
+    likelihood2.ped(comp, marker1, marker2, logbase = logbase, loopBreakers = lb, ...)
+  }, FUN.VALUE = 1)
 
   if(is.numeric(logbase)) sum(likel) else prod(likel)
 }
