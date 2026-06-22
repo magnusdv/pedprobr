@@ -104,9 +104,9 @@ likelihood2.list = function(x, marker1, marker2, logbase = NULL, ...) {
     stop2("Input is a list, but not a list of `ped` objects")
 
   if (!(is.vector(marker1) && !is.list(marker1)))
-    stop2("`likelihood.list()` requires `marker1` to be a vector of marker names or indices. Received: ", class(marker1))
+    stop2("`likelihood2.list()` requires `marker1` to be a vector of marker names or indices. Received: ", class(marker1))
   if (!(is.vector(marker2) && !is.list(marker2)))
-    stop2("`likelihood.list()` requires `marker2` to be a vector of marker names or indices. Received: ", class(marker2))
+    stop2("`likelihood2.list()` requires `marker2` to be a vector of marker names or indices. Received: ", class(marker2))
 
   likel = vapply(x, function(comp)
     likelihood2.ped(comp, marker1, marker2, logbase = logbase, ...),
