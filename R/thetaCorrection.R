@@ -11,7 +11,7 @@ thetaCorr = function(v, afr, theta) {
 }
 
 
-likTheta = function(x, m, theta, peeler, peelOrder) {
+likTheta = function(x, m, theta, peeler, peelOrder, .diagnostics = FALSE) {
 
   #---------------------
   # Mostly for debug (peeler and peelOrder will not be missing in practice)
@@ -82,7 +82,7 @@ likTheta = function(x, m, theta, peeler, peelOrder) {
 
     attr(gli, "impossible") = any(probs == 0)
 
-    li = peelingProcess(x, m, startdata=gli, peeler, peelOrder)
+    li = peelingProcess(x, m, startdata=gli, peeler, peelOrder, .diagnostics = .diagnostics)
     likel = likel + li
   }
 

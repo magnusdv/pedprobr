@@ -6,7 +6,8 @@ likelihood2 = function(x, ...) UseMethod("likelihood2", x)
 #' @rdname likelihood
 likelihood2.ped = function(x, marker1, marker2, rho = NULL, peelOrder = NULL,
                            lump = TRUE, special = TRUE, alleleLimit = Inf,
-                           logbase = NULL, loopBreakers = NULL, verbose = FALSE, ...) {
+                           logbase = NULL, loopBreakers = NULL, verbose = FALSE,
+                           .diagnostics = FALSE, ...) {
 
   if(hasInbredFounders(x))
     stop2("Likelihood of linked markers is not implemented in pedigrees with founder inbreeding.\n",
@@ -90,7 +91,8 @@ likelihood2.ped = function(x, marker1, marker2, rho = NULL, peelOrder = NULL,
   pedInfo = .pedInfo(x, treatAsFounder = treatAsFou, Xchrom = Xchrom)
   startdata = startdata_MM(x, m1, m2, pedInfo = pedInfo)
 
-  res = peelingProcess(x, m = NULL, startdata = startdata, peeler = peeler, peelOrder = peelOrder)
+  res = peelingProcess(x, m = NULL, startdata = startdata, peeler = peeler,
+                       peelOrder = peelOrder, .diagnostics = .diagnostics)
 
   if(is.numeric(logbase)) log(res, logbase) else res
 }

@@ -18,11 +18,12 @@ likelihood(x, ...)
   lump = TRUE,
   special = FALSE,
   alleleLimit = Inf,
+  theta = 0,
   logbase = NULL,
   loopBreakers = NULL,
   allX = NULL,
   verbose = FALSE,
-  theta = 0,
+  .diagnostics = FALSE,
   ...
 )
 
@@ -42,6 +43,7 @@ likelihood2(x, ...)
   logbase = NULL,
   loopBreakers = NULL,
   verbose = FALSE,
+  .diagnostics = FALSE,
   ...
 )
 
@@ -77,6 +79,8 @@ in \code{likelihood()} and TRUE in \code{likelihood2()}.}
 model is not generally lumpable, and the allele count exceeds this limit,
 switch to an \code{equal} model with the same rate and reapply lumping.}
 
+\item{theta}{Theta correction.}
+
 \item{logbase}{Either NULL (default) or a positive number indicating the
 basis for logarithmic output. Typical values are \code{exp(1)} and 10.}
 
@@ -88,7 +92,8 @@ basis for logarithmic output. Typical values are \code{exp(1)} and 10.}
 
 \item{verbose}{A logical.}
 
-\item{theta}{Theta correction.}
+\item{.diagnostics}{A logical; if TRUE, the peeling process prints diagnostic
+info.}
 
 \item{marker1, marker2}{Single markers compatible with \code{x}.}
 

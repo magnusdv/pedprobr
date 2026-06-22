@@ -50,6 +50,7 @@
 #' @param alleleLimit A positive number or `Inf` (default). If the mutation
 #'   model is not generally lumpable, and the allele count exceeds this limit,
 #'   switch to an `equal` model with the same rate and reapply lumping.
+#' @param theta Theta correction.
 #' @param logbase Either NULL (default) or a positive number indicating the
 #'   basis for logarithmic output. Typical values are `exp(1)` and 10.
 #' @param loopBreakers A vector of ID labels indicating loop breakers. If NULL
@@ -57,8 +58,8 @@
 #'   [pedtools::breakLoops()].
 #' @param peelOrder For internal use.
 #' @param allX For internal use; set to TRUE if all markers are X-chromosomal.
-#' @param verbose A logical.
-#' @param theta Theta correction.
+#' @param verbose,.diagnostics Logicals. If `.diagnostics = TRUE`, the peeling
+#'   process prints diagnostic messages.
 #' @param \dots Further arguments.
 
 #' @return A numeric with the same length as the number of markers indicated by
@@ -113,9 +114,9 @@ likelihood = function(x, ...) UseMethod("likelihood", x)
 #' @export
 #' @rdname likelihood
 likelihood.ped = function(x, markers = NULL, peelOrder = NULL, lump = TRUE,
-                          special = FALSE, alleleLimit = Inf,
+                          special = FALSE, alleleLimit = Inf, theta = 0,
                           logbase = NULL, loopBreakers = NULL, allX = NULL,
-                          verbose = FALSE, theta = 0, ...) {
+                          verbose = FALSE, .diagnostics = FALSE, ...) {
 
   if(theta > 0 && hasInbredFounders(x))
     stop2("Theta correction cannot be used in pedigrees with inbred founders")
@@ -207,7 +208,7 @@ likelihood.ped = function(x, markers = NULL, peelOrder = NULL, lump = TRUE,
     if(theta > 0)
       likTheta(x, m, theta, peeler(x,m), peelOrder)
     else
-      peelingProcess(x, m, starter(x,m), peeler(x,m), peelOrder)
+      peelingProcess(x, m, starter(x,m), peeler(x,m), peelOrder, .diagnostics = .diagnostics)
   })
 
   res = unlist(resList, recursive = FALSE)
@@ -219,7 +220,7 @@ likelihood.ped = function(x, markers = NULL, peelOrder = NULL, lump = TRUE,
 
 # Internal function: likelihood of a single marker
 peelingProcess = function(x, m = x$MARKERS[[1]], startdata = NULL,
-                          peeler = NULL, peelOrder = NULL, verbose = FALSE) {
+                          peeler = NULL, peelOrder = NULL, .diagnostics = FALSE) {
 
   if(hasUnbrokenLoops(x))
     stop2("Peeling process cannot handle unbroken pedigree loops")
@@ -244,15 +245,21 @@ peelingProcess = function(x, m = x$MARKERS[[1]], startdata = NULL,
   if(attr(startdata, "impossible"))
     return(0)
 
+  if(.diagnostics) {
+    message("--- Peeling diagnostics ---")
+    message("Number of nuclei: ", length(peelOrder))
+  }
+
   dat = startdata
 
   # If no loops: peel and return
   if(is.null(x$LOOP_BREAKERS)) {
-    if(verbose) {
-      len = lengths(lapply(dat, `[[`, "prob"))
+    if(.diagnostics) {
+      glen = lengths(lapply(dat, `[[`, "prob"))
+      keep = glen > 1L
+      unfixed = if(any(keep)) paste(x$ID[keep], glen[keep], sep = ":", collapse = ", ") else "None"
       message("No loops")
-      message("Number of nuclei: ", length(peelOrder))
-      message("Number of genos : ", paste(x$ID, len, sep = ":", collapse = ", "))
+      message("Unfixed genotype counts: ", unfixed)
     }
 
     for(nuc in peelOrder) {
@@ -279,9 +286,10 @@ peelingProcess = function(x, m = x$MARKERS[[1]], startdata = NULL,
 
   lens = lengths(genoMatching)
 
-  if(verbose) {
-    message("Loop breakers: ", toString(x$ID[origs]))
-    message("Total genotype combos: ", paste(lens, collapse = "*"), " = ", prod(lens))
+  if(.diagnostics) {
+    message("Loop breakers: ", toString(x$ID[LB[, "orig"]]))
+    prodtext = if(length(lens) > 1) paste(lens, collapse = "*") |> paste0(" = ") else ""
+    message("Genotype combinations: ", prodtext, prod(lens))
   }
 
   if(any(lens == 0L))
@@ -315,11 +323,11 @@ peelingProcess = function(x, m = x$MARKERS[[1]], startdata = NULL,
         message("The likelihood algorithm reached a strange place. The maintainer would be grateful to see this example.")
     }
 
-    if(verbose && !shown) {
-      len = lengths(lapply(dat1, `[[`, "prob"))
-      keep = len > 1L
-      if(any(keep))
-        message("Unfixed genotype counts: ", paste(x$ID[keep], len[keep], sep = ":", collapse = ", "))
+    if(.diagnostics && !shown) {
+      glen = lengths(lapply(dat1, `[[`, "prob"))
+      keep = glen > 1L
+      unfixed = if(any(keep)) paste(x$ID[keep], glen[keep], sep = ":", collapse = ", ") else "None"
+      message("Unfixed genotype counts: ", unfixed)
       shown = TRUE
     }
 
@@ -399,7 +407,7 @@ matchDat = function(dat1, dat2) {
     if(Xchrom)
       nseq[dat1$mat %in% dat2$mat]
     else {
-      R = max(0L, dat1$pat, dat1$mat) + 1L
+      R = max(0L, dat1$pat, dat1$mat, dat2$pat, dat2$mat) + 1L
       nseq[(dat1$pat + R*dat1$mat) %in% (dat2$pat + R*dat2$mat)]
     }
   }
