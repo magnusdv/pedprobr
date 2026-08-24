@@ -29,4 +29,4 @@ Language: en-GB
 Roxygen: list(markdown = TRUE)
 SystemRequirements: MERLIN (https://csg.sph.umich.edu/abecasis/merlin/)
     for calculations involving multiple linked markers.
-Config/roxygen2/version: 8.0.0
+Config/roxygen2/version: 8.1.0
