@@ -7,9 +7,11 @@
 lumpAlleles(
   x,
   markers = NULL,
-  always = FALSE,
+  observed = NULL,
+  force = !is.null(observed),
   special = TRUE,
   alleleLimit = Inf,
+  always = FALSE,
   verbose = FALSE
 )
 }
@@ -19,9 +21,11 @@ lumpAlleles(
 \item{markers}{A vector of names or indices referring to markers attached to
 \code{x}. (Default: All markers.)}
 
-\item{always}{A logical. If TRUE, lumping is always attempted. By default
-(FALSE) lumping is skipped for markers where no individuals, or all
-individuals, are genotyped.}
+\item{observed}{A list of vectors of observed alleles, one per marker. By
+default, these are extracted from the data.}
+
+\item{force}{A logical. If FALSE, lumping is skipped when no or all
+individuals are genotyped. Default is FALSE unless \code{observed} is supplied.}
 
 \item{special}{A logical. If TRUE, special lumping procedures (depending on
 the pedigree) will be attempted if the marker has a mutation model that is
@@ -30,6 +34,8 @@ not generally lumpable (in the Kemeny-Snell sense).}
 \item{alleleLimit}{A positive number or \code{Inf} (default). If the mutation
 model is not generally lumpable, and the allele count exceeds this limit,
 switch to an \code{equal} model with the same rate and reapply lumping.}
+
+\item{always}{Deprecated; renamed to \code{force}.}
 
 \item{verbose}{A logical.}
 }
@@ -50,6 +56,9 @@ afreq(x, 1)
 # Lump
 y = lumpAlleles(x, verbose = TRUE)
 afreq(y, 1)
+
+# User-supplied lump (must include the "1" allele)
+lumpAlleles(x, observed = 1:3) |> afreq(1)
 
 # With lumpable mutation model
 x2 = setMutmod(x, model = "equal", rate = 0.1)

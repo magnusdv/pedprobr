@@ -6,15 +6,17 @@
 #' @param x A `ped` object or a list of such.
 #' @param markers A vector of names or indices referring to markers attached to
 #'   `x`. (Default: All markers.)
-#' @param always A logical. If TRUE, lumping is always attempted. By default
-#'   (FALSE) lumping is skipped for markers where no individuals, or all
-#'   individuals, are genotyped.
+#' @param observed A list of vectors of observed alleles, one per marker. By
+#'   default, these are extracted from the data.
+#' @param force A logical. If FALSE, lumping is skipped when no or all
+#'   individuals are genotyped. Default is FALSE unless `observed` is supplied.
 #' @param special A logical. If TRUE, special lumping procedures (depending on
 #'   the pedigree) will be attempted if the marker has a mutation model that is
 #'   not generally lumpable (in the Kemeny-Snell sense).
 #' @param alleleLimit A positive number or `Inf` (default). If the mutation
 #'   model is not generally lumpable, and the allele count exceeds this limit,
 #'   switch to an `equal` model with the same rate and reapply lumping.
+#' @param always Deprecated; renamed to `force`.
 #' @param verbose A logical.
 #'
 #' @return An object similar to `x`, but whose attached markers have reduced
@@ -29,6 +31,9 @@
 #' # Lump
 #' y = lumpAlleles(x, verbose = TRUE)
 #' afreq(y, 1)
+#'
+#' # User-supplied lump (must include the "1" allele)
+#' lumpAlleles(x, observed = 1:3) |> afreq(1)
 #'
 #' # With lumpable mutation model
 #' x2 = setMutmod(x, model = "equal", rate = 0.1)
@@ -52,11 +57,17 @@
 #'
 #' @importFrom pedmut alwaysLumpable getParams isLumpable lumpedModel lumpMutSpecial
 #' @export
-lumpAlleles = function(x, markers = NULL, always = FALSE, special = TRUE,
-                       alleleLimit = Inf, verbose = FALSE) {
+lumpAlleles = function(x, markers = NULL, observed = NULL, force = !is.null(observed),
+                       special = TRUE, alleleLimit = Inf, always = FALSE, verbose = FALSE) {
+
+  # TODO: deprecate `always` after update in forrel & KLINK
+  if(always)
+    force = TRUE
 
   if(is.pedList(x))
-    return(lapply(x, function(comp) lumpAlleles(comp, markers, verbose = verbose)))
+    return(lapply(x, function(comp)
+      lumpAlleles(comp, markers, observed = observed, force = force, special = special,
+                       alleleLimit = alleleLimit, verbose = verbose)))
 
   # For special lumping, pass along pedigree for info
   ped = setMarkers(x, NULL)
@@ -64,23 +75,45 @@ lumpAlleles = function(x, markers = NULL, always = FALSE, special = TRUE,
   # Index of markers to be reduced
   midx = whichMarkers(x, markers %||% seq_along(x$MARKERS))
 
-  # Loop through
-  for(i in midx) {
-    m = x$MARKERS[[i]]
+  # Prepare list  of observed alleles, if given
+  if(!is.null(observed)) {
+    if(!is.list(observed))
+      if(length(midx) == 1)
+        observed = list(observed)
+      else
+        stop2("`observed` must be a list of allele vectors, one per marker")
 
-    if(sum(m) == 0 && !always) {
+    if(length(observed) != length(midx))
+      stop2("Length of `observed` does not match the number of markers")
+
+    obsnames = names(observed)
+    if(!is.null(obsnames)) {
+      mnames = name(x, midx)
+      if(!setequal(obsnames, mnames))
+        stop2("Unknown marker name in `observed`: ", .mysetdiff(obsnames, mnames))
+      observed = observed[mnames]
+    }
+  }
+
+  # Loop through
+  for(k in seq_along(midx)) {
+    i = midx[k]
+    m = x$MARKERS[[i]]
+    obs = observed[[k]] # typically NULL
+
+    if(sum(m) == 0 && !force) {
       if(verbose) message(sprintf("Marker %s: empty -- no lumping needed", name(m)))
       next
     }
 
-    newm = .lumpMarker(m, always, special, ped, verbose = verbose)
+    newm = .lumpMarker(m, obs, force, special, ped, verbose = verbose)
 
     # If not regular lumpable, switch to fallback model if too many alleles
     if(nAlleles(newm) > alleleLimit && !alwaysLumpable(mutmod(m))) {
       if(verbose)
         message("  --- allele limit exceeded; switching to `equal` model")
       y = setMutmod(x, i, model = "equal", update = TRUE)
-      newm = .lumpMarker(y$MARKERS[[i]], always, verbose = verbose)
+      newm = .lumpMarker(y$MARKERS[[i]], obs, force, verbose = verbose)
     }
 
     x$MARKERS[[i]] = newm
@@ -89,7 +122,8 @@ lumpAlleles = function(x, markers = NULL, always = FALSE, special = TRUE,
   x
 }
 
-.lumpMarker = function(marker, always = FALSE, special = TRUE, ped = NULL, verbose = FALSE) {
+.lumpMarker = function(marker, obs = NULL, force = FALSE,
+                       special = TRUE, ped = NULL, verbose = FALSE) {
 
   attrs = attributes(marker)
   origAlleles = attrs$alleles
@@ -100,7 +134,18 @@ lumpAlleles = function(x, markers = NULL, always = FALSE, special = TRUE,
   mInt = as.integer(marker)
 
   # Observed alleles
-  isObs = seq_len(nall) %in% mInt
+  if(is.null(obs))
+    isObs = seq_len(nall) %in% mInt
+  else {
+    obsInt = match(obs, origAlleles, nomatch = 0L)
+    if(any(obsInt == 0L))
+      stop2("Unknown `observed` allele: ", .mysetdiff(obs, origAlleles))
+    isObs = seq_len(nall) %in% obsInt
+    if(!all(isObs[mInt]))
+      stop2("Cannot lump alleles that are actually observed: ",
+            .mysetdiff(origAlleles[mInt], obs))
+  }
+
   nObs = sum(isObs)
 
   if(verbose) {
@@ -109,7 +154,7 @@ lumpAlleles = function(x, markers = NULL, always = FALSE, special = TRUE,
                 name(marker), nObs, nall, modname), appendLF = FALSE)
   }
 
-  if (!always && all(mInt != 0)) {
+  if (!force && all(mInt != 0)) {
     if(verbose) message("Lumping not needed (all members genotyped)")
     return(marker)
   }
