@@ -382,7 +382,8 @@ likelihood.list = function(x, markers = NULL, logbase = NULL, loopBreakers = NUL
     stop2("Input is a list, but not a list of `ped` objects")
 
   # Theta correction not implemented for lists
-  if("theta" %in% names(list(...)))
+  dotargs = list(...)
+  if("theta" %in% names(dotargs) && dotargs$theta > 0)
     stop2("Theta correction is not implemented for lists")
 
   if(is.null(markers))
