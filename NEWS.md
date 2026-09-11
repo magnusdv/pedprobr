@@ -1,3 +1,12 @@
+# pedprobr 1.1.1
+
+* Allow `theta = 0` in functions that do not support `theta` correction.
+
+* `lumpAlleles()` gains an argument `observed` for alleles that should not be lumped.
+
+* Fix ordering in `oneMarkerDistribution()` when target individuals are interleaved across pedigree components.
+
+
 # pedprobr 1.1.0
 
 * Updated loop handling to match **pedtools** v2.11.0, including support for founder and repeated loop breakers.
