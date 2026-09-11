@@ -92,3 +92,15 @@ test_that("oneMarkerDist with multiple components", {
   # plotPedList(list(x,y), marker = 1, cex = 1.5, widths = c(1,1,2))
   expect_equal(OMD(x, ids = c(1,5,4,7)), OMD(y, ids = c(1,5,4,7)))
 })
+
+test_that("oneMarkerDistribution preserves id order across components", {
+  x = list(nuclearPed(), singleton(4)) |>
+    addMarker(`1` = "1/1", `2` = "2/2", `4` = "1/2", alleles = 1:2)
+
+  # Correct
+  a = data.frame(`1` = "1/1", `4` = "1/2", `2` = "2/2", prob = 1, check.names = F)
+
+  res = OMD(x, ids = c(1, 4, 2), output = "sparse")
+
+  expect_equal(res, a)
+})

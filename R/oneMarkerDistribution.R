@@ -98,9 +98,17 @@ oneMarkerDistribution = function(x, ids, marker = 1, loopBreakers = NULL,
         idsC = ids[pednr == i]
         lb = if(is.null(loopBreakers)) NULL else .myintersect(loopBreakers, x[[i]]$ID)
         gs = if(is.null(grid.subset)) NULL else unique.matrix(grid.subset[, pednr == i, drop = FALSE])
-        oneMarkerDistribution(x[[i]], idsC, marker = marker, loopBreakers = lb, grid.subset = gs, verbose = FALSE)
+        oneMarkerDistribution(x[[i]], idsC, marker = marker, loopBreakers = lb,
+                              grid.subset = gs, verbose = FALSE)
       })
       res = Reduce(`%o%`, compRes)
+
+      # Restore original order of ids (needed when comps are interleaved)
+      if(anyDuplicated.default(rle(pednr)$values)) {
+        ord = unlist(lapply(unique.default(pednr), function(i) which(pednr == i)))
+        res = aperm(res, order(ord))
+      }
+
       return(formatResult(res))
     }
   }
