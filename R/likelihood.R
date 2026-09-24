@@ -50,6 +50,7 @@
 #'   the calculation switches to an `equal` mutation model to enable lumping.
 #'   This is an approximation intended to avoid very large computations.
 #' @param theta Theta correction.
+#' @param dropout Allelic dropout probability. Currently only implemented for singletons.
 #' @param logbase Either NULL (default) or a positive number indicating the
 #'   basis for logarithmic output. Typical values are `exp(1)` and 10.
 #' @param loopBreakers A vector of ID labels indicating loop breakers. Repeated
@@ -117,7 +118,7 @@ likelihood = function(x, ...) UseMethod("likelihood", x)
 #' @export
 #' @rdname likelihood
 likelihood.ped = function(x, markers = NULL, peelOrder = NULL, lump = TRUE,
-                          special = FALSE, alleleLimit = Inf, theta = 0,
+                          special = FALSE, alleleLimit = Inf, theta = 0, dropout = 0,
                           logbase = NULL, loopBreakers = NULL, allX = NULL,
                           verbose = FALSE, .diagnostics = FALSE, ...) {
 
@@ -127,6 +128,9 @@ likelihood.ped = function(x, markers = NULL, peelOrder = NULL, lump = TRUE,
   if(hasSelfing(x))
     stop2("Likelihood of pedigrees with selfing is not implemented.\n",
           "Contact the maintainer if this is important to you.")
+
+  if(length(dropout) != 1 || is.na(dropout) || dropout < 0 || dropout >= 1)
+    stop2("`dropout` must be a number in [0, 1)")
 
   # Catch erroneous input
   if(is.ped(peelOrder))
@@ -168,9 +172,13 @@ likelihood.ped = function(x, markers = NULL, peelOrder = NULL, lump = TRUE,
   if(is.singleton(x)) {
     if(verbose) message("Passing to singleton method")
     liks = vapply(x$MARKERS, function(m)
-      likelihoodSingleton(ped, m, theta = theta, Xchrom = Xchrom), FUN.VALUE = 1)
+      likelihoodSingleton(ped, m, theta = theta, dropout = dropout, Xchrom = Xchrom),
+      FUN.VALUE = 1)
     return(if(is.numeric(logbase)) log(liks, logbase) else liks)
   }
+
+  if(dropout > 0)
+    stop2("Dropout is currently only implemented for singletons")
 
   # Allele lumping
   if(lump)
@@ -436,7 +444,7 @@ matchDat = function(dat1, dat2) {
   }
 }
 
-likelihoodSingleton = function(x, m, theta = 0, Xchrom = isXmarker(m)) {
+likelihoodSingleton = function(x, m, theta = 0, Xchrom = isXmarker(m), dropout = 0) {
   m1 = m[1]
   m2 = m[2]
 
@@ -453,10 +461,10 @@ likelihoodSingleton = function(x, m, theta = 0, Xchrom = isXmarker(m)) {
     f = founderInbreeding(x, chromType = if(Xchrom) "x" else "autosomal")
 
   # Male on X
-  if (Xchrom && x$SEX == 1) {
-    if (m1 != m2)
+  if(Xchrom && x$SEX == 1) {
+    if(m1 != m2)
       stop2("Heterozygous genotype at X-linked marker in male singleton")
-    return(afr[m1])
+    return((1 - dropout) * afr[m1])
   }
 
   # One missing allele
@@ -466,6 +474,19 @@ likelihoodSingleton = function(x, m, theta = 0, Xchrom = isXmarker(m)) {
     return(res)
   }
 
-  # Otherwise: The usual HW formula, possibly with inbreeding correction
-  HWprob(m1, m2, afr, f = f)
+  # Otherwise: HW probability
+  hw = HWprob(m1, m2, afr, f = f)
+  if(dropout == 0)
+    return(hw)
+
+  # Dropout adjustment
+  d = dropout
+
+  # Heterozygote: both alleles must survive
+  if(m1 != m2)
+    return((1 - d)^2 * hw)
+
+  # Homozygote: true homozygote or heterozygote with dropout
+  p = afr[m1]
+  (1 - d^2) * hw + d * (1 - d) * (1 - f) * 2 * p * (1 - p)
 }

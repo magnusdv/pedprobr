@@ -19,6 +19,7 @@ likelihood(x, ...)
   special = FALSE,
   alleleLimit = Inf,
   theta = 0,
+  dropout = 0,
   logbase = NULL,
   loopBreakers = NULL,
   allX = NULL,
@@ -79,6 +80,8 @@ the calculation switches to an \code{equal} mutation model to enable lumping.
 This is an approximation intended to avoid very large computations.}
 
 \item{theta}{Theta correction.}
+
+\item{dropout}{Allelic dropout probability. Currently only implemented for singletons.}
 
 \item{logbase}{Either NULL (default) or a positive number indicating the
 basis for logarithmic output. Typical values are \code{exp(1)} and 10.}
