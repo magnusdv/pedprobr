@@ -18,11 +18,10 @@ startdata_M = function(x, marker, pedInfo = NULL) {#print("new startdata")
   marker = .sortGeno(marker)
   afr = attr(marker, "afreq")
   n = length(afr)
-
-  # Complete set of genotypes - phased and unphased (for founders) - used below
   nseq = seq_len(n)
-  allPhased   = list(pat = rep(nseq, each = n), mat = rep.int(nseq, times = n))
-  allUnphased = list(pat = rep(nseq, n:1), mat = sequence.default(n:1, from = nseq))
+
+  # Complete set of genotypes (build these on demand below)
+  allPhased = allUnphased = NULL
 
   # Initialise output
   glist = vector(nInd, mode = "list")
@@ -51,16 +50,17 @@ startdata_M = function(x, marker, pedInfo = NULL) {#print("new startdata")
       else
         list(mat = mat, prob = rep(1, length(mat)))
     }
-    else if(simpleFou[i]) {
-      # Simple founder: alleles directly (skip genotypes)
+    else if(simpleFou[i]) {  # Simple founder: alleles directly (skip genotypes)
       g = .alleleDistrib(a, b, afr, f = fi[i])
     }
-    else if(isFounder[i]) {
-      # General founder: unphased genotypes with HW probs
+    else if(isFounder[i]) {  # General founder: unphased genotypes with HW probs
+      if(a == 0L && is.null(allUnphased))
+        allUnphased = list(pat = rep(nseq, n:1), mat = sequence.default(n:1, from = nseq))
       g = .genoDistribFounder(a, b, afr, f = fi[i], COMPLETE = allUnphased)
     }
-    else {
-      # Nonfounder: phased genos with prob = 1
+    else {   # Nonfounder: phased genos with prob = 1
+      if(a == 0L && is.null(allPhased))
+        allPhased = list(pat = rep(nseq, each = n), mat = rep.int(nseq, times = n))
       g = .genoDistribNonfounder(a, b, COMPLETE = allPhased)
     }
 
@@ -290,7 +290,7 @@ startdata_MM = function(x, marker1, marker2, pedInfo = NULL) {
     prob[b] = afr[b]
     if(f > 0) {
       prob = prob * (1-f)
-      prob[b] = prob[b] + f
+      prob[b] = prob[b] + f * afr[b]
     }
   }
   else if (a == b) { # homozygous founder

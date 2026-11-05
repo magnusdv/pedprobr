@@ -145,9 +145,6 @@ likelihood.ped = function(x, markers = NULL, peelOrder = NULL, lump = TRUE,
       stop2("Invalid input for argument `markers`. Received object type: ", class(markers))
   }
 
-  # Just pedigree
-  ped = setMarkers(x, NULL)
-
   nM = length(x$MARKERS)
   if(verbose)
     message("Number of markers: ", nM)
@@ -172,7 +169,7 @@ likelihood.ped = function(x, markers = NULL, peelOrder = NULL, lump = TRUE,
   if(is.singleton(x)) {
     if(verbose) message("Passing to singleton method")
     liks = vapply(x$MARKERS, function(m)
-      likelihoodSingleton(ped, m, theta = theta, dropout = dropout, Xchrom = Xchrom),
+      likelihoodSingleton(x, m, theta = theta, dropout = dropout, Xchrom = Xchrom),
       FUN.VALUE = 1)
     return(if(is.numeric(logbase)) log(liks, logbase) else liks)
   }
@@ -205,30 +202,29 @@ likelihood.ped = function(x, markers = NULL, peelOrder = NULL, lump = TRUE,
     message("Informative nuclei: ", length(peelOrder))
 
   treatAsFou = attr(peelOrder, "treatAsFounder")
-
-  # Select tools for peeling
-  # TODO: Organise better, e.g., skip startdata if theta > 0
-
-  pedInfo = .pedInfo(x, treatAsFounder = treatAsFou, Xchrom = Xchrom)
-  starter = function(x, m) startdata_M(x, m, pedInfo = pedInfo)
-  if(Xchrom)
-    peeler = function(x, m) function(dat, sub) .peel_M_X(dat, sub, SEX = x$SEX, mutmat = mutmod(m))
-  else
-    peeler = function(x, m) function(dat, sub) .peel_M_AUT(dat, sub, mutmat = mutmod(m))
+  pedInfo = if(theta == 0) .pedInfo(x, treatAsFounder = treatAsFou, Xchrom = Xchrom)
+  sex = x$SEX
 
   # Loop over markers
-  resList = lapply(x$MARKERS, function(m) {
-    # If no data, return 1
-    if (sum(m) == 0) return(1)
+  res = vapply(x$MARKERS, function(m) {
 
-    # If theta correction, go to different function
-    if(theta > 0)
-      likTheta(x, m, theta, peeler(x,m), peelOrder)
+    if(sum(m) == 0)
+      return(1)  # empty marker has likelihood 1
+
+    # Construct peeler
+    mut = attr(m, "mutmod")
+    peeler = if(Xchrom)
+      function(dat, sub) .peel_M_X(dat, sub, SEX = sex, mutmat = mut)
     else
-      peelingProcess(x, m, starter(x,m), peeler(x,m), peelOrder, .diagnostics = .diagnostics)
-  })
+      function(dat, sub) .peel_M_AUT(dat, sub, mutmat = mut)
 
-  res = unlist(resList, recursive = FALSE)
+    if(theta > 0) # branch out for theta correction
+      likTheta(x, m, theta, peeler, peelOrder, .diagnostics = .diagnostics)
+    else {
+      startdat = startdata_M(x, m, pedInfo = pedInfo)
+      peelingProcess(x, m, startdat, peeler, peelOrder, .diagnostics = .diagnostics)
+    }
+  }, numeric(1))
 
   if(is.numeric(logbase)) log(res, logbase) else res
 }
@@ -467,10 +463,11 @@ likelihoodSingleton = function(x, m, theta = 0, Xchrom = isXmarker(m), dropout =
     return((1 - dropout) * afr[m1])
   }
 
-  # One missing allele
-  if (m1 == 0 || m2 == 0) {
+  # One known allele: sum over observed genotypes containing it
+  if(m1 == 0 || m2 == 0) {
     p = afr[m[m != 0]]
-    res = p^2 + 2 * p * (1 - p)
+    hom = p^2 + f * p * (1 - p)
+    res = (1 - dropout^2) * hom + (1 - dropout) * 2 * p * (1 - p) * (1 - f)
     return(res)
   }
 
