@@ -1,3 +1,16 @@
+# pedprobr 1.2.0
+
+* `likelihood()` gains an argument `dropout`, currently supported for singletons only.
+
+* Fixed a bug in the handling of `rho` in `likelihoodMerlin()`, potentially causing incorrect results with >2 linked markers. To my knowledge this does not affect any current downstream packages.
+
+* X-linked theta correction now gives an error for non-singleton pedigrees, which is not currently supported. Previous versions incorrectly used autosomal theta correction in this case.
+
+* Minor bug fixes and performance improvements.
+
+* Update links to the new pedsuite home page: https://pedsuite.org/.
+
+
 # pedprobr 1.1.1
 
 * Allow `theta = 0` in functions that do not support `theta` correction.

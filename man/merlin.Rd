@@ -121,7 +121,7 @@ including all markers.
 
 For likelihood computations with linked markers, the argument \code{rho} should
 indicate the recombination fractions between each consecutive pair of markers
-(i.e., \code{rho[i]} is the recombination rate between markers \code{i-1} and \code{i}).
+(i.e., \code{rho[i]} is the recombination rate between markers \code{i} and \code{i+1}).
 These will be converted to centiMorgan distances using Haldane's map
 function, and used to create genetic marker map in a MERLIN-friendly format.
 }
