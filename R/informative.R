@@ -37,7 +37,7 @@ informativeSubnucs = function(x, mlist = x$MARKERS, peelOrder = .peelOrder(x)) {
   }
 
 
-  treatAsFounder = numeric(0)
+  treatAsFounder = attr(peelOrder, "treatAsFounder") %||% numeric(0)
   goodNucs = list()
   NONFOU = nonfounders(x, internal = TRUE)
   LEAVES = leaves(x, internal = TRUE)

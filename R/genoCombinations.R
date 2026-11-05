@@ -75,6 +75,13 @@ genoCombinations = function(x, partialmarker = x$MARKERS[[1]], ids, make.grid = 
   else
     pars = lapply(idsSorted, function(i) parents(x, i) |> match(idsSorted, nomatch = 0) |> .mysetdiff(0))
 
+  # No parent-child restrictions: use the ordinary grid
+  if(!any(lengths(pars) > 0)) {
+    grid = fastGrid(rows)
+    colnames(grid) = idsSorted
+    return(grid[, ids, drop = FALSE])
+  }
+
   # Overlapping genotypes (as row numbers in `allg`)
   compat = lapply(1:nrow(allg), function(i)
     which(allg[i,1] == allg[,1] | allg[i,1] == allg[,2] | allg[i,2] == allg[,1] | allg[i,2] == allg[,2]))

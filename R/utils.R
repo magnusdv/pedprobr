@@ -245,7 +245,7 @@ fastGridRestricted = function(argslist, linkedWith, compatible) {
 
 # Thin wrapper of pedtools::breakLoops
 .breakLoops = function(x, loopBreakers = NULL, Xchrom = NULL, ...) {
-  if(is.null(loopBreakers)) {
+  if(!length(loopBreakers)) {
     Xchrom = Xchrom %||% if(length(x$MARKERS)) isXmarker(x$MARKERS[[1]]) else FALSE
     score = .lbScores(x, Xchrom = Xchrom)
   }
