@@ -72,3 +72,13 @@ test_that("complete inbreeding + heterozygosity = 0", {
   expect_equal(likelihood(y), 0)
 })
 
+test_that("partially typed inbred founder has correct likelihood", {
+  p = 0.1
+  f = 0.4
+  x = nuclearPed(1) |>
+    addMarker(`1` = "1/-", afreq = c("1" = p, "2" = 1-p))
+  founderInbreeding(x, 1) = f
+
+  expect_equal(likelihood(x), (1-f)*(2*p-p^2) + f*p)
+})
+

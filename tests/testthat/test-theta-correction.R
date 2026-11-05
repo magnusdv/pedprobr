@@ -14,10 +14,16 @@ test_that("theta works in two-generation pedigrees", {
 
 
 
-test_that("theta-correction gives error if founders are inbred", {
-  x = singleton(1)
-  founderInbreeding(x, 1) = 0.5
-  m = marker(x, afreq = c(A = 0.3, B = 0.7), "1" = "A/B")
+test_that("theta-correction gives error if inbred founders", {
+  x = singleton(1) |> addMarker(`1` = "1/1", alleles = 1:2) |>
+    setFounderInbreeding(1, 0.5)
 
-  expect_error(likelihood(x, m, theta = 0.05), "Theta correction cannot be used in pedigrees with inbred founders")
+  expect_error(likelihood(x, m, theta = 0.1), "Theta correction cannot be used in pedigrees with inbred founders")
+})
+
+
+test_that("X-linked pedigree theta correction is rejected", {
+  x = nuclearPed(1) |>
+    addMarker(geno = c("1", "1/1", "1"), alleles = 1:2, chrom = "X")
+  expect_error(likelihood(x, theta = 0.1), "X-linked")
 })

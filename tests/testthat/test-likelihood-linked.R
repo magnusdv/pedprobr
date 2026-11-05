@@ -120,3 +120,14 @@ test_that("linked X-markers in looped ped", {
   expect_equal(likelihood2(x, 1, 1, rho=0.25), 0.25)
   expect_equal(likelihood2(x, 1, 1, rho=0), 0.25)
 })
+
+test_that("unlinked markers retain trimmed founder priors", {
+  x = reorderPed(linearPed(3), 7:1) |>
+    addMarker(`5` = "1/1", alleles = 1:2) |>
+    addMarker(`7` = "1/1", alleles = 1:2)
+
+  expect_gt(length(attr(informativeSubnucs(x), "treatAsFounder")), 0)
+  expect_equal(likelihood2(x, 1, 2, rho = 0.5), prod(likelihood(x)))
+})
+
+

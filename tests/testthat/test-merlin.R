@@ -74,4 +74,16 @@ test_that("MINX gives correct likelihood with two markers", {
   expect_signif(prod(likelihood(x)), lm(x))
 })
 
+test_that("MERLIN accumulates recombination distances", {
+  x = nuclearPed(2)
+  m = marker(x, `1` = "1/2", `2` = "1/1",
+             `3` = "1/1", `4` = "1/1", alleles = 1:2)
+  x = setMarkers(x, list(m, m, m))
+  name(x) = paste0("m", 1:3)
+
+  rho = c(0.1, 0.2)
+  map = data.frame(CHROM = 1, MARKER = name(x),
+                   CM = c(0, cumsum(haldane(rho = rho))))
+  expect_equal(lm(x, rho = rho), lm(x, linkageMap = map))
+})
 

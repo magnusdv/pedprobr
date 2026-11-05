@@ -42,4 +42,7 @@ test_that("pedlists preserve component-specific repeated loop breakers", {
   expect_equal(likelihood2(list(x1, x2), 1, 2, rho = 0.25, loopBreakers = lb),
                likelihood2(x1, 1, 2, rho = 0.25, loopBreakers = c(3, 3)) *
                  likelihood2(x2, 1, 2, rho = 0.25, loopBreakers = c(13, 13)))
+
+  expect_equal(likelihood(list(x1, x2), loopBreakers = c(3, 3)),
+               likelihood(x1, loopBreakers = c(3, 3)) * likelihood(x2))
 })

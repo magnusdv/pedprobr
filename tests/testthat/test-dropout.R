@@ -13,3 +13,17 @@ test_that("likelihood handles dropout for singletons", {
   expect_equal(likelihood(het, dropout = 0), 2*p*q)
   expect_error(likelihood(ped, dropout = d), "only implemented for singletons")
 })
+
+
+test_that("partial singleton dropout sums compatible calls", {
+  s = singleton() |>
+    addMarker(geno = "1/-", afreq = c("1" = 0.1, "2" = 0.9))
+  founderInbreeding(s, 1) = 0.4
+
+  hom = setGenotype(s, marker = 1, id = 1, geno = "1/1")
+  het = setGenotype(s, marker = 1, id = 1, geno = "1/2")
+  d = 0.2
+
+  expect_equal(likelihood(s, dropout = d),
+               likelihood(hom, dropout = d) + likelihood(het, dropout = d))
+})
