@@ -15,9 +15,8 @@ status](https://www.r-pkg.org/badges/version/pedprobr)](https://CRAN.R-project.o
 
 The main content of **pedprobr** is an implementation of the
 Elston-Stewart algorithm for pedigree likelihoods given marker
-genotypes. It is part of the
-[pedsuite](https://magnusdv.github.io/pedsuite/), a collection of
-packages for pedigree analysis in R.
+genotypes. It is part of the [pedsuite](https://pedsuite.org/), a
+collection of packages for pedigree analysis in R.
 
 The **pedprobr** package does much of the hard work in several other
 pedsuite packages:
@@ -81,7 +80,7 @@ x = nuclearPed(nch = 2) |>
 plot(x, marker = "M1")
 ```
 
-<img src="man/figures/README-pedplot-1.png" style="display: block; margin: auto;" />
+<img src="man/figures/README-pedplot-1.png" alt="" style="display: block; margin: auto;" />
 
 The pedigree likelihood, i.e., the probability of the genotypes given
 the pedigree, is obtained as follows:

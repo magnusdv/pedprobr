@@ -24,7 +24,7 @@ knitr::opts_chunk$set(
 
 ## Introduction
 
-The main content of **pedprobr** is an implementation of the Elston-Stewart algorithm for pedigree likelihoods given marker genotypes. It is part of the [pedsuite](https://magnusdv.github.io/pedsuite/), a collection of packages for pedigree analysis in R.
+The main content of **pedprobr** is an implementation of the Elston-Stewart algorithm for pedigree likelihoods given marker genotypes. It is part of the [pedsuite](https://pedsuite.org/), a collection of packages for pedigree analysis in R.
 
 The **pedprobr** package does much of the hard work in several other pedsuite packages:
 
