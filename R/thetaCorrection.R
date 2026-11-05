@@ -13,6 +13,9 @@ thetaCorr = function(v, afr, theta) {
 
 likTheta = function(x, m, theta, peeler, peelOrder, .diagnostics = FALSE) {
 
+  if(isXmarker(m))
+    stop2("Theta correction is not implemented for X-linked pedigrees")
+
   #---------------------
   # Mostly for debug (peeler and peelOrder will not be missing in practice)
   if(missing(peeler)) {
