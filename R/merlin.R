@@ -24,7 +24,7 @@
 #'
 #' For likelihood computations with linked markers, the argument `rho` should
 #' indicate the recombination fractions between each consecutive pair of markers
-#' (i.e., `rho[i]` is the recombination rate between markers `i-1` and `i`).
+#' (i.e., `rho[i]` is the recombination rate between markers `i` and `i+1`).
 #' These will be converted to centiMorgan distances using Haldane's map
 #' function, and used to create genetic marker map in a MERLIN-friendly format.
 #'
@@ -219,7 +219,7 @@ likelihoodMerlin = function(x, markers = NULL, linkageMap = NULL, rho = NULL,
       chr = rep_len(1, nMarkers(x))
 
     # Convert to centiMorgan positions
-    cm = c(0, haldane(rho = rho))
+    cm = c(0, cumsum(haldane(rho = rho)))
 
     linkageMap = data.frame(CHROM = chr, MARKER = name(x), CM = cm)
   }
